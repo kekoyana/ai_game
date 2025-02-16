@@ -2,8 +2,8 @@ AIで作ったゲームをあげていく
 
 ## プロジェクト構成
 
-- `/menu` - メインメニュー画面（https://[username].github.io/ai_game/）
-- `/evolife` - 生命進化シミュレーションゲーム（https://[username].github.io/ai_game/evolife/）
+- `/menu` - メインメニュー画面（https://kekoyana.github.io/ai_game/）
+- `/evolife` - 生命進化シミュレーションゲーム（https://kekoyana.github.io/ai_game/evolife/）
 
 ## デプロイ方法
 
@@ -21,8 +21,8 @@ AIで作ったゲームをあげていく
 - mainブランチにプッシュすると、自動的にGitHub Actionsが実行されます
 - ビルドとデプロイは `.github/workflows/deploy.yml` で定義されています
 - デプロイが完了すると、以下のURLでアクセス可能になります：
-  - メインメニュー: https://[username].github.io/ai_game/
-  - Evolife: https://[username].github.io/ai_game/evolife/
+  - メインメニュー: https://kekoyana.github.io/ai_game/
+  - Evolife: https://kekoyana.github.io/ai_game/evolife/
 
 ## 新しいゲームの追加方法
 
