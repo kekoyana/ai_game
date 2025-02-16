@@ -38,7 +38,7 @@ jobs:
         run: npm run build
 
       - name: Upload evolife artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: evolife-build
           path: './evolife/dist'
@@ -51,7 +51,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Upload menu artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: menu-build
           path: './menu'
@@ -65,13 +65,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download evolife build
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: evolife-build
           path: './dist/evolife'
 
       - name: Download menu build
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: menu-build
           path: './dist'
