@@ -1,42 +1,68 @@
-#root {
-  max-width: 1280px;
+.game-container {
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+h1 {
+  color: #2c3e50;
   text-align: center;
+  margin-bottom: 30px;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.game-info {
+  margin-bottom: 20px;
+  padding: 10px 20px;
+  background-color: #e9ecef;
+  border-radius: 8px;
+  font-size: 1.2em;
 }
 
-@keyframes logo-spin {
+button {
+  font-family: inherit;
+  font-size: 1em;
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 環境アイコンのアニメーション */
+@keyframes fadeIn {
   from {
-    transform: rotate(0deg);
+    opacity: 0;
+    transform: scale(0.8);
   }
   to {
-    transform: rotate(360deg);
+    opacity: 1;
+    transform: scale(1);
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
+/* 生物のアニメーション */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
   }
 }
 
-.card {
-  padding: 2em;
+/* アニメーションの適用 */
+.cell-content {
+  animation: fadeIn 0.3s ease-out;
 }
 
-.read-the-docs {
-  color: #888;
+.organism-emoji {
+  animation: pulse 2s infinite;
 }
