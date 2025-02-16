@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import './App.css';
 import { GameBoard } from './components/GameBoard';
 import { EnvironmentSelector } from './components/EnvironmentSelector';
