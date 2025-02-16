@@ -63,6 +63,8 @@ export interface GameState {
   board: Cell[][];
   selectedEnvironment: EnvironmentType | null;
   turn: number;
+  isGameCleared: boolean; // クリアフラグ
+  humanCount: number; // 人類の数
 }
 
 // 進化の経路を定義

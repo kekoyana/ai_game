@@ -97,14 +97,14 @@ export const Cell: React.FC<CellProps> = ({ cell, onClick }) => {
     <div
       onClick={onClick}
       style={{
-        width: '48px',
-        height: '48px',
+        width: '64px',
+        height: '64px',
         border: '1px solid #ccc',
         backgroundColor,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        fontSize: '1.8em',
+        fontSize: '2.4em',
         cursor: 'pointer',
         position: 'relative',
         transition: 'all 0.3s ease',
