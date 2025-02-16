@@ -97,14 +97,14 @@ export const Cell: React.FC<CellProps> = ({ cell, onClick }) => {
     <div
       onClick={onClick}
       style={{
-        width: '32px',
-        height: '32px',
+        width: '48px',
+        height: '48px',
         border: '1px solid #ccc',
         backgroundColor,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        fontSize: '1.2em',
+        fontSize: '1.8em',
         cursor: 'pointer',
         position: 'relative',
         transition: 'all 0.3s ease',
@@ -118,11 +118,11 @@ export const Cell: React.FC<CellProps> = ({ cell, onClick }) => {
           <div
             style={{
               position: 'absolute',
-              bottom: '1px',
-              right: '1px',
-              fontSize: '0.3em',
+              bottom: '2px',
+              right: '2px',
+              fontSize: '0.4em',
               backgroundColor: 'rgba(255, 255, 255, 0.8)',
-              padding: '1px',
+              padding: '2px',
               borderRadius: '2px',
               color: getHealthColor(cell.organism.health),
               fontWeight: 'bold',
@@ -133,9 +133,9 @@ export const Cell: React.FC<CellProps> = ({ cell, onClick }) => {
           <div
             style={{
               position: 'absolute',
-              top: '1px',
-              right: '1px',
-              fontSize: '0.3em',
+              top: '2px',
+              right: '2px',
+              fontSize: '0.4em',
             }}
           >
             {getAdaptationIndicator(cell.organism.adaptationScore)}

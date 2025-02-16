@@ -34,6 +34,13 @@ const getEnvironmentEmoji = (type: EnvironmentType): string => {
   }
 };
 
+const getAdaptabilityText = (env: typeof environments[EnvironmentType]) => {
+  return Object.entries(env.adaptability)
+    .filter(([, adaptability]) => adaptability > 0)
+    .map(([species, adaptability]) => `${species}: ${adaptability}%`)
+    .join('\n');
+};
+
 export const EnvironmentSelector: React.FC<EnvironmentSelectorProps> = ({
   selectedEnvironment,
   onSelect,
@@ -47,19 +54,13 @@ export const EnvironmentSelector: React.FC<EnvironmentSelectorProps> = ({
           className={`environment-button ${
             selectedEnvironment === env.type ? 'selected' : ''
           }`}
-          title={`生物適応度: ${Object.entries(env.adaptability)
-            .filter(([stage, value]) => value > 0)
-            .map(([stage, value]) => `${stage}: ${value}%`)
-            .join(', ')}`}
+          title={`${env.description}\n\n生物適応度:\n${getAdaptabilityText(env)}`}
         >
           <span className="environment-emoji">
             {getEnvironmentEmoji(env.type)}
           </span>
           <div className="environment-info">
             <span className="environment-name">{env.name}</span>
-            <span className="environment-description">
-              {env.description}
-            </span>
           </div>
         </button>
       ))}

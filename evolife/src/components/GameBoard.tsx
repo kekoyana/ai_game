@@ -12,10 +12,9 @@ export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onCellClick }) 
     <div
       className="game-board"
       style={{
-        gridTemplateColumns: `repeat(${gameState.board[0].length}, 32px)`,
+        gridTemplateColumns: `repeat(${gameState.board[0].length}, 48px)`,
         width: 'fit-content',
         height: 'fit-content',
-        maxHeight: '768px',
       }}
     >
       {gameState.board.map((row, rowIndex) =>
