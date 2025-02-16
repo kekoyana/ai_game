@@ -1,0 +1,89 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: ['main']
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: 'pages'
+  cancel-in-progress: true
+
+jobs:
+  build-evolife:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: './evolife/package-lock.json'
+      
+      - name: Install dependencies
+        working-directory: ./evolife
+        run: npm ci
+      
+      - name: Build
+        working-directory: ./evolife
+        run: npm run build
+
+      - name: Upload evolife artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: evolife-build
+          path: './evolife/dist'
+          retention-days: 1
+
+  build-menu:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Upload menu artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: menu-build
+          path: './menu'
+          retention-days: 1
+
+  deploy:
+    needs: [build-evolife, build-menu]
+    environment:
+      name: github-pages
+      url: ${{ github.io_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download evolife build
+        uses: actions/download-artifact@v3
+        with:
+          name: evolife-build
+          path: './dist/evolife'
+
+      - name: Download menu build
+        uses: actions/download-artifact@v3
+        with:
+          name: menu-build
+          path: './dist'
+      
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+      
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './dist'
+      
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
