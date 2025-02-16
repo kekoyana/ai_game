@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import './App.css';
 import { GameBoard } from './components/GameBoard';
 import { EnvironmentSelector } from './components/EnvironmentSelector';
+import { Tutorial } from './components/Tutorial';
 import type { EnvironmentType, GameState, EvolutionStage, Cell } from './types/game';
 import { environments } from './data/environments';
 import { EVOLUTION_PATHS } from './types/game';
@@ -46,6 +47,8 @@ const countSpecies = (board: Cell[][], stage: EvolutionStage): number => {
 };
 
 function App() {
+  const [showTutorial, setShowTutorial] = useState(true);
+
   // ゲームの初期状態を設定（10x12のマス目）
   const initialState: GameState = {
     board: Array(10).fill(null).map(() =>
@@ -241,6 +244,7 @@ function App() {
 
   return (
     <div className="game-container">
+      {showTutorial && <Tutorial onComplete={() => setShowTutorial(false)} />}
       <div className="game-left-panel">
         <div className="game-info">
           <p>ターン: {gameState.turn}</p>
