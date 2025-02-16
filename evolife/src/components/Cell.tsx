@@ -42,20 +42,28 @@ const getOrganismEmoji = (cell: CellType): string => {
   switch (stage) {
     case 'primitive':
       return '🦠';
+    case 'bacteria':
+      return '🧫';
     case 'jellyfish':
       return '🎐';
     case 'shellfish':
       return '🐚';
+    case 'squid':
+      return '🦑';
     case 'fish':
       return '🐟';
     case 'lungfish':
       return '🐠';
     case 'amphibian':
       return '🐸';
+    case 'insect':
+      return '🦗';
     case 'reptile':
       return '🦎';
     case 'dinosaur':
       return '🦖';
+    case 'bird':
+      return '🦅';
     case 'mammal':
       return '🦁';
     case 'primate':
@@ -74,6 +82,13 @@ const getHealthColor = (health: number): string => {
   return '#f44336';
 };
 
+const getAdaptationIndicator = (adaptationScore: number): string => {
+  if (adaptationScore >= 90) return '⭐';
+  if (adaptationScore >= 70) return '✨';
+  if (adaptationScore >= 50) return '✧';
+  return '❗';
+};
+
 export const Cell: React.FC<CellProps> = ({ cell, onClick }) => {
   const backgroundColor = getEnvironmentColor(cell);
   const organismEmoji = getOrganismEmoji(cell);
@@ -82,14 +97,14 @@ export const Cell: React.FC<CellProps> = ({ cell, onClick }) => {
     <div
       onClick={onClick}
       style={{
-        width: '60px',
-        height: '60px',
+        width: '32px',
+        height: '32px',
         border: '1px solid #ccc',
         backgroundColor,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        fontSize: '2em',
+        fontSize: '1.2em',
         cursor: 'pointer',
         position: 'relative',
         transition: 'all 0.3s ease',
@@ -99,21 +114,33 @@ export const Cell: React.FC<CellProps> = ({ cell, onClick }) => {
         <span className="organism-emoji">{organismEmoji}</span>
       </div>
       {cell.organism && (
-        <div
-          style={{
-            position: 'absolute',
-            bottom: '2px',
-            right: '2px',
-            fontSize: '0.4em',
-            backgroundColor: 'rgba(255, 255, 255, 0.8)',
-            padding: '2px',
-            borderRadius: '2px',
-            color: getHealthColor(cell.organism.health),
-            fontWeight: 'bold',
-          }}
-        >
-          {Math.round(cell.organism.health)}
-        </div>
+        <>
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '1px',
+              right: '1px',
+              fontSize: '0.3em',
+              backgroundColor: 'rgba(255, 255, 255, 0.8)',
+              padding: '1px',
+              borderRadius: '2px',
+              color: getHealthColor(cell.organism.health),
+              fontWeight: 'bold',
+            }}
+          >
+            {Math.round(cell.organism.health)}
+          </div>
+          <div
+            style={{
+              position: 'absolute',
+              top: '1px',
+              right: '1px',
+              fontSize: '0.3em',
+            }}
+          >
+            {getAdaptationIndicator(cell.organism.adaptationScore)}
+          </div>
+        </>
       )}
     </div>
   );

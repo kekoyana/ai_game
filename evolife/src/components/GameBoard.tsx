@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Cell as CellComponent } from './Cell';
-import { Cell as CellType, GameState, EnvironmentType } from '../types/game';
-import { environments } from '../data/environments';
+import { GameState } from '../types/game';
 
 interface GameBoardProps {
   gameState: GameState;
@@ -11,13 +10,12 @@ interface GameBoardProps {
 export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onCellClick }) => {
   return (
     <div
+      className="game-board"
       style={{
-        display: 'grid',
-        gridTemplateColumns: `repeat(${gameState.board[0].length}, 60px)`,
-        gap: '2px',
-        padding: '10px',
-        backgroundColor: '#f0f0f0',
-        borderRadius: '8px',
+        gridTemplateColumns: `repeat(${gameState.board[0].length}, 32px)`,
+        width: 'fit-content',
+        height: 'fit-content',
+        maxHeight: '768px',
       }}
     >
       {gameState.board.map((row, rowIndex) =>

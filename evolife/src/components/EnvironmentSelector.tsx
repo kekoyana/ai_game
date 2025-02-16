@@ -39,41 +39,28 @@ export const EnvironmentSelector: React.FC<EnvironmentSelectorProps> = ({
   onSelect,
 }) => {
   return (
-    <div
-      style={{
-        display: 'flex',
-        gap: '8px',
-        padding: '10px',
-        backgroundColor: '#f8f9fa',
-        borderRadius: '8px',
-        marginBottom: '20px',
-        flexWrap: 'wrap',
-        justifyContent: 'center',
-      }}
-    >
+    <div className="environment-selector">
       {Object.values(environments).map((env) => (
         <button
           key={env.type}
           onClick={() => onSelect(env.type)}
-          style={{
-            padding: '8px',
-            border: selectedEnvironment === env.type ? '2px solid #007bff' : '1px solid #dee2e6',
-            borderRadius: '4px',
-            backgroundColor: selectedEnvironment === env.type ? '#e7f5ff' : '#ffffff',
-            cursor: 'pointer',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            minWidth: '80px',
-            position: 'relative',
-            transition: 'all 0.2s ease',
-          }}
-          title={env.description}
+          className={`environment-button ${
+            selectedEnvironment === env.type ? 'selected' : ''
+          }`}
+          title={`生物適応度: ${Object.entries(env.adaptability)
+            .filter(([stage, value]) => value > 0)
+            .map(([stage, value]) => `${stage}: ${value}%`)
+            .join(', ')}`}
         >
-          <div style={{ fontSize: '1.5em', marginBottom: '4px' }}>
+          <span className="environment-emoji">
             {getEnvironmentEmoji(env.type)}
+          </span>
+          <div className="environment-info">
+            <span className="environment-name">{env.name}</span>
+            <span className="environment-description">
+              {env.description}
+            </span>
           </div>
-          <div style={{ fontSize: '0.8em', fontWeight: 500 }}>{env.name}</div>
         </button>
       ))}
     </div>
