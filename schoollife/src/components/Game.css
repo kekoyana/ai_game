@@ -17,27 +17,38 @@
 .status-panel h2 {
   margin-top: 0;
   color: #2c3e50;
+  border-bottom: 2px solid #3498db;
+  padding-bottom: 8px;
 }
 
 .status-panel p {
-  margin: 8px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 10px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  margin: 5px 0;
   font-size: 1.1em;
   color: #34495e;
 }
 
-.action-panel {
+.action-panel, .club-selection {
   background-color: #ffffff;
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
 }
 
-.action-panel h2 {
+.action-panel h2, .club-selection h2 {
   margin-top: 0;
   color: #2c3e50;
+  border-bottom: 2px solid #3498db;
+  padding-bottom: 8px;
 }
 
-.action-panel button {
+.action-panel button, .club-selection button {
   display: block;
   width: 100%;
   padding: 12px;
@@ -48,30 +59,53 @@
   border-radius: 4px;
   cursor: pointer;
   font-size: 1.1em;
-  transition: background-color 0.3s;
+  transition: all 0.3s ease;
 }
 
-.action-panel button:hover {
+.action-panel button:hover, .club-selection button:hover {
   background-color: #2980b9;
+  transform: translateY(-2px);
 }
 
 .action-panel button:disabled {
   background-color: #bdc3c7;
   cursor: not-allowed;
+  transform: none;
 }
 
 h3 {
   margin: 15px 0 10px;
   color: #2c3e50;
+  font-size: 1.2em;
 }
 
-/* ステータス値の表示をより見やすく */
+/* 部活選択ボタンの特別なスタイル */
+.club-selection button {
+  background-color: #2ecc71;
+}
+
+.club-selection button:hover {
+  background-color: #27ae60;
+}
+
+/* ステータス値のバー表示 */
 .status-panel p {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 5px 10px;
-  background-color: #f8f9fa;
-  border-radius: 4px;
-  margin: 5px 0;
+  position: relative;
+}
+
+.status-panel p::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  width: var(--value-percent, 0%);
+  background-color: #3498db;
+  transition: width 0.3s ease;
+}
+
+/* アクティブな時間帯を強調 */
+.current-time {
+  font-weight: bold;
+  color: #3498db;
 }
