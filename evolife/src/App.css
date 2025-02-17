@@ -152,3 +152,39 @@
 .organism-emoji {
   animation: pulse 2s infinite;
 }
+
+/* ダークモード対応 */
+@media (prefers-color-scheme: dark) {
+  .game-container {
+    color: #e9ecef;
+  }
+
+  .game-info {
+    background-color: #343a40;
+    color: #e9ecef;
+  }
+
+  .environment-selector {
+    background-color: #343a40;
+    color: #e9ecef;
+  }
+
+  .environment-button {
+    background-color: #495057;
+    border-color: #6c757d;
+    color: #e9ecef;
+  }
+
+  .environment-button:hover {
+    box-shadow: 0 2px 8px rgba(255, 255, 255, 0.1);
+  }
+
+  .environment-button.selected {
+    border-color: #0d6efd;
+    background-color: #0d6efd40;
+  }
+
+  .game-board {
+    background-color: #343a40;
+  }
+}
