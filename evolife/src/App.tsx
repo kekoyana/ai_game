@@ -238,9 +238,11 @@ function App() {
 
   // 定期的なターン処理（500ミリ秒ごとに更新）
   useEffect(() => {
-    const interval = setInterval(processTurn, 500);
-    return () => clearInterval(interval);
-  }, [processTurn]);
+    if (!showTutorial) {
+      const interval = setInterval(processTurn, 500);
+      return () => clearInterval(interval);
+    }
+  }, [processTurn, showTutorial]);
 
   return (
     <div className="game-container">
