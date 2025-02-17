@@ -2,8 +2,8 @@ AIで作ったゲームをあげていく
 
 ## プロジェクト構成
 
-- `/menu` - メインメニュー画面（https://kekoyana.github.io/ai_game/）
-- `/evolife` - 生命進化シミュレーションゲーム（https://kekoyana.github.io/ai_game/evolife/）
+- `/menu` - メインメニュー画面（ https://kekoyana.github.io/ai_game/ ）
+- `/evolife` - 生命進化シミュレーションゲーム（ https://kekoyana.github.io/ai_game/evolife/ ）
 
 ## デプロイ方法
 
