@@ -1,19 +1,20 @@
 import { useState } from 'react';
 import { PlayerState, ClubType } from '../types/player';
+import { Classmate, initialClassmates } from '../types/classmate';
 import './Game.css';
 
 const initialPlayerState: PlayerState = {
   name: 'プレイヤー',
   stats: {
-    academic: 100,      // 初期学力
-    physical: 100,      // 初期体力
-    social: 100,        // 初期社交性
-    artistic: 100,      // 初期芸術性
-    intelligence: 100,  // 初期知性
-    charisma: 100,      // 初期カリスマ性
-    athletic: 100,      // 初期運動神経
-    stress: 0,          // 初期ストレス
-    energy: 100,        // 初期体力
+    academic: 100,
+    physical: 100,
+    social: 100,
+    artistic: 100,
+    intelligence: 100,
+    charisma: 100,
+    athletic: 100,
+    stress: 0,
+    energy: 100,
   },
   relationships: {},
   money: 1000,
@@ -25,6 +26,9 @@ const initialPlayerState: PlayerState = {
 
 export const Game: React.FC = () => {
   const [playerState, setPlayerState] = useState<PlayerState>(initialPlayerState);
+  const [classmates, setClassmates] = useState<Classmate[]>(initialClassmates);
+  const [selectedClassmate, setSelectedClassmate] = useState<Classmate | null>(null);
+  const [activePanel, setActivePanel] = useState<'actions' | 'classmates'>('actions');
 
   const updateStats = (statChanges: Partial<PlayerState['stats']>) => {
     setPlayerState(prev => ({
@@ -36,8 +40,18 @@ export const Game: React.FC = () => {
     }));
   };
 
+  const updateFriendship = (classmateId: string, amount: number) => {
+    setClassmates(prev => 
+      prev.map(classmate => 
+        classmate.id === classmateId
+          ? { ...classmate, friendship: Math.min(Math.max(classmate.friendship + amount, 0), 100) }
+          : classmate
+      )
+    );
+  };
+
   const getDateDisplay = (day: number) => {
-    const monthStart = 4; // 4月スタート
+    const monthStart = 4;
     let currentMonth = monthStart;
     let currentDay = day;
     
@@ -191,82 +205,182 @@ export const Game: React.FC = () => {
     }));
   };
 
+  const interactWithClassmate = (classmate: Classmate) => {
+    if (playerState.stats.energy >= 15) {
+      updateStats({
+        social: Math.min(playerState.stats.social + 2, 1000),
+        energy: playerState.stats.energy - 15,
+        stress: Math.max(playerState.stats.stress - 8, 0),
+      });
+      updateFriendship(classmate.id, 5);
+      advanceTime();
+    }
+  };
+
   return (
     <div className="game-container">
-      <div className="status-panel">
-        <h2>ステータス</h2>
-        <p>日付: {getDateDisplay(playerState.day)} ({playerState.isWeekend ? '週末' : '平日'})</p>
-        <p>時間帯: {
-          playerState.time === 'morning' ? '朝' :
-          playerState.time === 'afternoon' ? '昼' : '夕方'
-        }</p>
-        <h3>能力値</h3>
-        <p>学力: {playerState.stats.academic}</p>
-        <p>体力: {playerState.stats.physical}</p>
-        <p>社交性: {playerState.stats.social}</p>
-        <p>芸術性: {playerState.stats.artistic}</p>
-        <p>知性: {playerState.stats.intelligence}</p>
-        <p>カリスマ性: {playerState.stats.charisma}</p>
-        <p>運動神経: {playerState.stats.athletic}</p>
-        <p>体力: {playerState.stats.energy}</p>
-        <p>ストレス: {playerState.stats.stress}</p>
-      </div>
-
-      <div className="action-panel">
-        <h2>行動選択</h2>
-        {!playerState.isWeekend && (playerState.time === 'morning' || playerState.time === 'afternoon') ? (
-          <button onClick={attendClass}>
-            授業を受ける（体力-15, 学力+1, 知性+1, ストレス+5）
-          </button>
-        ) : (
-          <>
-            <button 
-              onClick={study}
-              disabled={playerState.stats.energy < 20}>
-              勉強する（体力-20, 学力+2, 知性+1, ストレス+10）
-            </button>
-            <button 
-              onClick={exercise}
-              disabled={playerState.stats.energy < 20}>
-              運動する（体力-20, 体力+2, 運動神経+2, ストレス-5）
-            </button>
-            <button 
-              onClick={socialize}
-              disabled={playerState.stats.energy < 15}>
-              交流する（体力-15, 社交性+2, カリスマ性+1, ストレス-10）
-            </button>
-            <button
-              onClick={read}
-              disabled={playerState.stats.energy < 15}>
-              読書する（体力-15, 知性+2, 学力+1, ストレス+5）
-            </button>
-            <button
-              onClick={art}
-              disabled={playerState.stats.energy < 20}>
-              芸術活動（体力-20, 芸術性+2, ストレス-10）
-            </button>
-            {playerState.club !== 'none' && (
-              <button
-                onClick={clubActivity}
-                disabled={playerState.stats.energy < 25}>
-                部活動（体力-25, 能力+3/+2, ストレス+8）
-              </button>
-            )}
-            <button onClick={rest}>
-              休憩する（体力+30, ストレス-20）
-            </button>
-          </>
-        )}
-      </div>
-
-      {playerState.club === 'none' && (
-        <div className="club-selection">
-          <h2>部活選択</h2>
-          <button onClick={() => joinClub('sports')}>運動部に入部</button>
-          <button onClick={() => joinClub('cultural')}>文化部に入部</button>
-          <button onClick={() => joinClub('student_council')}>生徒会に入部</button>
+      <div className="game-header">
+        <div className="basic-info">
+          <p>日付: {getDateDisplay(playerState.day)} ({playerState.isWeekend ? '週末' : '平日'})</p>
+          <p>時間帯: {
+            playerState.time === 'morning' ? '朝' :
+            playerState.time === 'afternoon' ? '昼' : '夕方'
+          }</p>
         </div>
-      )}
+        <div className="tab-buttons">
+          <button 
+            className={`tab-button ${activePanel === 'actions' ? 'active' : ''}`}
+            onClick={() => setActivePanel('actions')}
+          >
+            行動
+          </button>
+          <button 
+            className={`tab-button ${activePanel === 'classmates' ? 'active' : ''}`}
+            onClick={() => setActivePanel('classmates')}
+          >
+            クラスメート
+          </button>
+        </div>
+      </div>
+
+      <div className="game-main">
+        <div className="left-column">
+          <div className="status-panel">
+            <h3>ステータス</h3>
+            <div className="stats-grid">
+              <div className="stat-item">
+                <span className="stat-label">学力:</span>
+                <span className="stat-value">{playerState.stats.academic}</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-label">体力:</span>
+                <span className="stat-value">{playerState.stats.physical}</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-label">社交性:</span>
+                <span className="stat-value">{playerState.stats.social}</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-label">芸術性:</span>
+                <span className="stat-value">{playerState.stats.artistic}</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-label">知性:</span>
+                <span className="stat-value">{playerState.stats.intelligence}</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-label">カリスマ性:</span>
+                <span className="stat-value">{playerState.stats.charisma}</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-label">運動神経:</span>
+                <span className="stat-value">{playerState.stats.athletic}</span>
+              </div>
+              <div className="stat-item condition">
+                <span className="stat-label">体力:</span>
+                <span className="stat-value">{playerState.stats.energy}</span>
+              </div>
+              <div className="stat-item condition">
+                <span className="stat-label">ストレス:</span>
+                <span className="stat-value">{playerState.stats.stress}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="right-column">
+          {activePanel === 'actions' ? (
+            <div className="action-panel">
+              <h3>行動選択</h3>
+              {!playerState.isWeekend && (playerState.time === 'morning' || playerState.time === 'afternoon') ? (
+                <button onClick={attendClass}>
+                  授業を受ける（体力-15, 学力+1, 知性+1）
+                </button>
+              ) : (
+                <>
+                  <button 
+                    onClick={study}
+                    disabled={playerState.stats.energy < 20}>
+                    勉強する（体力-20, 学力+2）
+                  </button>
+                  <button 
+                    onClick={exercise}
+                    disabled={playerState.stats.energy < 20}>
+                    運動する（体力-20, 体力+2）
+                  </button>
+                  <button 
+                    onClick={socialize}
+                    disabled={playerState.stats.energy < 15}>
+                    交流する（体力-15, 社交性+2）
+                  </button>
+                  <button
+                    onClick={read}
+                    disabled={playerState.stats.energy < 15}>
+                    読書する（体力-15, 知性+2）
+                  </button>
+                  <button
+                    onClick={art}
+                    disabled={playerState.stats.energy < 20}>
+                    芸術活動（体力-20, 芸術性+2）
+                  </button>
+                  {playerState.club !== 'none' && (
+                    <button
+                      onClick={clubActivity}
+                      disabled={playerState.stats.energy < 25}>
+                      部活動（体力-25, 能力+3）
+                    </button>
+                  )}
+                  <button onClick={rest}>
+                    休憩する（体力+30, ストレス-20）
+                  </button>
+                </>
+              )}
+
+              {playerState.club === 'none' && (
+                <div className="club-selection">
+                  <h3>部活選択</h3>
+                  <button onClick={() => joinClub('sports')}>運動部に入部</button>
+                  <button onClick={() => joinClub('cultural')}>文化部に入部</button>
+                  <button onClick={() => joinClub('student_council')}>生徒会に入部</button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="classmates-panel">
+              <h3>クラスメート</h3>
+              <div className="classmates-grid">
+                {classmates.map(classmate => (
+                  <div 
+                    key={classmate.id} 
+                    className={`classmate-card ${selectedClassmate?.id === classmate.id ? 'selected' : ''}`}
+                    onClick={() => setSelectedClassmate(
+                      selectedClassmate?.id === classmate.id ? null : classmate
+                    )}
+                  >
+                    <h4>{classmate.name}</h4>
+                    <div className="classmate-info">
+                      <p>友好度: {classmate.friendship}</p>
+                      {selectedClassmate?.id === classmate.id && (
+                        <>
+                          <p className="description">{classmate.description}</p>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              interactWithClassmate(classmate);
+                            }}
+                            disabled={playerState.stats.energy < 15}>
+                            交流する（体力-15）
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
