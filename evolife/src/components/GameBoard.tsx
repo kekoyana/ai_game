@@ -9,15 +9,7 @@ interface GameBoardProps {
 
 export const GameBoard: React.FC<GameBoardProps> = ({ gameState, onCellClick }) => {
   return (
-    <div
-      className="game-board"
-      style={{
-        gridTemplateColumns: `repeat(${gameState.board[0].length}, 64px)`,
-        width: 'fit-content',
-        height: 'fit-content',
-        margin: '0 auto',
-      }}
-    >
+    <div className="game-board">
       {gameState.board.map((row, rowIndex) =>
         row.map((cell, colIndex) => (
           <CellComponent

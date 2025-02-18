@@ -1,8 +1,8 @@
 .game-container {
-  width: 1024px;
-  height: 768px;
+  max-width: 1024px;
+  min-height: 100vh;
   margin: 0 auto;
-  padding: 20px;
+  padding: 10px;
   display: flex;
   flex-direction: row;
   gap: 20px;
@@ -21,7 +21,6 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
 }
 
 .game-info {
@@ -41,6 +40,56 @@
   font-weight: bold;
   animation: pulse-green 2s infinite;
 }
+
+/* セルのスタイル */
+.cell {
+  width: 64px;
+  height: 64px;
+  border: 1px solid #ccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.4em;
+  cursor: pointer;
+  position: relative;
+}
+
+.cell-health {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  font-size: 0.4em;
+  background-color: rgba(255, 255, 255, 0.8);
+  padding: 2px;
+  border-radius: 2px;
+  font-weight: bold;
+}
+
+.cell-adaptation {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  font-size: 0.4em;
+}
+
+/* 環境タイプごとの背景色 */
+.env-deep_ocean { background-color: #1a5d97; }
+.env-shallow_water { background-color: #4a90e2; }
+.env-wetland { background-color: #7cb342; }
+.env-beach { background-color: #ffd54f; }
+.env-jungle { background-color: #2e7d32; }
+.env-plains { background-color: #c0ca33; }
+.env-mountain { background-color: #78909c; }
+.env-desert { background-color: #ffa726; }
+.env-cave { background-color: #5d4037; }
+.env-volcano { background-color: #d32f2f; }
+.env-default { background-color: #ffffff; }
+
+/* 体力ステータスの色 */
+.health-high { color: #4caf50; }
+.health-medium { color: #ffd700; }
+.health-low { color: #ff9800; }
+.health-critical { color: #f44336; }
 
 @keyframes pulse-green {
   0% {
@@ -112,13 +161,20 @@
   display: none;
 }
 
+/* ゲームボードのスタイル */
 .game-board {
   display: grid;
+  grid-template-columns: repeat(12, 64px);
+  grid-auto-rows: 64px;
   gap: 1px;
   padding: 10px;
   background-color: #f0f0f0;
   border-radius: 8px;
+  width: fit-content;
+  height: fit-content;
   margin: 0 auto;
+  max-width: 100%;
+  overflow: auto;
 }
 
 /* アニメーション */
@@ -151,6 +207,75 @@
 
 .organism-emoji {
   animation: pulse 2s infinite;
+}
+
+/* タブレット向けレイアウト */
+@media screen and (max-width: 768px) {
+  .game-container {
+    flex-direction: column;
+    padding: 10px;
+  }
+
+  .game-left-panel {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .environment-selector {
+    grid-template-columns: repeat(5, 1fr);
+  }
+
+  .game-right-panel {
+    width: 100%;
+  }
+
+  .game-board {
+    grid-template-columns: repeat(12, 56px);
+  }
+
+  .cell {
+    width: 56px;
+    height: 56px;
+    font-size: 2em;
+  }
+}
+
+/* スマートフォン向けレイアウト */
+@media screen and (max-width: 480px) {
+  .game-container {
+    padding: 5px;
+  }
+
+  .environment-selector {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .game-info {
+    font-size: 1em;
+  }
+
+  .environment-button {
+    min-height: 56px;
+  }
+
+  .environment-emoji {
+    font-size: 1.2em;
+  }
+
+  .game-board {
+    grid-template-columns: repeat(12, 48px);
+  }
+
+  .cell {
+    width: 48px;
+    height: 48px;
+    font-size: 1.8em;
+  }
+
+  .cell-health,
+  .cell-adaptation {
+    font-size: 0.5em;
+  }
 }
 
 /* ダークモード対応 */
@@ -186,5 +311,13 @@
 
   .game-board {
     background-color: #343a40;
+  }
+
+  .cell {
+    border-color: #495057;
+  }
+
+  .cell-health {
+    background-color: rgba(0, 0, 0, 0.6);
   }
 }
