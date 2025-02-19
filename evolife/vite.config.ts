@@ -4,5 +4,5 @@ import react from '@vitejs/plugin-react-swc'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: '/ai_game/evolife/',
+  base: process.env.DEPLOY_TARGET === 'netlify' ? '/' : '/ai_game/evolife/',
 })
