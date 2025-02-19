@@ -25,13 +25,13 @@ a:hover {
 body {
   margin: 0;
   display: flex;
-  place-items: center;
-  min-width: 320px;
+  min-width: 280px;
   min-height: 100vh;
+  width: 100%;
 }
 
 h1 {
-  font-size: 3.2em;
+  font-size: clamp(2em, 5vw, 3.2em);
   line-height: 1.1;
 }
 
@@ -39,19 +39,45 @@ button {
   border-radius: 8px;
   border: 1px solid transparent;
   padding: 0.6em 1.2em;
-  font-size: 1em;
+  font-size: max(14px, min(16px, 1em));
   font-weight: 500;
   font-family: inherit;
   background-color: #1a1a1a;
   cursor: pointer;
   transition: border-color 0.25s;
+  touch-action: manipulation;
 }
+
 button:hover {
   border-color: #646cff;
 }
+
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
+}
+
+/* タブレット向けスタイル */
+@media (max-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+
+  button {
+    padding: 0.5em 1em;
+  }
+}
+
+/* スマートフォン向けスタイル */
+@media (max-width: 480px) {
+  body {
+    font-size: 13px;
+  }
+
+  button {
+    padding: 0.4em 0.8em;
+    min-height: 44px; /* タッチターゲットサイズの確保 */
+  }
 }
 
 @media (prefers-color-scheme: light) {
