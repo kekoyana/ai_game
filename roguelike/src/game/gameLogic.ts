@@ -15,15 +15,20 @@ import {
 const FINAL_FLOOR = 10;
 
 const MONSTER_TYPES = [
-  { symbol: '👻', name: 'スライム', baseHp: 5, baseAttack: 2, baseDefense: 1, baseExp: 2 },
-  { symbol: '👺', name: 'ゴブリン', baseHp: 8, baseAttack: 3, baseDefense: 2, baseExp: 3 },
-  { symbol: '👹', name: 'オーク', baseHp: 12, baseAttack: 4, baseDefense: 3, baseExp: 5 }
+  { symbol: '👻', name: 'スライム', baseHp: 8, baseAttack: 3, baseDefense: 1, baseExp: 2 },
+  { symbol: '👺', name: 'ゴブリン', baseHp: 12, baseAttack: 4, baseDefense: 2, baseExp: 3 },
+  { symbol: '👹', name: 'オーク', baseHp: 15, baseAttack: 5, baseDefense: 3, baseExp: 5 },
+  { symbol: '🐲', name: 'ドラゴン', baseHp: 20, baseAttack: 7, baseDefense: 4, baseExp: 8 },
+  { symbol: '💀', name: 'リッチ', baseHp: 18, baseAttack: 8, baseDefense: 3, baseExp: 7 }
 ] as const;
 
 const ITEM_TYPES = [
-  { type: 'potion' as ItemType, name: '回復薬', symbol: '🧪', power: 10 },
-  { type: 'weapon' as ItemType, name: '鋼の剣', symbol: '⚔️', power: 3 },
-  { type: 'armor' as ItemType, name: '鎧', symbol: '🛡️', power: 2 }
+  { type: 'potion' as ItemType, name: '回復薬', symbol: '🧪', power: 15 },
+  { type: 'potion' as ItemType, name: '上級回復薬', symbol: '🧪', power: 30 },
+  { type: 'weapon' as ItemType, name: '鋼の剣', symbol: '⚔️', power: 4 },
+  { type: 'weapon' as ItemType, name: '魔剣', symbol: '⚔️', power: 7 },
+  { type: 'armor' as ItemType, name: '鎧', symbol: '🛡️', power: 3 },
+  { type: 'armor' as ItemType, name: 'ミスリルの鎧', symbol: '🛡️', power: 5 }
 ] as const;
 
 const calculateDamage = (attacker: { attack: number }, defender: { defense: number }): number => {
@@ -64,13 +69,25 @@ const isPositionOccupied = (
   );
 };
 
-const generateItems = (rooms: Room[]): Item[] => {
+const generateItems = (rooms: Room[], floor: number): Item[] => {
   const items: Item[] = [];
-  const itemsPerRoom = Math.floor(Math.random() * 2) + 1;
+  const itemsPerRoom = Math.floor(Math.random() * 3) + 2;
 
   rooms.slice(1).forEach(room => {
     for (let i = 0; i < itemsPerRoom; i++) {
-      const itemType = ITEM_TYPES[Math.floor(Math.random() * ITEM_TYPES.length)];
+      // 階層に応じて出現するアイテムを制限
+      let availableItems;
+      if (floor <= 3) {
+        // 1-3階：基本アイテムのみ（回復薬、鋼の剣、鎧）
+        availableItems = [ITEM_TYPES[0], ITEM_TYPES[2], ITEM_TYPES[4]];
+      } else if (floor <= 7) {
+        // 4-7階：上級回復薬を追加
+        availableItems = [ITEM_TYPES[0], ITEM_TYPES[1], ITEM_TYPES[2], ITEM_TYPES[4]];
+      } else {
+        // 8階以降：すべてのアイテム（魔剣、ミスリルの鎧を含む）
+        availableItems = ITEM_TYPES;
+      }
+      const itemType = availableItems[Math.floor(Math.random() * availableItems.length)];
       let position: Position;
       let attempts = 0;
       const maxAttempts = 10;
@@ -272,11 +289,26 @@ const revealSurroundings = (map: GameMap, pos: Position): void => {
 
 const generateMonsters = (rooms: Room[], floor: number): Monster[] => {
   const monsters: Monster[] = [];
-  const monstersPerRoom = Math.min(Math.floor(floor / 2) + 1, 3);
+  const monstersPerRoom = Math.min(Math.floor(floor / 2) + 2, 5);
 
   rooms.slice(1).forEach(room => {
     for (let i = 0; i < monstersPerRoom; i++) {
-      const monsterType = MONSTER_TYPES[Math.floor(Math.random() * MONSTER_TYPES.length)];
+      // 階層に応じて出現するモンスターを制限
+      let availableMonsters;
+      if (floor <= 3) {
+        // 1-3階：スライムとゴブリンのみ
+        availableMonsters = MONSTER_TYPES.slice(0, 2);
+      } else if (floor <= 6) {
+        // 4-6階：オークまで追加
+        availableMonsters = MONSTER_TYPES.slice(0, 3);
+      } else if (floor <= 8) {
+        // 7-8階：ドラゴンまで追加
+        availableMonsters = MONSTER_TYPES.slice(0, 4);
+      } else {
+        // 9階以降：すべてのモンスター（リッチを含む）
+        availableMonsters = MONSTER_TYPES;
+      }
+      const monsterType = availableMonsters[Math.floor(Math.random() * availableMonsters.length)];
       const stats = createMonsterStats(monsterType, floor);
       let position: Position;
       let attempts = 0;
@@ -475,7 +507,7 @@ const createNextFloor = (
   }
 
   const monsters = generateMonsters(rooms, floor);
-  const items = generateItems(rooms);
+  const items = generateItems(rooms, floor);
   revealRoom(map, rooms[0], monsters);
 
   return {
@@ -515,7 +547,7 @@ export const createInitialGameState = (width: number, height: number): GameState
   }
 
   const monsters = generateMonsters(rooms, 1);
-  const items = generateItems(rooms);
+  const items = generateItems(rooms, 1);
 
   return {
     player: initialPlayer,
