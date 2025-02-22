@@ -57,4 +57,12 @@ export type GameState = {
   isGameClear: boolean;
 };
 
-export type Direction = 'up' | 'down' | 'left' | 'right';
+export type Direction = 
+  | 'up' 
+  | 'down' 
+  | 'left' 
+  | 'right'
+  | 'upleft'
+  | 'upright'
+  | 'downleft'
+  | 'downright';

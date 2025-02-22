@@ -16,6 +16,7 @@ const Game: React.FC = () => {
     
     let direction: Direction | null = null;
     switch (e.key) {
+      // Arrow keys for orthogonal movement
       case 'ArrowUp':
         direction = 'up';
         break;
@@ -27,6 +28,23 @@ const Game: React.FC = () => {
         break;
       case 'ArrowRight':
         direction = 'right';
+        break;
+      // Numpad for diagonal movement
+      case '7':
+      case 'Home':
+        direction = 'upleft';
+        break;
+      case '9':
+      case 'PageUp':
+        direction = 'upright';
+        break;
+      case '1':
+      case 'End':
+        direction = 'downleft';
+        break;
+      case '3':
+      case 'PageDown':
+        direction = 'downright';
         break;
       default:
         break;
@@ -138,6 +156,22 @@ const Game: React.FC = () => {
               </div>
             ))}
           </div>
+        </div>
+
+        {/* 操作説明 */}
+        <div style={{
+          backgroundColor: '#34495e',
+          padding: '15px',
+          marginTop: '20px',
+          borderRadius: '8px',
+          color: '#ecf0f1'
+        }}>
+          <h3 style={{ margin: '0 0 15px 0', color: '#e74c3c' }}>🎮 操作方法</h3>
+          <div>矢印キー: 上下左右移動</div>
+          <div>テンキー: 斜め移動</div>
+          <div>7️⃣8️⃣9️⃣</div>
+          <div>4️⃣5️⃣6️⃣</div>
+          <div>1️⃣2️⃣3️⃣</div>
         </div>
       </div>
 
