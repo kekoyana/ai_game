@@ -38,6 +38,17 @@ export type Monster = {
   name: string;
 };
 
+export type ItemType = 'potion' | 'weapon' | 'armor';
+
+export type Item = {
+  position: Position;
+  type: ItemType;
+  name: string;
+  symbol: string;
+  power: number;
+  isVisible: boolean;
+};
+
 export type GameMap = Cell[][];
 
 export type BattleLog = {
@@ -51,6 +62,7 @@ export type GameState = {
   map: GameMap;
   rooms: Room[];
   monsters: Monster[];
+  items: Item[];
   battleLogs: BattleLog[];
   currentFloor: number;
   isGameOver: boolean;

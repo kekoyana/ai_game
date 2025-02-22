@@ -93,10 +93,19 @@ const Game: React.FC = () => {
                   content = cell.isVisible ? '🚪' : '';
                 }
 
+                // アイテムの表示処理を追加
+                const item = gameState.items.find(
+                  item => item.position.x === colIndex &&
+                         item.position.y === rowIndex &&
+                         cell.isVisible
+                );
+
                 if (isPlayer) {
                   content = '🦸';
                 } else if (monster) {
                   content = monster.symbol;
+                } else if (item) {
+                  content = item.symbol;
                 }
 
                 return (
