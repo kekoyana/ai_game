@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { GameState, Direction, Cell, Monster } from './types/game';
 import { createInitialGameState, movePlayer } from './game/gameLogic';
 
-const CELL_SIZE = 40; // 絵文字を大きく表示するためにサイズを増加
+const CELL_SIZE = 40;
 
 const Game: React.FC = () => {
   const width = 20;
@@ -70,7 +70,6 @@ const Game: React.FC = () => {
                 let backgroundColor = cell.isVisible ? '#34495e' : '#2c3e50';
                 
                 if (cell.type === 'wall') {
-                  content = cell.isVisible ? '🧱' : '';
                   backgroundColor = cell.isVisible ? '#7f8c8d' : '#2c3e50';
                 } else if (cell.type === 'stairs') {
                   content = cell.isVisible ? '🚪' : '';

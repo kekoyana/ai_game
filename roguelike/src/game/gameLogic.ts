@@ -54,15 +54,41 @@ const isInsideRoom = (pos: Position, room: Room): boolean => {
          pos.y < room.y + room.h;
 };
 
+// 部屋の視界を更新（部屋全体と周囲1マス）
 const revealRoom = (map: GameMap, room: Room, monsters: Monster[]): void => {
+  // 部屋の内部を可視化
   for (let y = room.y; y < room.y + room.h; y++) {
     for (let x = room.x; x < room.x + room.w; x++) {
       map[y][x].isVisible = true;
     }
   }
+
+  // 部屋の周囲1マスを可視化
+  for (let y = Math.max(0, room.y - 1); y < Math.min(map.length, room.y + room.h + 1); y++) {
+    for (let x = Math.max(0, room.x - 1); x < Math.min(map[0].length, room.x + room.w + 1); x++) {
+      map[y][x].isVisible = true;
+    }
+  }
+
+  // モンスターの可視化
   monsters.forEach(monster => {
     if (isInsideRoom(monster.position, room)) {
       monster.isVisible = true;
+    }
+  });
+};
+
+// プレイヤーの周囲1マスを可視化
+const revealSurroundings = (map: GameMap, pos: Position): void => {
+  const directions = [
+    [-1, 0], [1, 0], [0, -1], [0, 1]
+  ];
+
+  directions.forEach(([dy, dx]) => {
+    const newY = pos.y + dy;
+    const newX = pos.x + dx;
+    if (newY >= 0 && newY < map.length && newX >= 0 && newX < map[0].length) {
+      map[newY][newX].isVisible = true;
     }
   });
 };
@@ -174,10 +200,10 @@ export const createInitialGameState = (width: number, height: number): GameState
       x: Math.floor(firstRoom.x + firstRoom.w / 2),
       y: Math.floor(firstRoom.y + firstRoom.h / 2)
     };
+    revealRoom(map, firstRoom, []); // 初期部屋を可視化
   }
 
   const monsters = generateMonsters(rooms, 1);
-  revealRoom(map, rooms[0], monsters);
 
   return {
     player: initialPlayer,
@@ -213,7 +239,7 @@ const createNextFloor = (
   }
 
   const monsters = generateMonsters(rooms, floor);
-  revealRoom(map, rooms[0], monsters);
+  revealRoom(map, rooms[0], monsters); // 初期部屋を可視化
 
   return {
     player,
@@ -361,12 +387,19 @@ export const movePlayer = (state: GameState, direction: Direction): GameState =>
   // 新しい位置を可視化
   map[newY][newX].isVisible = true;
 
-  // 新しい位置が部屋の中にあるかチェック
+  // 部屋の中にいるかチェック
+  let inRoom = false;
   for (const room of rooms) {
     if (isInsideRoom({ x: newX, y: newY }, room)) {
       revealRoom(map, room, monsters);
+      inRoom = true;
       break;
     }
+  }
+
+  // 部屋の中にいない場合は周囲1マスを可視化
+  if (!inRoom) {
+    revealSurroundings(map, { x: newX, y: newY });
   }
 
   // 階段に到達した場合
