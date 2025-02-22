@@ -48,3 +48,9 @@ export default tseslint.config({
   },
 })
 ```
+
+
+## deploy
+```
+npm run netlify
+```
