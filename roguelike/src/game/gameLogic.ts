@@ -6,13 +6,32 @@ const MONSTER_TYPES = [
   { symbol: '👻', name: 'スライム', baseHp: 5, baseAttack: 2, baseDefense: 1, baseExp: 2 },
   { symbol: '👺', name: 'ゴブリン', baseHp: 8, baseAttack: 3, baseDefense: 2, baseExp: 3 },
   { symbol: '👹', name: 'オーク', baseHp: 12, baseAttack: 4, baseDefense: 3, baseExp: 5 },
-];
+] as const;
 
 const calculateDamage = (attacker: { attack: number }, defender: { defense: number }): number => {
   return Math.max(1, attacker.attack - Math.floor(defender.defense / 2));
 };
 
-const createMonsterStats = (base: typeof MONSTER_TYPES[0], floor: number) => {
+const distance = (a: Position, b: Position): number => {
+  return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+};
+
+const isAdjacent = (a: Position, b: Position): boolean => {
+  return distance(a, b) === 1;
+};
+
+const getNextPosition = (current: Position, target: Position): Position => {
+  const dx = Math.sign(target.x - current.x);
+  const dy = Math.sign(target.y - current.y);
+  
+  if (Math.abs(target.x - current.x) > Math.abs(target.y - current.y)) {
+    return { x: current.x + dx, y: current.y };
+  } else {
+    return { x: current.x, y: current.y + dy };
+  }
+};
+
+const createMonsterStats = (base: typeof MONSTER_TYPES[number], floor: number): Status => {
   const levelBonus = Math.floor(floor / 2);
   return {
     hp: base.baseHp + levelBonus * 2,
@@ -20,6 +39,7 @@ const createMonsterStats = (base: typeof MONSTER_TYPES[0], floor: number) => {
     attack: base.baseAttack + levelBonus,
     defense: base.baseDefense + levelBonus,
     exp: base.baseExp + levelBonus,
+    level: 1
   };
 };
 
@@ -54,9 +74,7 @@ const isInsideRoom = (pos: Position, room: Room): boolean => {
          pos.y < room.y + room.h;
 };
 
-// 部屋の視界を更新（部屋全体と周囲1マス）
 const revealRoom = (map: GameMap, room: Room, monsters: Monster[]): void => {
-  // 部屋の内部を可視化
   for (let y = room.y; y < room.y + room.h; y++) {
     for (let x = room.x; x < room.x + room.w; x++) {
       map[y][x].isVisible = true;
@@ -70,7 +88,6 @@ const revealRoom = (map: GameMap, room: Room, monsters: Monster[]): void => {
     }
   }
 
-  // モンスターの可視化
   monsters.forEach(monster => {
     if (isInsideRoom(monster.position, room)) {
       monster.isVisible = true;
@@ -78,7 +95,6 @@ const revealRoom = (map: GameMap, room: Room, monsters: Monster[]): void => {
   });
 };
 
-// プレイヤーの周囲1マスを可視化
 const revealSurroundings = (map: GameMap, pos: Position): void => {
   const directions = [
     [-1, 0], [1, 0], [0, -1], [0, 1]
@@ -106,7 +122,11 @@ const generateMonsters = (rooms: Room[], floor: number): Monster[] => {
           x: Math.floor(Math.random() * (room.w - 2)) + room.x + 1,
           y: Math.floor(Math.random() * (room.h - 2)) + room.y + 1,
         },
-        ...stats,
+        hp: stats.hp,
+        maxHp: stats.maxHp,
+        attack: stats.attack,
+        defense: stats.defense,
+        exp: stats.exp,
         isVisible: false,
         symbol: monsterType.symbol,
         name: monsterType.name
@@ -118,7 +138,7 @@ const generateMonsters = (rooms: Room[], floor: number): Monster[] => {
   return monsters;
 };
 
-export const generateGameMap = (width: number, height: number): { map: GameMap, rooms: Room[] } => {
+const generateGameMap = (width: number, height: number): { map: GameMap, rooms: Room[] } => {
   const map: GameMap = [];
   for (let y = 0; y < height; y++) {
     const row: Cell[] = [];
@@ -311,6 +331,66 @@ const processBattle = (
   return { updatedPlayerStatus, updatedMonster, logs };
 };
 
+const processMonsterTurn = (
+  state: GameState
+): { updatedState: GameState; logs: BattleLog[] } => {
+  const { map, monsters, player, playerStatus } = state;
+  const updatedMonsters = [...monsters];
+  const logs: BattleLog[] = [];
+  const timestamp = Date.now();
+
+  monsters.forEach((monster, index) => {
+    if (monster.hp <= 0 || !monster.isVisible) return;
+
+    // モンスターの現在位置
+    const currentPos = monster.position;
+
+    // プレイヤーが隣接している場合は攻撃
+    if (isAdjacent(currentPos, player)) {
+      const monsterDamage = calculateDamage(monster, playerStatus);
+      state.playerStatus = {
+        ...playerStatus,
+        hp: Math.max(0, playerStatus.hp - monsterDamage)
+      };
+
+      logs.push({
+        message: `💥 ${monster.name}から${monsterDamage}のダメージを受けた！`,
+        timestamp: timestamp + index
+      });
+
+      if (state.playerStatus.hp <= 0) {
+        state.isGameOver = true;
+      }
+      return;
+    }
+
+    // プレイヤーが見えている場合は追跡
+    if (monster.isVisible && distance(currentPos, player) <= 5) {
+      const nextPos = getNextPosition(currentPos, player);
+      
+      // 移動先が有効かチェック
+      if (nextPos.x >= 0 && nextPos.x < map[0].length &&
+          nextPos.y >= 0 && nextPos.y < map.length &&
+          map[nextPos.y][nextPos.x].type === 'floor' &&
+          !monsters.some(m => m.hp > 0 && m.position.x === nextPos.x && m.position.y === nextPos.y)) {
+        
+        updatedMonsters[index] = {
+          ...monster,
+          position: nextPos
+        };
+      }
+    }
+  });
+
+  return {
+    updatedState: {
+      ...state,
+      monsters: updatedMonsters
+    },
+    logs
+  };
+};
+
 export const movePlayer = (state: GameState, direction: Direction): GameState => {
   const { player, map, rooms, monsters, playerStatus } = state;
   let newX = player.x;
@@ -347,40 +427,34 @@ export const movePlayer = (state: GameState, direction: Direction): GameState =>
   if (monster && monster.isVisible) {
     const { updatedPlayerStatus, updatedMonster, logs } = processBattle(playerStatus, monster);
 
-    // プレイヤーが死亡した場合
-    if (updatedPlayerStatus.hp <= 0) {
-      return {
-        ...state,
-        playerStatus: updatedPlayerStatus,
-        monsters: monsters.map(m => 
-          m === monster ? updatedMonster : m
-        ),
-        battleLogs: [...state.battleLogs, ...logs],
-        isGameOver: true
-      };
-    }
-
-    // モンスターが死亡した場合は移動可能
-    if (updatedMonster.hp <= 0) {
-      return {
-        ...state,
-        player: { x: newX, y: newY },
-        playerStatus: updatedPlayerStatus,
-        monsters: monsters.map(m => 
-          m === monster ? updatedMonster : m
-        ),
-        battleLogs: [...state.battleLogs, ...logs]
-      };
-    }
-
-    // モンスターが生存している場合は移動できない
-    return {
+    const battleState = {
       ...state,
       playerStatus: updatedPlayerStatus,
       monsters: monsters.map(m => 
         m === monster ? updatedMonster : m
       ),
       battleLogs: [...state.battleLogs, ...logs]
+    };
+
+    // プレイヤーが死亡した場合
+    if (updatedPlayerStatus.hp <= 0) {
+      return {
+        ...battleState,
+        isGameOver: true
+      };
+    }
+
+    // モンスターが死亡した場合は移動可能
+    const movedState = updatedMonster.hp <= 0 ? {
+      ...battleState,
+      player: { x: newX, y: newY }
+    } : battleState;
+
+    // モンスターのターンを実行
+    const { updatedState: finalState, logs: monsterLogs } = processMonsterTurn(movedState);
+    return {
+      ...finalState,
+      battleLogs: [...finalState.battleLogs, ...monsterLogs]
     };
   }
 
@@ -408,8 +482,16 @@ export const movePlayer = (state: GameState, direction: Direction): GameState =>
     return createNextFloor(map.length, map[0].length, nextFloor, playerStatus);
   }
 
-  return {
+  // プレイヤーの移動を適用
+  const initialUpdatedState = {
     ...state,
     player: { x: newX, y: newY }
+  };
+
+  // モンスターのターンを実行
+  const { updatedState: finalState, logs } = processMonsterTurn(initialUpdatedState);
+  return {
+    ...finalState,
+    battleLogs: [...finalState.battleLogs, ...logs]
   };
 };
