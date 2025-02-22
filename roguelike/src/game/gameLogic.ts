@@ -3,9 +3,9 @@ import { GameState, GameMap, Position, Cell, Direction, Room, Monster, Status, B
 const FINAL_FLOOR = 10;
 
 const MONSTER_TYPES = [
-  { symbol: 'S', name: 'Slime', baseHp: 5, baseAttack: 2, baseDefense: 1, baseExp: 2 },
-  { symbol: 'G', name: 'Goblin', baseHp: 8, baseAttack: 3, baseDefense: 2, baseExp: 3 },
-  { symbol: 'O', name: 'Orc', baseHp: 12, baseAttack: 4, baseDefense: 3, baseExp: 5 },
+  { symbol: '👻', name: 'スライム', baseHp: 5, baseAttack: 2, baseDefense: 1, baseExp: 2 },
+  { symbol: '👺', name: 'ゴブリン', baseHp: 8, baseAttack: 3, baseDefense: 2, baseExp: 3 },
+  { symbol: '👹', name: 'オーク', baseHp: 12, baseAttack: 4, baseDefense: 3, baseExp: 5 },
 ];
 
 const calculateDamage = (attacker: { attack: number }, defender: { defense: number }): number => {
@@ -243,7 +243,7 @@ const processBattle = (
   const playerDamage = calculateDamage(playerStatus, monster);
   const updatedMonster = { ...monster, hp: Math.max(0, monster.hp - playerDamage) };
   logs.push({
-    message: `${playerDamage}のダメージを${monster.name}に与えた！`,
+    message: `⚔️ ${playerDamage}のダメージを${monster.name}に与えた！`,
     timestamp
   });
 
@@ -257,13 +257,13 @@ const processBattle = (
       hp: Math.max(0, playerStatus.hp - monsterDamage)
     };
     logs.push({
-      message: `${monsterDamage}のダメージを受けた！`,
+      message: `💥 ${monsterDamage}のダメージを受けた！`,
       timestamp: timestamp + 1
     });
   } else {
     // モンスターを倒した場合
     logs.push({
-      message: `${monster.name}を倒した！ ${monster.exp}の経験値を獲得！`,
+      message: `🎯 ${monster.name}を倒した！ ${monster.exp}の経験値を獲得！`,
       timestamp: timestamp + 1
     });
 
@@ -274,7 +274,7 @@ const processBattle = (
     if (newExp >= expForNext) {
       updatedPlayerStatus = levelUp(playerStatus);
       logs.push({
-        message: `レベルアップ！ Level ${updatedPlayerStatus.level}になった！`,
+        message: `⭐️ レベルアップ！ Level ${updatedPlayerStatus.level}になった！`,
         timestamp: timestamp + 2
       });
     } else {

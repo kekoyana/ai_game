@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { GameState, Direction, Cell, Monster } from './types/game';
 import { createInitialGameState, movePlayer } from './game/gameLogic';
 
-const CELL_SIZE = 30;
+const CELL_SIZE = 40; // 絵文字を大きく表示するためにサイズを増加
 
 const Game: React.FC = () => {
   const width = 20;
@@ -54,10 +54,10 @@ const Game: React.FC = () => {
   return (
     <div style={{ display: 'flex', padding: '20px', gap: '20px' }}>
       <div>
-        <div style={{ marginBottom: '10px', fontSize: '20px' }}>
-          地下{gameState.currentFloor}階
+        <div style={{ marginBottom: '10px', fontSize: '24px' }}>
+          🏰 地下{gameState.currentFloor}階
         </div>
-        <div style={{ display: 'inline-block', border: '2px solid black' }}>
+        <div style={{ display: 'inline-block', border: '2px solid black', backgroundColor: '#2c3e50' }}>
           {gameState.map.map((row: Cell[], rowIndex: number) => (
             <div key={rowIndex} style={{ display: 'flex', height: `${CELL_SIZE}px` }}>
               {row.map((cell: Cell, colIndex: number) => {
@@ -66,25 +66,20 @@ const Game: React.FC = () => {
                   gameState.player.y === rowIndex;
                 const monster = getMonsterAtPosition(colIndex, rowIndex);
                 
-                let backgroundColor: string;
                 let content = '';
-                let textColor = '#000';
+                let backgroundColor = cell.isVisible ? '#34495e' : '#2c3e50';
                 
                 if (cell.type === 'wall') {
-                  backgroundColor = '#333';
+                  content = cell.isVisible ? '🧱' : '';
+                  backgroundColor = cell.isVisible ? '#7f8c8d' : '#2c3e50';
                 } else if (cell.type === 'stairs') {
-                  backgroundColor = cell.isVisible ? '#8B4513' : '#fff';
-                  content = cell.isVisible ? '>' : '';
-                } else {
-                  backgroundColor = cell.isVisible ? '#ccc' : '#fff';
+                  content = cell.isVisible ? '🚪' : '';
                 }
 
                 if (isPlayer) {
-                  content = '@';
-                  textColor = '#ff0000';
+                  content = '🦸';
                 } else if (monster) {
                   content = monster.symbol;
-                  textColor = '#0000ff';
                 }
 
                 return (
@@ -94,13 +89,11 @@ const Game: React.FC = () => {
                       width: CELL_SIZE,
                       height: CELL_SIZE,
                       backgroundColor,
-                      border: '1px solid #000',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      fontSize: '16px',
-                      color: textColor,
-                      fontWeight: monster ? 'bold' : 'normal',
+                      fontSize: '24px',
+                      transition: 'background-color 0.3s'
                     }}
                   >
                     {content}
@@ -115,31 +108,33 @@ const Game: React.FC = () => {
       <div style={{ width: '300px' }}>
         {/* ステータス表示 */}
         <div style={{ 
-          backgroundColor: '#eee',
-          padding: '10px',
+          backgroundColor: '#34495e',
+          padding: '15px',
           marginBottom: '20px',
-          borderRadius: '5px'
+          borderRadius: '8px',
+          color: '#ecf0f1'
         }}>
-          <h3 style={{ margin: '0 0 10px 0' }}>ステータス</h3>
-          <div>HP: {gameState.playerStatus.hp}/{gameState.playerStatus.maxHp}</div>
-          <div>Level: {gameState.playerStatus.level}</div>
-          <div>EXP: {gameState.playerStatus.exp}</div>
-          <div>Attack: {gameState.playerStatus.attack}</div>
-          <div>Defense: {gameState.playerStatus.defense}</div>
+          <h3 style={{ margin: '0 0 15px 0', color: '#e74c3c' }}>👤 ステータス</h3>
+          <div>❤️ HP: {gameState.playerStatus.hp}/{gameState.playerStatus.maxHp}</div>
+          <div>⭐️ Level: {gameState.playerStatus.level}</div>
+          <div>📈 EXP: {gameState.playerStatus.exp}</div>
+          <div>⚔️ Attack: {gameState.playerStatus.attack}</div>
+          <div>🛡️ Defense: {gameState.playerStatus.defense}</div>
         </div>
 
         {/* バトルログ表示 */}
         <div style={{
-          backgroundColor: '#eee',
-          padding: '10px',
-          borderRadius: '5px',
+          backgroundColor: '#34495e',
+          padding: '15px',
+          borderRadius: '8px',
           height: '300px',
-          overflowY: 'auto'
+          overflowY: 'auto',
+          color: '#ecf0f1'
         }}>
-          <h3 style={{ margin: '0 0 10px 0' }}>バトルログ</h3>
+          <h3 style={{ margin: '0 0 15px 0', color: '#e74c3c' }}>📜 バトルログ</h3>
           <div>
             {gameState.battleLogs.slice().reverse().map((log, index) => (
-              <div key={index} style={{ marginBottom: '5px' }}>
+              <div key={index} style={{ marginBottom: '8px' }}>
                 {log.message}
               </div>
             ))}
@@ -154,15 +149,15 @@ const Game: React.FC = () => {
             top: '50%',
             left: '50%',
             transform: 'translate(-50%, -50%)',
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-            color: '#fff',
-            padding: '20px',
-            borderRadius: '10px',
-            fontSize: '24px',
+            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+            color: '#e74c3c',
+            padding: '30px',
+            borderRadius: '15px',
+            fontSize: '32px',
             zIndex: 1000,
           }}
         >
-          Game Over...
+          💀 Game Over...
         </div>
       )}
 
@@ -173,15 +168,15 @@ const Game: React.FC = () => {
             top: '50%',
             left: '50%',
             transform: 'translate(-50%, -50%)',
-            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-            color: '#fff',
-            padding: '20px',
-            borderRadius: '10px',
-            fontSize: '24px',
+            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+            color: '#f1c40f',
+            padding: '30px',
+            borderRadius: '15px',
+            fontSize: '32px',
             zIndex: 1000,
           }}
         >
-          Game Clear!
+          🏆 Game Clear!
         </div>
       )}
     </div>
