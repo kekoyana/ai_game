@@ -4,6 +4,7 @@ AIで作ったゲームをあげていく
 
 - `/menu` - メインメニュー画面（ https://kekoyana.github.io/ai_game/ ）
 - `/evolife` - 生命進化シミュレーションゲーム（ https://kekoyana.github.io/ai_game/evolife/ ）
+- `/roguelike` - ローグライクゲーム（ https://kekoyana.github.io/ai_game/roguelike/ ）
 
 ## デプロイ方法
 
@@ -23,6 +24,7 @@ AIで作ったゲームをあげていく
 - デプロイが完了すると、以下のURLでアクセス可能になります：
   - メインメニュー: https://kekoyana.github.io/ai_game/
   - Evolife: https://kekoyana.github.io/ai_game/evolife/
+  - Roguelike: https://kekoyana.github.io/ai_game/roguelike/
 
 ## 新しいゲームの追加方法
 

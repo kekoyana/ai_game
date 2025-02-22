@@ -29,6 +29,10 @@ jobs:
           cache: 'npm'
           cache-dependency-path: './evolife/package-lock.json'
       
+      - name: Update dependencies
+        working-directory: ./evolife
+        run: npm install
+      
       - name: Install dependencies
         working-directory: ./evolife
         run: npm ci
@@ -42,6 +46,38 @@ jobs:
         with:
           name: evolife-build
           path: './evolife/dist'
+          retention-days: 1
+
+  build-roguelike:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: './roguelike/package-lock.json'
+      
+      - name: Update dependencies
+        working-directory: ./roguelike
+        run: npm install
+      
+      - name: Install dependencies
+        working-directory: ./roguelike
+        run: npm ci
+      
+      - name: Build
+        working-directory: ./roguelike
+        run: npm run build
+
+      - name: Upload roguelike artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: roguelike-build
+          path: './roguelike/dist'
           retention-days: 1
 
   build-menu:
@@ -58,7 +94,7 @@ jobs:
           retention-days: 1
 
   deploy:
-    needs: [build-evolife, build-menu]
+    needs: [build-evolife, build-roguelike, build-menu]
     environment:
       name: github-pages
       url: ${{ github.io_url }}
@@ -69,6 +105,12 @@ jobs:
         with:
           name: evolife-build
           path: './dist/evolife'
+
+      - name: Download roguelike build
+        uses: actions/download-artifact@v4
+        with:
+          name: roguelike-build
+          path: './dist/roguelike'
 
       - name: Download menu build
         uses: actions/download-artifact@v4
