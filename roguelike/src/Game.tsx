@@ -3,8 +3,6 @@ import { GameState, Direction, Cell, Monster } from './types/game';
 import { createInitialGameState, movePlayer, applyItem, getPlayerPower, dropItem } from './game/gameLogic';
 import './Game.css';
 
-const CELL_SIZE = 40;
-
 const Game: React.FC = () => {
   const width = 20;
   const height = 20;
@@ -108,7 +106,12 @@ const Game: React.FC = () => {
         <div className="floor-title">
           <span role="img" aria-label="castle">🏰</span> 地下{gameState.currentFloor}階
         </div>
-        <div className="map-container">
+        <div className={`map-container ${
+          gameState.currentFloor <= 3 ? 'dungeon-early' :
+          gameState.currentFloor <= 6 ? 'dungeon-middle' :
+          gameState.currentFloor <= 8 ? 'dungeon-late' :
+          'dungeon-final'
+        }`}>
           {gameState.map.map((row: Cell[], rowIndex: number) => (
             <div key={rowIndex} className="map-row">
               {row.map((cell: Cell, colIndex: number) => {
@@ -118,15 +121,11 @@ const Game: React.FC = () => {
                 const monster = getMonsterAtPosition(colIndex, rowIndex);
                 
                 let content = '';
-                let backgroundColor = cell.isVisible ? '#34495e' : '#2c3e50';
-                
-                if (cell.type === 'wall') {
-                  backgroundColor = cell.isVisible ? '#7f8c8d' : '#2c3e50';
-                } else if (cell.type === 'stairs') {
-                  content = cell.isVisible ? '🚪' : '';
+                if (cell.type === 'stairs' && cell.isVisible) {
+                  content = '🚪';
                 }
 
-                // アイテムの表示処理を追加
+                // アイテムの表示処理
                 const item = gameState.items.find(
                   item => item.position !== null &&
                          item.position.x === colIndex &&
@@ -145,16 +144,8 @@ const Game: React.FC = () => {
                 return (
                   <div
                     key={colIndex}
-                    style={{
-                      width: CELL_SIZE,
-                      height: CELL_SIZE,
-                      backgroundColor,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '24px',
-                      transition: 'background-color 0.3s'
-                    }}
+                    className="map-cell"
+                    data-type={cell.isVisible ? cell.type : 'hidden'}
                   >
                     {content}
                   </div>
