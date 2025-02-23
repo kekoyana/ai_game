@@ -25,10 +25,24 @@ const MONSTER_TYPES = [
 const ITEM_TYPES = [
   { type: 'potion' as ItemType, name: '回復薬', symbol: '🧪', power: 15 },
   { type: 'potion' as ItemType, name: '上級回復薬', symbol: '🧪', power: 30 },
-  { type: 'weapon' as ItemType, name: '鋼の剣', symbol: '⚔️', power: 4 },
-  { type: 'weapon' as ItemType, name: '魔剣', symbol: '⚔️', power: 7 },
-  { type: 'armor' as ItemType, name: '鎧', symbol: '🛡️', power: 3 },
-  { type: 'armor' as ItemType, name: 'ミスリルの鎧', symbol: '🛡️', power: 5 }
+  // 武器（8種類）
+  { type: 'weapon' as ItemType, name: 'ダガー', symbol: '⚔️', power: 4 },
+  { type: 'weapon' as ItemType, name: 'グラディウス', symbol: '⚔️', power: 5 },
+  { type: 'weapon' as ItemType, name: 'カタール', symbol: '⚔️', power: 6 },
+  { type: 'weapon' as ItemType, name: 'ロングソード', symbol: '⚔️', power: 7 },
+  { type: 'weapon' as ItemType, name: 'ランス', symbol: '⚔️', power: 8 },
+  { type: 'weapon' as ItemType, name: 'バスタードソード', symbol: '⚔️', power: 9 },
+  { type: 'weapon' as ItemType, name: '蛇矛', symbol: '⚔️', power: 10 },
+  { type: 'weapon' as ItemType, name: 'エクスカリバー', symbol: '⚔️', power: 11 },
+  // 防具（8種類）
+  { type: 'armor' as ItemType, name: 'レザーアーマー', symbol: '🛡️', power: 3 },
+  { type: 'armor' as ItemType, name: 'ブロンズアーマー', symbol: '🛡️', power: 4 },
+  { type: 'armor' as ItemType, name: 'チェーンメイル', symbol: '🛡️', power: 5 },
+  { type: 'armor' as ItemType, name: '南蛮胴', symbol: '🛡️', power: 6 },
+  { type: 'armor' as ItemType, name: 'ラメラーアーマー', symbol: '🛡️', power: 7 },
+  { type: 'armor' as ItemType, name: 'プレートメイル', symbol: '🛡️', power: 8 },
+  { type: 'armor' as ItemType, name: 'ドラゴンメイル', symbol: '🛡️', power: 9 },
+  { type: 'armor' as ItemType, name: 'アイギスの鎧', symbol: '🛡️', power: 10 }
 ] as const;
 
 const calculateDamage = (attacker: { attack: number }, defender: { defense: number }): number => {
@@ -70,25 +84,22 @@ const isPositionOccupied = (
   );
 };
 
-const generateItems = (rooms: Room[], floor: number): Item[] => {
+const generateItems = (rooms: Room[]): Item[] => {
   const items: Item[] = [];
   const itemsPerRoom = Math.floor(Math.random() * 3) + 2;
 
   rooms.slice(1).forEach(room => {
     for (let i = 0; i < itemsPerRoom; i++) {
-      // 階層に応じて出現するアイテムを制限
-      let availableItems;
-      if (floor <= 3) {
-        // 1-3階：基本アイテムのみ（回復薬、鋼の剣、鎧）
-        availableItems = [ITEM_TYPES[0], ITEM_TYPES[2], ITEM_TYPES[4]];
-      } else if (floor <= 7) {
-        // 4-7階：上級回復薬を追加
-        availableItems = [ITEM_TYPES[0], ITEM_TYPES[1], ITEM_TYPES[2], ITEM_TYPES[4]];
-      } else {
-        // 8階以降：すべてのアイテム（魔剣、ミスリルの鎧を含む）
-        availableItems = ITEM_TYPES;
-      }
+      // 全階層で全てのアイテムが対象だが、強いアイテムほどドロップ率を下げる
+      const availableItems = ITEM_TYPES;
       const itemType = availableItems[Math.floor(Math.random() * availableItems.length)];
+      let dropChance = 1;
+      if (itemType.type !== 'potion') {
+        dropChance = Math.max(0.1, 1 - (itemType.power / 15));
+      }
+      if (Math.random() > dropChance) {
+        continue;
+      }
       let position: Position;
       let attempts = 0;
       const maxAttempts = 10;
@@ -618,7 +629,7 @@ const createNextFloor = (
   }
 
   const monsters = generateMonsters(rooms, floor);
-  const items = generateItems(rooms, floor);
+  const items = generateItems(rooms);
   revealRoom(map, rooms[0], monsters);
 return {
   player,
@@ -659,7 +670,7 @@ export const createInitialGameState = (width: number, height: number): GameState
   }
 
   const monsters = generateMonsters(rooms, 1);
-  const items = generateItems(rooms, 1);
+  const items = generateItems(rooms);
 return {
   player: initialPlayer,
   playerStatus,
