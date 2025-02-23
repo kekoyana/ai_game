@@ -80,6 +80,7 @@ export type GameState = {
   currentFloor: number;
   isGameOver: boolean;
   isGameClear: boolean;
+  healingPool: number;
 };
 
 export type Direction = 

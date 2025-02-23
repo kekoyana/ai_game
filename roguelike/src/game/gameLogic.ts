@@ -15,11 +15,11 @@ import {
 const FINAL_FLOOR = 10;
 
 const MONSTER_TYPES = [
-  { symbol: '👻', name: 'スライム', baseHp: 8, baseAttack: 3, baseDefense: 1, baseExp: 2 },
-  { symbol: '👺', name: 'ゴブリン', baseHp: 12, baseAttack: 4, baseDefense: 2, baseExp: 3 },
-  { symbol: '👹', name: 'オーク', baseHp: 15, baseAttack: 5, baseDefense: 3, baseExp: 5 },
-  { symbol: '🐲', name: 'ドラゴン', baseHp: 20, baseAttack: 7, baseDefense: 4, baseExp: 8 },
-  { symbol: '💀', name: 'リッチ', baseHp: 18, baseAttack: 8, baseDefense: 3, baseExp: 7 }
+  { symbol: '👻', name: 'スライム', baseHp: 8, baseAttack: 3, baseDefense: 1, baseExp: 5 },
+  { symbol: '👺', name: 'ゴブリン', baseHp: 12, baseAttack: 4, baseDefense: 2, baseExp: 8 },
+  { symbol: '👹', name: 'オーク', baseHp: 25, baseAttack: 10, baseDefense: 5, baseExp: 15 },
+  { symbol: '🐲', name: 'ドラゴン', baseHp: 40, baseAttack: 18, baseDefense: 8, baseExp: 25 },
+  { symbol: '💀', name: 'リッチ', baseHp: 35, baseAttack: 20, baseDefense: 6, baseExp: 30 }
 ] as const;
 
 const ITEM_TYPES = [
@@ -86,10 +86,9 @@ const isPositionOccupied = (
 
 const generateItems = (rooms: Room[]): Item[] => {
   const items: Item[] = [];
-  const itemsPerRoom = Math.floor(Math.random() * 3) + 2;
-
+  // 部屋ごとに50%の確率でアイテムを1つ生成
   rooms.slice(1).forEach(room => {
-    for (let i = 0; i < itemsPerRoom; i++) {
+    if (Math.random() < 0.5) {
       // 全階層で全てのアイテムが対象だが、強いアイテムほどドロップ率を下げる
       const availableItems = ITEM_TYPES;
       const itemType = availableItems[Math.floor(Math.random() * availableItems.length)];
@@ -268,7 +267,7 @@ const getExpForNextLevel = (level: number): number => {
 
 const levelUp = (status: Status): Status => {
   return {
-    hp: status.maxHp + 5,
+    hp: status.hp,  // HPは現在値を維持
     maxHp: status.maxHp + 5,
     attack: status.attack + 2,
     defense: status.defense + 1,
@@ -633,7 +632,8 @@ return {
   battleLogs: [],
   currentFloor: floor,
   isGameOver: false,
-  isGameClear: floor > FINAL_FLOOR
+  isGameClear: floor > FINAL_FLOOR,
+  healingPool: 0
 };
 };
 
@@ -643,6 +643,34 @@ const findMonsterAtPosition = (monsters: Monster[], pos: Position): Monster | un
     m.position.y === pos.y &&
     m.hp > 0
   );
+};
+
+const processNaturalHealing = (state: GameState): GameState => {
+  if (state.playerStatus.hp >= state.playerStatus.maxHp) {
+    return { ...state, healingPool: 0 };
+  }
+
+  const healingRate = Math.max(0.2, state.playerStatus.maxHp * 0.01);
+  const newHealingPool = state.healingPool + healingRate;
+
+  if (newHealingPool >= 1) {
+    const healAmount = Math.floor(newHealingPool);
+    const newHp = Math.min(
+      state.playerStatus.maxHp,
+      state.playerStatus.hp + healAmount
+    );
+
+    return {
+      ...state,
+      healingPool: newHealingPool - healAmount,
+      playerStatus: {
+        ...state.playerStatus,
+        hp: newHp
+      }
+    };
+  }
+
+  return { ...state, healingPool: newHealingPool };
 };
 
 export const createInitialGameState = (width: number, height: number): GameState => {
@@ -679,7 +707,8 @@ return {
   battleLogs: [],
   currentFloor: 1,
   isGameOver: false,
-  isGameClear: false
+  isGameClear: false,
+  healingPool: 0
 };
 };
 
@@ -793,8 +822,10 @@ export const movePlayer = (state: GameState, direction: Direction): GameState =>
   };
 
   const { updatedState: finalState, logs } = processMonsterTurn(movedState);
-  return {
+  
+  // 移動後に自然回復を処理する
+  return processNaturalHealing({
     ...finalState,
     battleLogs: [...finalState.battleLogs, ...logs]
-  };
+  });
 };

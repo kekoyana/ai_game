@@ -122,6 +122,20 @@
   color: #ecf0f1;
 }
 
+.hp-status {
+  transition: color 0.3s;
+}
+
+.hp-status.danger {
+  color: #e74c3c;
+  font-weight: bold;
+  text-shadow: 0 0 2px rgba(231, 76, 60, 0.5);
+}
+
+.hp-status.warning {
+  color: #f1c40f;
+}
+
 .status-title {
   margin: 0 0 15px 0;
   color: #e74c3c;
