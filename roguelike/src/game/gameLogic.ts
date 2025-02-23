@@ -519,6 +519,13 @@ const processMonsterTurn = (
     const currentPos = monster.position;
 
     if (distance(currentPos, player) === 1) {
+      if (currentPos.x !== player.x && currentPos.y !== player.y) {
+        const inter1 = map[currentPos.y][player.x];
+        const inter2 = map[player.y][currentPos.x];
+        if (!isWalkable(inter1) || !isWalkable(inter2)) {
+          return;
+        }
+      }
       const playerWithEquipment = getPlayerPower(playerStatus, state);
       const monsterDamage = calculateDamage(monster, playerWithEquipment);
       state.playerStatus = {
@@ -543,6 +550,12 @@ const processMonsterTurn = (
       for (const dy of [-1, 0, 1]) {
         for (const dx of [-1, 0, 1]) {
           if (dx === 0 && dy === 0) continue;
+          // 斜め移動の場合、中間マスの確認
+          if (dx !== 0 && dy !== 0) {
+            const inter1 = map[currentPos.y][currentPos.x + dx];
+            const inter2 = map[currentPos.y + dy][currentPos.x];
+            if (!isWalkable(inter1) || !isWalkable(inter2)) continue;
+          }
 
           const newX = currentPos.x + dx;
           const newY = currentPos.y + dy;
@@ -674,6 +687,14 @@ export const movePlayer = (state: GameState, direction: Direction): GameState =>
   const offset = getDirectionOffset(direction);
   const newX = player.x + offset.x;
   const newY = player.y + offset.y;
+  // 斜め移動の場合、中間マスの確認
+  if (offset.x !== 0 && offset.y !== 0) {
+    const intermediate1 = map[player.y][player.x + offset.x];
+    const intermediate2 = map[player.y + offset.y][player.x];
+    if (!isWalkable(intermediate1) || !isWalkable(intermediate2)) {
+      return state;
+    }
+  }
 
   if (newY < 0 || newY >= map.length || newX < 0 || newX >= map[0].length) {
     return state;
