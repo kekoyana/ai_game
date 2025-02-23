@@ -161,7 +161,7 @@ export const dropItem = (state: GameState, itemIndex: number): GameState => {
   };
 };
 
-export const useItem = (state: GameState, itemIndex: number): GameState => {
+export const applyItem = (state: GameState, itemIndex: number): GameState => {
   const item = state.inventory.items[itemIndex];
   if (!item) return state;
 
@@ -480,17 +480,7 @@ const processBattle = (
 
   let updatedPlayerStatus = playerStatus;
 
-  if (updatedMonster.hp > 0) {
-    const monsterDamage = calculateDamage(monster, playerWithEquipment);
-    updatedPlayerStatus = {
-      ...playerStatus,
-      hp: Math.max(0, playerStatus.hp - monsterDamage)
-    };
-    logs.push({
-      message: `💥 ${monsterDamage}のダメージを受けた！`,
-      timestamp: timestamp + 1
-    });
-  } else {
+  if (updatedMonster.hp <= 0) {
     logs.push({
       message: `🎯 ${monster.name}を倒した！ ${monster.exp}の経験値を獲得！`,
       timestamp: timestamp + 1

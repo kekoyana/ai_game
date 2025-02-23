@@ -1,8 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { GameState, Direction, Cell, Monster } from './types/game';
-import { createInitialGameState, movePlayer, useItem, getPlayerPower, dropItem } from './game/gameLogic';
-
-const CELL_SIZE = 40;
+import { createInitialGameState, movePlayer, applyItem, getPlayerPower, dropItem } from './game/gameLogic';
+import './Game.css';
 
 const Game: React.FC = () => {
   const width = 20;
@@ -10,6 +9,33 @@ const Game: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>(() =>
     createInitialGameState(width, height)
   );
+  const [showFloorAnnouncement, setShowFloorAnnouncement] = useState(true);
+  const [prevFloor, setPrevFloor] = useState(1);
+
+  // 初期表示とフロア変更時のアナウンス表示
+  useEffect(() => {
+    // 初期表示または階層が変わった時
+    if (gameState.currentFloor !== prevFloor) {
+      setShowFloorAnnouncement(true);
+      setPrevFloor(gameState.currentFloor);
+      
+      // 3秒後に非表示
+      const timer = setTimeout(() => {
+        setShowFloorAnnouncement(false);
+      }, 3000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [gameState.currentFloor, prevFloor]);
+
+  // 初期表示用
+  useEffect(() => {
+    setShowFloorAnnouncement(true);
+    const timer = setTimeout(() => {
+      setShowFloorAnnouncement(false);
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleKeyDown = useCallback((e: KeyboardEvent): void => {
     if (gameState.isGameClear || gameState.isGameOver) return;
@@ -70,14 +96,24 @@ const Game: React.FC = () => {
   };
 
   return (
-    <div style={{ display: 'flex', padding: '20px', gap: '20px' }}>
-      <div>
-        <div style={{ marginBottom: '10px', fontSize: '24px' }}>
-          🏰 地下{gameState.currentFloor}階
+    <div className="game-container">
+      {showFloorAnnouncement && (
+        <div className="floor-announcement">
+          地下{gameState.currentFloor}階
         </div>
-        <div style={{ display: 'inline-block', border: '2px solid black', backgroundColor: '#2c3e50' }}>
+      )}
+      <div>
+        <div className="floor-title">
+          <span role="img" aria-label="castle">🏰</span> 地下{gameState.currentFloor}階
+        </div>
+        <div className={`map-container ${
+          gameState.currentFloor <= 3 ? 'dungeon-early' :
+          gameState.currentFloor <= 6 ? 'dungeon-middle' :
+          gameState.currentFloor <= 8 ? 'dungeon-late' :
+          'dungeon-final'
+        }`}>
           {gameState.map.map((row: Cell[], rowIndex: number) => (
-            <div key={rowIndex} style={{ display: 'flex', height: `${CELL_SIZE}px` }}>
+            <div key={rowIndex} className="map-row">
               {row.map((cell: Cell, colIndex: number) => {
                 const isPlayer =
                   gameState.player.x === colIndex &&
@@ -85,15 +121,11 @@ const Game: React.FC = () => {
                 const monster = getMonsterAtPosition(colIndex, rowIndex);
                 
                 let content = '';
-                let backgroundColor = cell.isVisible ? '#34495e' : '#2c3e50';
-                
-                if (cell.type === 'wall') {
-                  backgroundColor = cell.isVisible ? '#7f8c8d' : '#2c3e50';
-                } else if (cell.type === 'stairs') {
-                  content = cell.isVisible ? '🚪' : '';
+                if (cell.type === 'stairs' && cell.isVisible) {
+                  content = '🚪';
                 }
 
-                // アイテムの表示処理を追加
+                // アイテムの表示処理
                 const item = gameState.items.find(
                   item => item.position !== null &&
                          item.position.x === colIndex &&
@@ -112,16 +144,8 @@ const Game: React.FC = () => {
                 return (
                   <div
                     key={colIndex}
-                    style={{
-                      width: CELL_SIZE,
-                      height: CELL_SIZE,
-                      backgroundColor,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '24px',
-                      transition: 'background-color 0.3s'
-                    }}
+                    className="map-cell"
+                    data-type={cell.isVisible ? cell.type : 'hidden'}
                   >
                     {content}
                   </div>
@@ -132,16 +156,10 @@ const Game: React.FC = () => {
         </div>
       </div>
 
-      <div style={{ width: '300px' }}>
+      <div className="status-container">
         {/* ステータス表示 */}
-        <div style={{ 
-          backgroundColor: '#34495e',
-          padding: '15px',
-          marginBottom: '20px',
-          borderRadius: '8px',
-          color: '#ecf0f1'
-        }}>
-          <h3 style={{ margin: '0 0 15px 0', color: '#e74c3c' }}>👤 ステータス</h3>
+        <div className="status-display">
+          <h3 className="status-title">👤 ステータス</h3>
           <div>❤️ HP: {gameState.playerStatus.hp}/{gameState.playerStatus.maxHp}</div>
           <div>⭐️ Level: {gameState.playerStatus.level}</div>
           <div>📈 EXP: {gameState.playerStatus.exp}</div>
@@ -169,7 +187,7 @@ const Game: React.FC = () => {
                     alignItems: 'center',
                     gap: '5px'
                   }}
-                  onClick={() => setGameState(prevState => useItem(prevState, index))}
+                  onClick={() => setGameState(prevState => applyItem(prevState, index))}
                 >
                   {item.symbol} {item.isEquipped ? 'E ' : ''}{item.name}
                 </div>
@@ -194,14 +212,7 @@ const Game: React.FC = () => {
         </div>
 
         {/* バトルログ表示 */}
-        <div style={{
-          backgroundColor: '#34495e',
-          padding: '15px',
-          borderRadius: '8px',
-          height: '300px',
-          overflowY: 'auto',
-          color: '#ecf0f1'
-        }}>
+        <div className="battle-log">
           <h3 style={{ margin: '0 0 15px 0', color: '#e74c3c' }}>📜 バトルログ</h3>
           <div>
             {gameState.battleLogs.slice().reverse().map((log, index) => (
@@ -213,13 +224,7 @@ const Game: React.FC = () => {
         </div>
 
         {/* 操作説明 */}
-        <div style={{
-          backgroundColor: '#34495e',
-          padding: '15px',
-          marginTop: '20px',
-          borderRadius: '8px',
-          color: '#ecf0f1'
-        }}>
+        <div className="operation-instructions">
           <h3 style={{ margin: '0 0 15px 0', color: '#e74c3c' }}>🎮 操作方法</h3>
           <div>矢印キー: 上下左右移動</div>
           <div>テンキー: 斜め移動</div>
@@ -230,20 +235,7 @@ const Game: React.FC = () => {
       </div>
 
       {gameState.isGameOver && (
-        <div
-          style={{
-            position: 'fixed',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            backgroundColor: 'rgba(0, 0, 0, 0.9)',
-            color: '#e74c3c',
-            padding: '30px',
-            borderRadius: '15px',
-            fontSize: '32px',
-            zIndex: 1000,
-          }}
-        >
+        <div className="game-over">
           💀 Game Over...
         </div>
       )}
