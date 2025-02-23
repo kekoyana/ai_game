@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { GameState, Direction, Cell, Monster } from './types/game';
-import { createInitialGameState, movePlayer } from './game/gameLogic';
+import { createInitialGameState, movePlayer, useItem, getPlayerPower } from './game/gameLogic';
 
 const CELL_SIZE = 40;
 
@@ -95,7 +95,8 @@ const Game: React.FC = () => {
 
                 // アイテムの表示処理を追加
                 const item = gameState.items.find(
-                  item => item.position.x === colIndex &&
+                  item => item.position !== null &&
+                         item.position.x === colIndex &&
                          item.position.y === rowIndex &&
                          cell.isVisible
                 );
@@ -144,8 +145,41 @@ const Game: React.FC = () => {
           <div>❤️ HP: {gameState.playerStatus.hp}/{gameState.playerStatus.maxHp}</div>
           <div>⭐️ Level: {gameState.playerStatus.level}</div>
           <div>📈 EXP: {gameState.playerStatus.exp}</div>
-          <div>⚔️ Attack: {gameState.playerStatus.attack}</div>
-          <div>🛡️ Defense: {gameState.playerStatus.defense}</div>
+          <div>⚔️ Attack: {getPlayerPower(gameState.playerStatus, gameState.equipment).attack}</div>
+          <div>🛡️ Defense: {getPlayerPower(gameState.playerStatus, gameState.equipment).defense}</div>
+          
+          <h3 style={{ margin: '15px 0', color: '#e74c3c' }}>🎒 インベントリ</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+            {gameState.inventory.items.map((item, index) => (
+              <div
+                key={index}
+                onClick={() => setGameState(prevState => useItem(prevState, index))}
+                style={{
+                  cursor: 'pointer',
+                  padding: '5px',
+                  backgroundColor: '#2c3e50',
+                  borderRadius: '4px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px'
+                }}
+              >
+                {item.symbol} {item.name}
+              </div>
+            ))}
+          </div>
+
+          <h3 style={{ margin: '15px 0', color: '#e74c3c' }}>⚔️ 装備</h3>
+          <div>
+            武器: {gameState.equipment.weapon
+              ? `${gameState.equipment.weapon.symbol} ${gameState.equipment.weapon.name} (+${gameState.equipment.weapon.power})`
+              : 'なし'}
+          </div>
+          <div>
+            防具: {gameState.equipment.armor
+              ? `${gameState.equipment.armor.symbol} ${gameState.equipment.armor.name} (+${gameState.equipment.armor.power})`
+              : 'なし'}
+          </div>
         </div>
 
         {/* バトルログ表示 */}

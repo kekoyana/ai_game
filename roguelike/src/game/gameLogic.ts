@@ -9,7 +9,8 @@ import {
   Status,
   BattleLog,
   Item,
-  ItemType
+  ItemType,
+  EquipmentType
 } from '../types/game';
 
 const FINAL_FLOOR = 10;
@@ -64,6 +65,7 @@ const isPositionOccupied = (
     m.position.x === pos.x &&
     m.position.y === pos.y
   ) || items.some(item =>
+    item.position !== null &&
     item.position.x === pos.x &&
     item.position.y === pos.y
   );
@@ -100,6 +102,7 @@ const generateItems = (rooms: Room[], floor: number): Item[] => {
         attempts++;
       } while (
         items.some(item =>
+          item.position !== null &&
           item.position.x === position.x &&
           item.position.y === position.y
         ) && attempts < maxAttempts
@@ -108,9 +111,10 @@ const generateItems = (rooms: Room[], floor: number): Item[] => {
       if (attempts >= maxAttempts) continue;
 
       const item: Item = {
-        position,
         ...itemType,
-        isVisible: true // Always visible
+        position,
+        isVisible: true, // Always visible
+        isEquipped: false,
       };
       items.push(item);
     }
@@ -119,33 +123,86 @@ const generateItems = (rooms: Room[], floor: number): Item[] => {
   return items;
 };
 
-const applyItem = (playerStatus: Status, item: Item): { updatedStatus: Status; message: string } => {
+export const useItem = (state: GameState, itemIndex: number): GameState => {
+  const item = state.inventory.items[itemIndex];
+  if (!item) return state;
+
   switch (item.type) {
-    case 'potion':
+    case 'potion': {
+      const newHp = Math.min(state.playerStatus.maxHp, state.playerStatus.hp + item.power);
       return {
-        updatedStatus: {
-          ...playerStatus,
-          hp: Math.min(playerStatus.maxHp, playerStatus.hp + item.power)
+        ...state,
+        playerStatus: { ...state.playerStatus, hp: newHp },
+        inventory: {
+          ...state.inventory,
+          items: state.inventory.items.filter((_, i) => i !== itemIndex)
         },
-        message: `🧪 HPが${item.power}回復した！`
+        battleLogs: [...state.battleLogs, {
+          message: `🧪 ${item.name}を使用、HPが${item.power}回復した！`,
+          timestamp: Date.now()
+        }]
       };
-    case 'weapon':
+    }
+    case 'weapon': {
+      // 現在装備中のアイテムをインベントリに戻す
+      const currentWeapon = state.equipment.weapon;
+      const newInventoryItems = state.inventory.items.filter((_, i) => i !== itemIndex);
+      if (currentWeapon) {
+        currentWeapon.isEquipped = false;
+        newInventoryItems.push(currentWeapon);
+      }
+
+      // 新しいアイテムを装備
+      item.isEquipped = true;
       return {
-        updatedStatus: {
-          ...playerStatus,
-          attack: playerStatus.attack + item.power
+        ...state,
+        equipment: { ...state.equipment, weapon: item },
+        inventory: {
+          ...state.inventory,
+          items: newInventoryItems
         },
-        message: `⚔️ 攻撃力が${item.power}上昇した！`
+        battleLogs: [...state.battleLogs, {
+          message: `⚔️ ${item.name}を装備した！`,
+          timestamp: Date.now()
+        }]
       };
-    case 'armor':
+    }
+    case 'armor': {
+      // 現在装備中のアイテムをインベントリに戻す
+      const currentArmor = state.equipment.armor;
+      const newInventoryItems = state.inventory.items.filter((_, i) => i !== itemIndex);
+      if (currentArmor) {
+        currentArmor.isEquipped = false;
+        newInventoryItems.push(currentArmor);
+      }
+
+      // 新しいアイテムを装備
+      item.isEquipped = true;
       return {
-        updatedStatus: {
-          ...playerStatus,
-          defense: playerStatus.defense + item.power
+        ...state,
+        equipment: { ...state.equipment, armor: item },
+        inventory: {
+          ...state.inventory,
+          items: newInventoryItems
         },
-        message: `🛡️ 防御力が${item.power}上昇した！`
+        battleLogs: [...state.battleLogs, {
+          message: `🛡️ ${item.name}を装備した！`,
+          timestamp: Date.now()
+        }]
       };
+    }
   }
+  return state;
+};
+
+export const getPlayerPower = (playerStatus: Status, equipment: EquipmentType): Status => {
+  const weaponBonus = equipment.weapon?.power || 0;
+  const armorBonus = equipment.armor?.power || 0;
+  return {
+    ...playerStatus,
+    attack: playerStatus.attack + weaponBonus,
+    defense: playerStatus.defense + armorBonus
+  };
 };
 
 const createInitialPlayerStatus = (): Status => ({
@@ -493,7 +550,8 @@ const createNextFloor = (
   width: number,
   height: number,
   floor: number,
-  playerStatus: Status
+  playerStatus: Status,
+  prevState: GameState
 ): GameState => {
   const { map, rooms } = generateGameMap(width, height);
   let player: Position = { x: 1, y: 1 };
@@ -509,19 +567,20 @@ const createNextFloor = (
   const monsters = generateMonsters(rooms, floor);
   const items = generateItems(rooms, floor);
   revealRoom(map, rooms[0], monsters);
-
-  return {
-    player,
-    playerStatus,
-    map,
-    rooms,
-    monsters,
-    items,
-    battleLogs: [],
-    currentFloor: floor,
-    isGameOver: false,
-    isGameClear: floor > FINAL_FLOOR
-  };
+return {
+  player,
+  playerStatus,
+  map,
+  rooms,
+  monsters,
+  items,
+  inventory: prevState.inventory,
+  equipment: prevState.equipment,
+  battleLogs: [],
+  currentFloor: floor,
+  isGameOver: false,
+  isGameClear: floor > FINAL_FLOOR
+};
 };
 
 const findMonsterAtPosition = (monsters: Monster[], pos: Position): Monster | undefined => {
@@ -548,19 +607,26 @@ export const createInitialGameState = (width: number, height: number): GameState
 
   const monsters = generateMonsters(rooms, 1);
   const items = generateItems(rooms, 1);
-
-  return {
-    player: initialPlayer,
-    playerStatus,
-    map,
-    rooms,
-    monsters,
-    items,
-    battleLogs: [],
-    currentFloor: 1,
-    isGameOver: false,
-    isGameClear: false
-  };
+return {
+  player: initialPlayer,
+  playerStatus,
+  map,
+  rooms,
+  monsters,
+  items,
+  inventory: {
+    items: [],
+    maxSize: 10
+  },
+  equipment: {
+    weapon: null,
+    armor: null
+  },
+  battleLogs: [],
+  currentFloor: 1,
+  isGameOver: false,
+  isGameClear: false
+};
 };
 
 export const movePlayer = (state: GameState, direction: Direction): GameState => {
@@ -579,15 +645,36 @@ export const movePlayer = (state: GameState, direction: Direction): GameState =>
   }
 
   // アイテムの取得チェック
-  const item = items.find(i => i.position.x === newX && i.position.y === newY && i.isVisible);
-  if (item) {
-    const { updatedStatus, message } = applyItem(playerStatus, item);
+  const item = items.find(i =>
+    i.position !== null &&
+    i.position.x === newX &&
+    i.position.y === newY &&
+    i.isVisible
+  );
+  if (item && state.inventory.items.length < state.inventory.maxSize) {
+    // アイテムをインベントリに追加
+    const pickedItem = { ...item, position: null };
     return {
       ...state,
       player: { x: newX, y: newY },
-      playerStatus: updatedStatus,
       items: items.filter(i => i !== item),
-      battleLogs: [...state.battleLogs, { message, timestamp: Date.now() }]
+      inventory: {
+        ...state.inventory,
+        items: [...state.inventory.items, pickedItem]
+      },
+      battleLogs: [...state.battleLogs, {
+        message: `${item.name}を拾った！`,
+        timestamp: Date.now()
+      }]
+    };
+  } else if (item) {
+    // インベントリがいっぱいの場合
+    return {
+      ...state,
+      battleLogs: [...state.battleLogs, {
+        message: 'インベントリがいっぱいです！',
+        timestamp: Date.now()
+      }]
     };
   }
 
@@ -635,7 +722,7 @@ export const movePlayer = (state: GameState, direction: Direction): GameState =>
 
   if (targetCell.type === 'stairs') {
     const nextFloor = state.currentFloor + 1;
-    return createNextFloor(map.length, map[0].length, nextFloor, playerStatus);
+    return createNextFloor(map.length, map[0].length, nextFloor, playerStatus, state);
   }
 
   const movedState = {

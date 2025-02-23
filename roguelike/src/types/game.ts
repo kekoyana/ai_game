@@ -41,12 +41,23 @@ export type Monster = {
 export type ItemType = 'potion' | 'weapon' | 'armor';
 
 export type Item = {
-  position: Position;
+  position: Position | null; // nullの場合はインベントリ内
   type: ItemType;
   name: string;
   symbol: string;
   power: number;
   isVisible: boolean;
+  isEquipped: boolean;
+};
+
+export type InventoryType = {
+  items: Item[];
+  maxSize: number;
+};
+
+export type EquipmentType = {
+  weapon: Item | null;
+  armor: Item | null;
 };
 
 export type GameMap = Cell[][];
@@ -63,6 +74,8 @@ export type GameState = {
   rooms: Room[];
   monsters: Monster[];
   items: Item[];
+  inventory: InventoryType;
+  equipment: EquipmentType;
   battleLogs: BattleLog[];
   currentFloor: number;
   isGameOver: boolean;
