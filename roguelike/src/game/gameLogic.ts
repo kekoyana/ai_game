@@ -711,6 +711,32 @@ export const movePlayer = (state: GameState, direction: Direction): GameState =>
     return state;
   }
 
+  const monster = findMonsterAtPosition(monsters, { x: newX, y: newY });
+  if (monster && monster.isVisible) {
+    const { updatedPlayerStatus, updatedMonster, logs } = processBattle(playerStatus, monster, state);
+
+    const battleState = {
+      ...state,
+      playerStatus: updatedPlayerStatus,
+      monsters: monsters.map(m => m === monster ? updatedMonster : m),
+      battleLogs: [...state.battleLogs, ...logs]
+    };
+
+    if (updatedPlayerStatus.hp <= 0) {
+      return { ...battleState, isGameOver: true };
+    }
+
+    const movedState = battleState;
+
+    const { updatedState: finalState, logs: monsterLogs } = processMonsterTurn(movedState);
+    return {
+      ...finalState,
+      battleLogs: [...finalState.battleLogs, ...monsterLogs]
+    };
+  }
+
+  map[newY][newX].isVisible = true;
+
   // アイテムの取得チェック
   const item = items.find(i =>
     i.position !== null &&
@@ -744,35 +770,6 @@ export const movePlayer = (state: GameState, direction: Direction): GameState =>
       }]
     };
   }
-
-  const monster = findMonsterAtPosition(monsters, { x: newX, y: newY });
-  if (monster && monster.isVisible) {
-    const { updatedPlayerStatus, updatedMonster, logs } = processBattle(playerStatus, monster, state);
-
-    const battleState = {
-      ...state,
-      playerStatus: updatedPlayerStatus,
-      monsters: monsters.map(m => m === monster ? updatedMonster : m),
-      battleLogs: [...state.battleLogs, ...logs]
-    };
-
-    if (updatedPlayerStatus.hp <= 0) {
-      return { ...battleState, isGameOver: true };
-    }
-
-    const movedState = updatedMonster.hp <= 0 ? {
-      ...battleState,
-      player: { x: newX, y: newY }
-    } : battleState;
-
-    const { updatedState: finalState, logs: monsterLogs } = processMonsterTurn(movedState);
-    return {
-      ...finalState,
-      battleLogs: [...finalState.battleLogs, ...monsterLogs]
-    };
-  }
-
-  map[newY][newX].isVisible = true;
 
   let inRoom = false;
   for (const room of rooms) {
