@@ -9,8 +9,7 @@ import {
   Status,
   BattleLog,
   Item,
-  ItemType,
-  EquipmentType
+  ItemType
 } from '../types/game';
 
 const FINAL_FLOOR = 10;
