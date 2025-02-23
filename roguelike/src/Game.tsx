@@ -11,6 +11,33 @@ const Game: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>(() =>
     createInitialGameState(width, height)
   );
+  const [showFloorAnnouncement, setShowFloorAnnouncement] = useState(true);
+  const [prevFloor, setPrevFloor] = useState(1);
+
+  // 初期表示とフロア変更時のアナウンス表示
+  useEffect(() => {
+    // 初期表示または階層が変わった時
+    if (gameState.currentFloor !== prevFloor) {
+      setShowFloorAnnouncement(true);
+      setPrevFloor(gameState.currentFloor);
+      
+      // 3秒後に非表示
+      const timer = setTimeout(() => {
+        setShowFloorAnnouncement(false);
+      }, 3000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [gameState.currentFloor, prevFloor]);
+
+  // 初期表示用
+  useEffect(() => {
+    setShowFloorAnnouncement(true);
+    const timer = setTimeout(() => {
+      setShowFloorAnnouncement(false);
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleKeyDown = useCallback((e: KeyboardEvent): void => {
     if (gameState.isGameClear || gameState.isGameOver) return;
@@ -72,9 +99,14 @@ const Game: React.FC = () => {
 
   return (
     <div className="game-container">
+      {showFloorAnnouncement && (
+        <div className="floor-announcement">
+          地下{gameState.currentFloor}階
+        </div>
+      )}
       <div>
         <div className="floor-title">
-          🏰 地下{gameState.currentFloor}階
+          <span role="img" aria-label="castle">🏰</span> 地下{gameState.currentFloor}階
         </div>
         <div className="map-container">
           {gameState.map.map((row: Cell[], rowIndex: number) => (
