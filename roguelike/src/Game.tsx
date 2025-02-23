@@ -11,6 +11,7 @@ const Game: React.FC = () => {
   );
   const [showFloorAnnouncement, setShowFloorAnnouncement] = useState(true);
   const [prevFloor, setPrevFloor] = useState(1);
+  const [showHelp, setShowHelp] = useState(false);
 
   // 初期表示とフロア変更時のアナウンス表示
   useEffect(() => {
@@ -160,7 +161,12 @@ const Game: React.FC = () => {
         {/* ステータス表示 */}
         <div className="status-display">
           <h3 className="status-title">👤 ステータス</h3>
-          <div>❤️ HP: {gameState.playerStatus.hp}/{gameState.playerStatus.maxHp}</div>
+          <div className={`hp-status ${
+            gameState.playerStatus.hp <= gameState.playerStatus.maxHp * 0.25 ? 'danger' :
+            gameState.playerStatus.hp <= gameState.playerStatus.maxHp * 0.5 ? 'warning' : ''
+          }`}>
+            ❤️ HP: {gameState.playerStatus.hp}/{gameState.playerStatus.maxHp}
+          </div>
           <div>⭐️ Level: {gameState.playerStatus.level}</div>
           <div>📈 EXP: {gameState.playerStatus.exp}</div>
           <div>⚔️ Attack: {getPlayerPower(gameState.playerStatus, gameState).attack}</div>
@@ -223,15 +229,21 @@ const Game: React.FC = () => {
           </div>
         </div>
 
-        {/* 操作説明 */}
-        <div className="operation-instructions">
-          <h3 style={{ margin: '0 0 15px 0', color: '#e74c3c' }}>🎮 操作方法</h3>
-          <div>矢印キー: 上下左右移動</div>
-          <div>テンキー: 斜め移動</div>
-          <div>7️⃣8️⃣9️⃣</div>
-          <div>4️⃣5️⃣6️⃣</div>
-          <div>1️⃣2️⃣3️⃣</div>
-        </div>
+        <button className="help-button" onClick={() => setShowHelp(true)}>
+          ❔ 操作方法
+        </button>
+
+        {showHelp && (
+          <div className="operation-instructions">
+            <button className="close-button" onClick={() => setShowHelp(false)}>×</button>
+            <h3>🎮 操作方法</h3>
+            <div>矢印キー: 上下左右移動</div>
+            <div>テンキー: 斜め移動</div>
+            <div>7️⃣8️⃣9️⃣</div>
+            <div>4️⃣5️⃣6️⃣</div>
+            <div>1️⃣2️⃣3️⃣</div>
+          </div>
+        )}
       </div>
 
       {gameState.isGameOver && (
