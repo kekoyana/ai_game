@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { GameState, Direction, Cell, Monster } from './types/game';
-import { createInitialGameState, movePlayer, useItem, getPlayerPower, dropItem } from './game/gameLogic';
+import { createInitialGameState, movePlayer, applyItem, getPlayerPower, dropItem } from './game/gameLogic';
+import './Game.css';
 
 const CELL_SIZE = 40;
 
@@ -70,14 +71,14 @@ const Game: React.FC = () => {
   };
 
   return (
-    <div style={{ display: 'flex', padding: '20px', gap: '20px' }}>
+    <div className="game-container">
       <div>
-        <div style={{ marginBottom: '10px', fontSize: '24px' }}>
+        <div className="floor-title">
           🏰 地下{gameState.currentFloor}階
         </div>
-        <div style={{ display: 'inline-block', border: '2px solid black', backgroundColor: '#2c3e50' }}>
+        <div className="map-container">
           {gameState.map.map((row: Cell[], rowIndex: number) => (
-            <div key={rowIndex} style={{ display: 'flex', height: `${CELL_SIZE}px` }}>
+            <div key={rowIndex} className="map-row">
               {row.map((cell: Cell, colIndex: number) => {
                 const isPlayer =
                   gameState.player.x === colIndex &&
@@ -132,16 +133,10 @@ const Game: React.FC = () => {
         </div>
       </div>
 
-      <div style={{ width: '300px' }}>
+      <div className="status-container">
         {/* ステータス表示 */}
-        <div style={{ 
-          backgroundColor: '#34495e',
-          padding: '15px',
-          marginBottom: '20px',
-          borderRadius: '8px',
-          color: '#ecf0f1'
-        }}>
-          <h3 style={{ margin: '0 0 15px 0', color: '#e74c3c' }}>👤 ステータス</h3>
+        <div className="status-display">
+          <h3 className="status-title">👤 ステータス</h3>
           <div>❤️ HP: {gameState.playerStatus.hp}/{gameState.playerStatus.maxHp}</div>
           <div>⭐️ Level: {gameState.playerStatus.level}</div>
           <div>📈 EXP: {gameState.playerStatus.exp}</div>
@@ -169,7 +164,7 @@ const Game: React.FC = () => {
                     alignItems: 'center',
                     gap: '5px'
                   }}
-                  onClick={() => setGameState(prevState => useItem(prevState, index))}
+                  onClick={() => setGameState(prevState => applyItem(prevState, index))}
                 >
                   {item.symbol} {item.isEquipped ? 'E ' : ''}{item.name}
                 </div>
@@ -194,14 +189,7 @@ const Game: React.FC = () => {
         </div>
 
         {/* バトルログ表示 */}
-        <div style={{
-          backgroundColor: '#34495e',
-          padding: '15px',
-          borderRadius: '8px',
-          height: '300px',
-          overflowY: 'auto',
-          color: '#ecf0f1'
-        }}>
+        <div className="battle-log">
           <h3 style={{ margin: '0 0 15px 0', color: '#e74c3c' }}>📜 バトルログ</h3>
           <div>
             {gameState.battleLogs.slice().reverse().map((log, index) => (
@@ -213,13 +201,7 @@ const Game: React.FC = () => {
         </div>
 
         {/* 操作説明 */}
-        <div style={{
-          backgroundColor: '#34495e',
-          padding: '15px',
-          marginTop: '20px',
-          borderRadius: '8px',
-          color: '#ecf0f1'
-        }}>
+        <div className="operation-instructions">
           <h3 style={{ margin: '0 0 15px 0', color: '#e74c3c' }}>🎮 操作方法</h3>
           <div>矢印キー: 上下左右移動</div>
           <div>テンキー: 斜め移動</div>
@@ -230,20 +212,7 @@ const Game: React.FC = () => {
       </div>
 
       {gameState.isGameOver && (
-        <div
-          style={{
-            position: 'fixed',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            backgroundColor: 'rgba(0, 0, 0, 0.9)',
-            color: '#e74c3c',
-            padding: '30px',
-            borderRadius: '15px',
-            fontSize: '32px',
-            zIndex: 1000,
-          }}
-        >
+        <div className="game-over">
           💀 Game Over...
         </div>
       )}

@@ -161,7 +161,7 @@ export const dropItem = (state: GameState, itemIndex: number): GameState => {
   };
 };
 
-export const useItem = (state: GameState, itemIndex: number): GameState => {
+export const applyItem = (state: GameState, itemIndex: number): GameState => {
   const item = state.inventory.items[itemIndex];
   if (!item) return state;
 
