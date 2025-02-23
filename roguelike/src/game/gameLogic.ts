@@ -123,6 +123,34 @@ const generateItems = (rooms: Room[], floor: number): Item[] => {
   return items;
 };
 
+export const dropItem = (state: GameState, itemIndex: number): GameState => {
+  const item = state.inventory.items[itemIndex];
+  if (!item) return state;
+
+  // 装備中のアイテムは破棄できない
+  if (item.isEquipped) {
+    return {
+      ...state,
+      battleLogs: [...state.battleLogs, {
+        message: '装備中のアイテムは破棄できません！',
+        timestamp: Date.now()
+      }]
+    };
+  }
+
+  return {
+    ...state,
+    inventory: {
+      ...state.inventory,
+      items: state.inventory.items.filter((_, i) => i !== itemIndex)
+    },
+    battleLogs: [...state.battleLogs, {
+      message: `${item.name}を捨てました。`,
+      timestamp: Date.now()
+    }]
+  };
+};
+
 export const useItem = (state: GameState, itemIndex: number): GameState => {
   const item = state.inventory.items[itemIndex];
   if (!item) return state;
@@ -144,22 +172,26 @@ export const useItem = (state: GameState, itemIndex: number): GameState => {
       };
     }
     case 'weapon': {
-      // 現在装備中のアイテムをインベントリに戻す
-      const currentWeapon = state.equipment.weapon;
-      const newInventoryItems = state.inventory.items.filter((_, i) => i !== itemIndex);
-      if (currentWeapon) {
-        currentWeapon.isEquipped = false;
-        newInventoryItems.push(currentWeapon);
-      }
+      // 現在装備中の武器があれば装備解除
+      const newInventoryItems = state.inventory.items.map(invItem => {
+        if (invItem.type === 'weapon' && invItem.isEquipped) {
+          return { ...invItem, isEquipped: false };
+        }
+        if (invItem === item) {
+          return { ...invItem, isEquipped: true };
+        }
+        return invItem;
+      });
 
-      // 新しいアイテムを装備
-      item.isEquipped = true;
       return {
         ...state,
-        equipment: { ...state.equipment, weapon: item },
         inventory: {
           ...state.inventory,
           items: newInventoryItems
+        },
+        equipment: {
+          ...state.equipment,
+          weapon: { ...item, isEquipped: true }
         },
         battleLogs: [...state.battleLogs, {
           message: `⚔️ ${item.name}を装備した！`,
@@ -168,22 +200,26 @@ export const useItem = (state: GameState, itemIndex: number): GameState => {
       };
     }
     case 'armor': {
-      // 現在装備中のアイテムをインベントリに戻す
-      const currentArmor = state.equipment.armor;
-      const newInventoryItems = state.inventory.items.filter((_, i) => i !== itemIndex);
-      if (currentArmor) {
-        currentArmor.isEquipped = false;
-        newInventoryItems.push(currentArmor);
-      }
+      // 現在装備中の防具があれば装備解除
+      const newInventoryItems = state.inventory.items.map(invItem => {
+        if (invItem.type === 'armor' && invItem.isEquipped) {
+          return { ...invItem, isEquipped: false };
+        }
+        if (invItem === item) {
+          return { ...invItem, isEquipped: true };
+        }
+        return invItem;
+      });
 
-      // 新しいアイテムを装備
-      item.isEquipped = true;
       return {
         ...state,
-        equipment: { ...state.equipment, armor: item },
         inventory: {
           ...state.inventory,
           items: newInventoryItems
+        },
+        equipment: {
+          ...state.equipment,
+          armor: { ...item, isEquipped: true }
         },
         battleLogs: [...state.battleLogs, {
           message: `🛡️ ${item.name}を装備した！`,
@@ -195,13 +231,15 @@ export const useItem = (state: GameState, itemIndex: number): GameState => {
   return state;
 };
 
-export const getPlayerPower = (playerStatus: Status, equipment: EquipmentType): Status => {
-  const weaponBonus = equipment.weapon?.power || 0;
-  const armorBonus = equipment.armor?.power || 0;
+export const getPlayerPower = (playerStatus: Status, state: GameState): Status => {
+  // インベントリから装備中のアイテムを探す
+  const equippedWeapon = state.inventory.items.find(item => item.type === 'weapon' && item.isEquipped);
+  const equippedArmor = state.inventory.items.find(item => item.type === 'armor' && item.isEquipped);
+
   return {
     ...playerStatus,
-    attack: playerStatus.attack + weaponBonus,
-    defense: playerStatus.defense + armorBonus
+    attack: playerStatus.attack + (equippedWeapon?.power || 0),
+    defense: playerStatus.defense + (equippedArmor?.power || 0)
   };
 };
 
@@ -416,12 +454,14 @@ const createMonsterStats = (base: typeof MONSTER_TYPES[number], floor: number): 
 
 const processBattle = (
   playerStatus: Status,
-  monster: Monster
+  monster: Monster,
+  state: GameState
 ): { updatedPlayerStatus: Status; updatedMonster: Monster; logs: BattleLog[] } => {
   const logs: BattleLog[] = [];
   const timestamp = Date.now();
 
-  const playerDamage = calculateDamage(playerStatus, monster);
+  const playerWithEquipment = getPlayerPower(playerStatus, state);
+  const playerDamage = calculateDamage(playerWithEquipment, monster);
   const updatedMonster = { ...monster, hp: Math.max(0, monster.hp - playerDamage) };
   logs.push({
     message: `⚔️ ${playerDamage}のダメージを${monster.name}に与えた！`,
@@ -431,7 +471,7 @@ const processBattle = (
   let updatedPlayerStatus = playerStatus;
 
   if (updatedMonster.hp > 0) {
-    const monsterDamage = calculateDamage(monster, playerStatus);
+    const monsterDamage = calculateDamage(monster, playerWithEquipment);
     updatedPlayerStatus = {
       ...playerStatus,
       hp: Math.max(0, playerStatus.hp - monsterDamage)
@@ -480,7 +520,8 @@ const processMonsterTurn = (
     const currentPos = monster.position;
 
     if (distance(currentPos, player) === 1) {
-      const monsterDamage = calculateDamage(monster, playerStatus);
+      const playerWithEquipment = getPlayerPower(playerStatus, state);
+      const monsterDamage = calculateDamage(monster, playerWithEquipment);
       state.playerStatus = {
         ...playerStatus,
         hp: Math.max(0, playerStatus.hp - monsterDamage)
@@ -680,7 +721,7 @@ export const movePlayer = (state: GameState, direction: Direction): GameState =>
 
   const monster = findMonsterAtPosition(monsters, { x: newX, y: newY });
   if (monster && monster.isVisible) {
-    const { updatedPlayerStatus, updatedMonster, logs } = processBattle(playerStatus, monster);
+    const { updatedPlayerStatus, updatedMonster, logs } = processBattle(playerStatus, monster, state);
 
     const battleState = {
       ...state,

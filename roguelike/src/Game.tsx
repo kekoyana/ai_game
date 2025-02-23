@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { GameState, Direction, Cell, Monster } from './types/game';
-import { createInitialGameState, movePlayer, useItem, getPlayerPower } from './game/gameLogic';
+import { createInitialGameState, movePlayer, useItem, getPlayerPower, dropItem } from './game/gameLogic';
 
 const CELL_SIZE = 40;
 
@@ -145,40 +145,51 @@ const Game: React.FC = () => {
           <div>❤️ HP: {gameState.playerStatus.hp}/{gameState.playerStatus.maxHp}</div>
           <div>⭐️ Level: {gameState.playerStatus.level}</div>
           <div>📈 EXP: {gameState.playerStatus.exp}</div>
-          <div>⚔️ Attack: {getPlayerPower(gameState.playerStatus, gameState.equipment).attack}</div>
-          <div>🛡️ Defense: {getPlayerPower(gameState.playerStatus, gameState.equipment).defense}</div>
+          <div>⚔️ Attack: {getPlayerPower(gameState.playerStatus, gameState).attack}</div>
+          <div>🛡️ Defense: {getPlayerPower(gameState.playerStatus, gameState).defense}</div>
           
-          <h3 style={{ margin: '15px 0', color: '#e74c3c' }}>🎒 インベントリ</h3>
+          <h3 style={{ margin: '15px 0', color: '#e74c3c' }}>🎒 インベントリ ({gameState.inventory.items.length}/{gameState.inventory.maxSize})</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
             {gameState.inventory.items.map((item, index) => (
               <div
                 key={index}
-                onClick={() => setGameState(prevState => useItem(prevState, index))}
                 style={{
-                  cursor: 'pointer',
                   padding: '5px',
                   backgroundColor: '#2c3e50',
                   borderRadius: '4px',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '5px'
+                  justifyContent: 'space-between'
                 }}
               >
-                {item.symbol} {item.name}
+                <div
+                  style={{
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '5px'
+                  }}
+                  onClick={() => setGameState(prevState => useItem(prevState, index))}
+                >
+                  {item.symbol} {item.isEquipped ? 'E ' : ''}{item.name}
+                </div>
+                {!item.isEquipped && (
+                  <button
+                    onClick={() => setGameState(prevState => dropItem(prevState, index))}
+                    style={{
+                      backgroundColor: '#c0392b',
+                      border: 'none',
+                      color: 'white',
+                      padding: '2px 5px',
+                      borderRadius: '3px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    ×
+                  </button>
+                )}
               </div>
             ))}
-          </div>
-
-          <h3 style={{ margin: '15px 0', color: '#e74c3c' }}>⚔️ 装備</h3>
-          <div>
-            武器: {gameState.equipment.weapon
-              ? `${gameState.equipment.weapon.symbol} ${gameState.equipment.weapon.name} (+${gameState.equipment.weapon.power})`
-              : 'なし'}
-          </div>
-          <div>
-            防具: {gameState.equipment.armor
-              ? `${gameState.equipment.armor.symbol} ${gameState.equipment.armor.name} (+${gameState.equipment.armor.power})`
-              : 'なし'}
           </div>
         </div>
 
