@@ -190,7 +190,28 @@ export const applyItem = (state: GameState, itemIndex: number): GameState => {
       };
     }
     case 'weapon': {
-      // 現在装備中の武器があれば装備解除
+      // 同じアイテムをクリックした場合は装備を外す
+      if (item.isEquipped) {
+        return {
+          ...state,
+          inventory: {
+            ...state.inventory,
+            items: state.inventory.items.map(invItem =>
+              invItem === item ? { ...invItem, isEquipped: false } : invItem
+            )
+          },
+          equipment: {
+            ...state.equipment,
+            weapon: null
+          },
+          battleLogs: [...state.battleLogs, {
+            message: `⚔️ ${item.name}の装備を外した！`,
+            timestamp: Date.now()
+          }]
+        };
+      }
+
+      // 新しい装備を付ける場合
       const newInventoryItems = state.inventory.items.map(invItem => {
         if (invItem.type === 'weapon' && invItem.isEquipped) {
           return { ...invItem, isEquipped: false };
@@ -218,7 +239,28 @@ export const applyItem = (state: GameState, itemIndex: number): GameState => {
       };
     }
     case 'armor': {
-      // 現在装備中の防具があれば装備解除
+      // 同じアイテムをクリックした場合は装備を外す
+      if (item.isEquipped) {
+        return {
+          ...state,
+          inventory: {
+            ...state.inventory,
+            items: state.inventory.items.map(invItem =>
+              invItem === item ? { ...invItem, isEquipped: false } : invItem
+            )
+          },
+          equipment: {
+            ...state.equipment,
+            armor: null
+          },
+          battleLogs: [...state.battleLogs, {
+            message: `🛡️ ${item.name}の装備を外した！`,
+            timestamp: Date.now()
+          }]
+        };
+      }
+
+      // 新しい装備を付ける場合
       const newInventoryItems = state.inventory.items.map(invItem => {
         if (invItem.type === 'armor' && invItem.isEquipped) {
           return { ...invItem, isEquipped: false };
