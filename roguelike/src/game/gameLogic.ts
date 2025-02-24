@@ -939,11 +939,7 @@ export const movePlayer = (state: GameState, direction: Direction): GameState =>
   if (newMonster) {
     movedState = {
       ...movedState,
-      monsters: [...movedState.monsters, newMonster],
-      battleLogs: [...movedState.battleLogs, {
-        message: `新しい${newMonster.name}が出現した！`,
-        timestamp: Date.now()
-      }]
+      monsters: [...movedState.monsters, newMonster]
     };
   }
 
