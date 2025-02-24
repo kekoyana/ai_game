@@ -1,5 +1,5 @@
 AIで作ったゲームをあげていく
-
+過去に作ったものはこちら: https://kekoyana.github.io/carddragon/
 ## プロジェクト構成
 
 - `/menu` - メインメニュー画面（ https://kekoyana.github.io/ai_game/ ）
