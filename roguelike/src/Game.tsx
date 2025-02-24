@@ -256,27 +256,33 @@ const Game: React.FC = () => {
       )}
 
       {gameState.isGameClear && (
-        <div
-          style={{
-            position: 'fixed',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            backgroundColor: 'rgba(0, 0, 0, 0.9)',
-            color: '#f1c40f',
-            padding: '30px',
-            borderRadius: '15px',
-            fontSize: '32px',
-            zIndex: 1000,
-            textAlign: 'center',
-          }}
-        >
-          <div>🏆 Game Clear!</div>
-          <div style={{ fontSize: '24px', marginTop: '20px', color: '#ecf0f1' }}>
-            あなたは地下11階に到達し、<br />
-            すべての試練を乗り越えました！<br /><br />
-            おめでとうございます！
+        <div className="game-clear">
+          <div className="clear-content">
+            <div className="clear-title">
+              🏆 Eternal Glory!
+            </div>
+            <div className="clear-message">
+              遥か地下11階の深層へと至り、<br />
+              数々の強敵を打ち倒し、<br />
+              すべての試練を乗り越えた。<br />
+              かくしてあなたは伝説の勇者となった！
+            </div>
+            <div className="clear-congrats">
+              ✨ Congratulations! ✨
+            </div>
           </div>
+          {[...Array(10)].map((_, i) => (
+            <div
+              key={i}
+              className="sparkle"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 2}s`,
+                animation: 'sparkle 1.5s infinite'
+              }}
+            />
+          ))}
         </div>
       )}
     </div>
