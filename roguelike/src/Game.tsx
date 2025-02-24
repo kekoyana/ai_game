@@ -185,7 +185,7 @@ const Game: React.FC = () => {
         <div className="operation-container">
           <div className="button-group">
             <button className="help-button" onClick={() => setShowHelp(true)}>❔ 操作方法</button>
-            <button className="logs-button" onClick={() => setBattleLogFade(false)}>📜 ログ表示</button>
+            <button className="logs-button" onClick={() => setBattleLogFade(prev => !prev)}>📜 ログ表示</button>
           </div>
           {showHelp && (
             <div className="operation-instructions">
@@ -199,6 +199,21 @@ const Game: React.FC = () => {
             </div>
           )}
         </div>
+        
+        <div className="status-display">
+          <h3 className="status-title">👤 ステータス</h3>
+          <div className={`hp-status ${gameState.playerStatus.hp <= gameState.playerStatus.maxHp * 0.25 ? 'danger' : gameState.playerStatus.hp <= gameState.playerStatus.maxHp * 0.5 ? 'warning' : ''}`}>
+            ❤️ HP: {gameState.playerStatus.hp}/{gameState.playerStatus.maxHp}
+          </div>
+          <div className={`hp-status ${gameState.playerStatus.satiety <= gameState.playerStatus.maxSatiety * 0.25 ? 'danger' : gameState.playerStatus.satiety <= gameState.playerStatus.maxSatiety * 0.5 ? 'warning' : ''}`}>
+            🍖 満腹度: {Math.floor(gameState.playerStatus.satiety)}/{gameState.playerStatus.maxSatiety}
+          </div>
+          <div>⭐️ Level: {gameState.playerStatus.level}</div>
+          <div>📈 EXP: {gameState.playerStatus.exp}</div>
+          <div>⚔️ Attack: {getPlayerPower(gameState.playerStatus, gameState).attack}</div>
+          <div>🛡️ Defense: {getPlayerPower(gameState.playerStatus, gameState).defense}</div>
+        </div>
+
         <div className="inventory-container">
           <h3>🎒 インベントリ ({gameState.inventory.items.length}/{gameState.inventory.maxSize})</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
@@ -224,19 +239,6 @@ const Game: React.FC = () => {
               </div>
             ))}
           </div>
-        </div>
-        <div className="status-display">
-          <h3 className="status-title">👤 ステータス</h3>
-          <div className={`hp-status ${gameState.playerStatus.hp <= gameState.playerStatus.maxHp * 0.25 ? 'danger' : gameState.playerStatus.hp <= gameState.playerStatus.maxHp * 0.5 ? 'warning' : ''}`}>
-            ❤️ HP: {gameState.playerStatus.hp}/{gameState.playerStatus.maxHp}
-          </div>
-          <div className={`hp-status ${gameState.playerStatus.satiety <= gameState.playerStatus.maxSatiety * 0.25 ? 'danger' : gameState.playerStatus.satiety <= gameState.playerStatus.maxSatiety * 0.5 ? 'warning' : ''}`}>
-            🍖 満腹度: {Math.floor(gameState.playerStatus.satiety)}/{gameState.playerStatus.maxSatiety}
-          </div>
-          <div>⭐️ Level: {gameState.playerStatus.level}</div>
-          <div>📈 EXP: {gameState.playerStatus.exp}</div>
-          <div>⚔️ Attack: {getPlayerPower(gameState.playerStatus, gameState).attack}</div>
-          <div>🛡️ Defense: {getPlayerPower(gameState.playerStatus, gameState).defense}</div>
         </div>
       </div>
 
