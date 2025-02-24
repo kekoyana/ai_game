@@ -15,9 +15,9 @@ import {
 const FINAL_FLOOR = 10;
 
 const MONSTER_TYPES = [
-  { symbol: '👻', name: 'スライム', baseHp: 8, baseAttack: 3, baseDefense: 1, baseExp: 5 },
-  { symbol: '👺', name: 'ゴブリン', baseHp: 12, baseAttack: 4, baseDefense: 2, baseExp: 8 },
-  { symbol: '👹', name: 'オーク', baseHp: 25, baseAttack: 10, baseDefense: 5, baseExp: 15 },
+  { symbol: '🫠', name: 'スライム', baseHp: 8, baseAttack: 3, baseDefense: 1, baseExp: 5 },
+  { symbol: '👹', name: 'ゴブリン', baseHp: 12, baseAttack: 4, baseDefense: 2, baseExp: 8 },
+  { symbol: '🧌', name: 'オーク', baseHp: 25, baseAttack: 10, baseDefense: 5, baseExp: 15 },
   { symbol: '🐲', name: 'ドラゴン', baseHp: 40, baseAttack: 18, baseDefense: 8, baseExp: 25 },
   { symbol: '💀', name: 'リッチ', baseHp: 35, baseAttack: 20, baseDefense: 6, baseExp: 30 }
 ] as const;
@@ -70,18 +70,25 @@ const isPositionOccupied = (
   pos: Position,
   monsters: Monster[],
   ignoreMonsterIndex: number = -1,
-  items: Item[] = []
+  items: Item[] = [],
+  checkItems: boolean = false
 ): boolean => {
-  return monsters.some((m, index) =>
+  const monsterCollision = monsters.some((m, index) =>
     index !== ignoreMonsterIndex &&
     m.hp > 0 &&
     m.position.x === pos.x &&
     m.position.y === pos.y
-  ) || items.some(item =>
+  );
+
+  if (!checkItems) return monsterCollision;
+
+  const itemCollision = items.some(item =>
     item.position !== null &&
     item.position.x === pos.x &&
     item.position.y === pos.y
   );
+
+  return monsterCollision || itemCollision;
 };
 
 const generateItems = (rooms: Room[]): Item[] => {
@@ -541,7 +548,7 @@ const processMonsterTurn = (
             newY >= 0 && newY < map.length &&
             map[newY][newX].type === 'floor' &&
             !(newX === player.x && newY === player.y) &&
-            !isPositionOccupied({ x: newX, y: newY }, updatedMonsters, index, items)
+            !isPositionOccupied({ x: newX, y: newY }, updatedMonsters, index, items, false)
           ) {
             possibleMoves.push({
               x: newX,
