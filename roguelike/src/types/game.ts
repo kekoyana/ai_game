@@ -83,6 +83,7 @@ export type GameState = {
   isGameOver: boolean;
   isGameClear: boolean;
   healingPool: number;
+  turns: number;  // ゲームの経過ターン数
 };
 
 export type Direction = 

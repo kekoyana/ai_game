@@ -491,6 +491,16 @@ const processBattle = (
       timestamp: timestamp + 1
     });
 
+    // アイテムドロップ処理
+    const droppedItem = generateMonsterDrop(monster, monster.position);
+    if (droppedItem) {
+      state.items.push(droppedItem);
+      logs.push({
+        message: `${monster.name}は${droppedItem.name}を落とした！`,
+        timestamp: timestamp + 2
+      });
+    }
+
     const newExp = playerStatus.exp + monster.exp;
     const expForNext = getExpForNextLevel(playerStatus.level);
 
@@ -498,7 +508,7 @@ const processBattle = (
       updatedPlayerStatus = levelUp(playerStatus);
       logs.push({
         message: `⭐️ レベルアップ！ Level ${updatedPlayerStatus.level}になった！`,
-        timestamp: timestamp + 2
+        timestamp: timestamp + 3
       });
     } else {
       updatedPlayerStatus = { ...playerStatus, exp: newExp };
@@ -506,6 +516,70 @@ const processBattle = (
   }
 
   return { updatedPlayerStatus, updatedMonster, logs };
+};
+
+const generateMonsterDrop = (monster: Monster, position: Position): Item | null => {
+  // 10%の確率でアイテムをドロップ
+  if (Math.random() > 0.1) return null;
+
+  // ドロップするアイテムをランダムに選択
+  const availableItems = ITEM_TYPES;
+  const itemType = availableItems[Math.floor(Math.random() * availableItems.length)];
+
+  const item: Item = {
+    ...itemType,
+    position,
+    isVisible: true,
+    isEquipped: false,
+  };
+
+  return item;
+};
+
+const spawnNewMonster = (state: GameState): Monster | null => {
+  // 10ターンごとにモンスター出現判定（20%の確率）
+  if (state.turns % 10 !== 0 || Math.random() > 0.2) return null;
+
+  // ランダムな部屋を選択（プレイヤーのいる部屋は除外）
+  const availableRooms = state.rooms.filter(room => !isInsideRoom(state.player, room));
+  if (availableRooms.length === 0) return null;
+
+  const room = availableRooms[Math.floor(Math.random() * availableRooms.length)];
+  
+  // フロアに応じて出現するモンスターを制限
+  let availableMonsters;
+  if (state.currentFloor <= 3) {
+    availableMonsters = MONSTER_TYPES.slice(0, 2);      // 1-3階：スライムとゴブリン
+  } else if (state.currentFloor <= 6) {
+    availableMonsters = MONSTER_TYPES.slice(0, 3);      // 4-6階：オークまで
+  } else if (state.currentFloor <= 8) {
+    availableMonsters = MONSTER_TYPES.slice(0, 4);      // 7-8階：ドラゴンまで
+  } else {
+    availableMonsters = MONSTER_TYPES;                  // 9階以降：全モンスター
+  }
+  
+  const monsterType = availableMonsters[Math.floor(Math.random() * availableMonsters.length)];
+  const stats = createMonsterStats(monsterType, state.currentFloor);
+
+  const position = {
+    x: Math.floor(Math.random() * (room.w - 2)) + room.x + 1,
+    y: Math.floor(Math.random() * (room.h - 2)) + room.y + 1
+  };
+
+  // 他のモンスターやアイテムと重ならないように確認
+  if (isPositionOccupied(position, state.monsters, -1, state.items)) return null;
+
+  return {
+    position,
+    hp: stats.hp,
+    maxHp: stats.maxHp,
+    attack: stats.attack,
+    defense: stats.defense,
+    exp: stats.exp,
+    isVisible: isInsideRoom(position, room),
+    symbol: monsterType.symbol,
+    name: monsterType.name
+  };
 };
 
 const processMonsterTurn = (
@@ -639,7 +713,8 @@ return {
   currentFloor: floor,
   isGameOver: false,
   isGameClear: floor > FINAL_FLOOR,
-  healingPool: 0
+  healingPool: 0,
+  turns: 1
 };
 };
 
@@ -747,7 +822,8 @@ return {
   currentFloor: 1,
   isGameOver: false,
   isGameClear: false,
-  healingPool: 0
+  healingPool: 0,
+  turns: 1
 };
 };
 
@@ -852,10 +928,24 @@ export const movePlayer = (state: GameState, direction: Direction): GameState =>
     return createNextFloor(map.length, map[0].length, nextFloor, playerStatus, state);
   }
 
-  const movedState = {
+  let movedState = {
     ...state,
-    player: { x: newX, y: newY }
+    player: { x: newX, y: newY },
+    turns: state.turns + 1  // ターン数を増やす
   };
+
+  // 新しいモンスターの生成を試みる
+  const newMonster = spawnNewMonster(movedState);
+  if (newMonster) {
+    movedState = {
+      ...movedState,
+      monsters: [...movedState.monsters, newMonster],
+      battleLogs: [...movedState.battleLogs, {
+        message: `新しい${newMonster.name}が出現した！`,
+        timestamp: Date.now()
+      }]
+    };
+  }
 
   const { updatedState: finalState, logs } = processMonsterTurn(movedState);
   
