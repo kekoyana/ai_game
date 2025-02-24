@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react'; // eslint-disable-line no-unused-vars
 import { GameState, Direction, Cell, Monster } from './types/game';
-import { createInitialGameState, movePlayer, applyItem, getPlayerPower, dropItem } from './game/gameLogic';
+import { createInitialGameState, movePlayer, applyItem, getPlayerPower, dropItem, getExpForNextLevel } from './game/gameLogic';
 import './Game.css';
 
 const Game: React.FC = () => {
@@ -203,13 +203,20 @@ const Game: React.FC = () => {
         <div className="status-display">
           <h3 className="status-title">👤 ステータス</h3>
           <div className={`hp-status ${gameState.playerStatus.hp <= gameState.playerStatus.maxHp * 0.25 ? 'danger' : gameState.playerStatus.hp <= gameState.playerStatus.maxHp * 0.5 ? 'warning' : ''}`}>
-            ❤️ HP: {gameState.playerStatus.hp}/{gameState.playerStatus.maxHp}
+            <div className="progress-bar hp-progress" style={{ width: `${(gameState.playerStatus.hp / gameState.playerStatus.maxHp) * 100}%` }} />
+            <div className="status-text">❤️ HP: {gameState.playerStatus.hp}/{gameState.playerStatus.maxHp}</div>
           </div>
           <div className={`hp-status ${gameState.playerStatus.satiety <= gameState.playerStatus.maxSatiety * 0.25 ? 'danger' : gameState.playerStatus.satiety <= gameState.playerStatus.maxSatiety * 0.5 ? 'warning' : ''}`}>
-            🍖 満腹度: {Math.floor(gameState.playerStatus.satiety)}/{gameState.playerStatus.maxSatiety}
+            <div className="progress-bar satiety-progress" style={{ width: `${(gameState.playerStatus.satiety / gameState.playerStatus.maxSatiety) * 100}%` }} />
+            <div className="status-text">🍖 満腹度: {Math.floor(gameState.playerStatus.satiety)}/{gameState.playerStatus.maxSatiety}</div>
           </div>
-          <div>⭐️ Level: {gameState.playerStatus.level}</div>
-          <div>📈 EXP: {gameState.playerStatus.exp}</div>
+          <div>
+            <div className="status-text">⭐️ Level: {gameState.playerStatus.level}</div>
+          </div>
+          <div>
+            <div className="progress-bar exp-progress" style={{ width: `${(gameState.playerStatus.exp / getExpForNextLevel(gameState.playerStatus.level)) * 100}%` }} />
+            <div className="status-text">📈 EXP: {gameState.playerStatus.exp}/{getExpForNextLevel(gameState.playerStatus.level)}</div>
+          </div>
           <div>⚔️ Attack: {getPlayerPower(gameState.playerStatus, gameState).attack}</div>
           <div>🛡️ Defense: {getPlayerPower(gameState.playerStatus, gameState).defense}</div>
         </div>

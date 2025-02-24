@@ -314,7 +314,7 @@ const createInitialPlayerStatus = (): Status => ({
   maxSatiety: 100
 });
 
-const getExpForNextLevel = (level: number): number => {
+export const getExpForNextLevel = (level: number): number => {
   return level * 5;
 };
 
