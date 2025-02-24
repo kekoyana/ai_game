@@ -560,7 +560,7 @@ const processBattle = (
   return { updatedPlayerStatus, updatedMonster, logs };
 };
 
-const generateMonsterDrop = (monster: Monster, position: Position): Item | null => {
+const generateMonsterDrop = (_monster: Monster, position: Position): Item | null => {
   // 10%の確率でアイテムをドロップ
   if (Math.random() > 0.1) return null;
 
