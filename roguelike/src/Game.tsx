@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react'; // eslint-disable-line no-unused-vars
 import { GameState, Direction, Cell, Monster } from './types/game';
 import { createInitialGameState, movePlayer, applyItem, getPlayerPower, dropItem } from './game/gameLogic';
 import './Game.css';
@@ -12,6 +12,21 @@ const Game: React.FC = () => {
   const [showFloorAnnouncement, setShowFloorAnnouncement] = useState(true);
   const [prevFloor, setPrevFloor] = useState(1);
   const [showHelp, setShowHelp] = useState(false);
+  const [battleLogFade, setBattleLogFade] = useState(true);
+  /* eslint-disable-next-line no-unused-vars */
+  const prevBattleLogLengthRef = useRef<number>(gameState.battleLogs.length);
+  useEffect(() => {
+    if (gameState.battleLogs.length > prevBattleLogLengthRef.current) {
+      setBattleLogFade(false);
+      const timer = setTimeout(() => {
+        setBattleLogFade(true);
+      }, 3000);
+      prevBattleLogLengthRef.current = gameState.battleLogs.length;
+      return () => clearTimeout(timer);
+    } else {
+      prevBattleLogLengthRef.current = gameState.battleLogs.length;
+    }
+  }, [gameState.battleLogs]);
 
   // 初期表示とフロア変更時のアナウンス表示
   useEffect(() => {
@@ -157,6 +172,15 @@ const Game: React.FC = () => {
         </div>
       </div>
 
+      <div className={`battle-log ${battleLogFade ? "fade-out" : ""}`}>
+        <div>
+          {gameState.battleLogs.slice().reverse().map((log, index) => (
+            <div key={index} style={{ marginBottom: '8px' }}>
+              {log.message}
+            </div>
+          ))}
+        </div>
+      </div>
       <div className="status-container">
         {/* ステータス表示 */}
         <div className="status-display">
@@ -223,17 +247,6 @@ const Game: React.FC = () => {
           </div>
         </div>
 
-        {/* バトルログ表示 */}
-        <div className="battle-log">
-          <h3 style={{ margin: '0 0 15px 0', color: '#e74c3c' }}>📜 バトルログ</h3>
-          <div>
-            {gameState.battleLogs.slice().reverse().map((log, index) => (
-              <div key={index} style={{ marginBottom: '8px' }}>
-                {log.message}
-              </div>
-            ))}
-          </div>
-        </div>
 
         <button className="help-button" onClick={() => setShowHelp(true)}>
           ❔ 操作方法

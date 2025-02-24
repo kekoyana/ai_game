@@ -1,16 +1,67 @@
 /* 共通スタイル */
 .game-container {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 300px;
+  grid-template-rows: 1fr auto;
   padding: 20px;
   gap: 20px;
+  background: linear-gradient(135deg, #1a1c1e, #2c3e50);
+  min-height: 100vh;
+  color: #ecf0f1;
+}
+
+/* バトルログ */
+.battle-log {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  width: calc(100% - 360px);
+  background: rgba(0, 0, 0, 0.8);
+  padding: 10px;
+  border-radius: 8px;
+  max-height: 150px;
+  overflow-y: auto;
+  backdrop-filter: blur(5px);
+  color: #ecf0f1;
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+.battle-log-message {
+  margin: 5px 0;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from { transform: translateX(-20px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
 }
 
 .floor-title {
-  margin-bottom: 10px;
-  font-size: 24px;
-  color: #f1c40f;
+  margin-bottom: 15px;
+  font-size: 28px;
+  background: linear-gradient(45deg, #f1c40f, #f39c12);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
   font-weight: bold;
+  letter-spacing: 2px;
+  padding: 10px 0;
+  position: relative;
+}
+
+.floor-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #f1c40f, transparent);
 }
 
 .floor-announcement {
@@ -60,8 +111,31 @@
   align-items: center;
   justify-content: center;
   font-size: 24px;
-  transition: all 0.3s;
-  border: 1px solid rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.map-cell::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at center, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.map-cell:hover::before {
+  opacity: 1;
+}
+
+.map-cell[data-type="hidden"] {
+  background: #1a1c1e;
+  color: transparent;
 }
 
 /* 1-3階のデザイン */
@@ -113,13 +187,38 @@
 }
 
 /* その他のスタイル */
-.status-container { width: 300px; }
+.status-container {
+  width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
 
 .status-display {
-  background-color: rgba(52,73,94,0.8);
-  padding: 15px;
+  background: linear-gradient(135deg, rgba(44, 62, 80, 0.9), rgba(52, 73, 94, 0.9));
+  padding: 12px;
   border-radius: 8px;
   color: #ecf0f1;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  font-size: 0.9em;
+}
+
+.status-display > div {
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.2);
+  white-space: nowrap;
+  transition: all 0.3s ease;
+}
+
+.status-display .hp-status,
+.status-display .exp-status {
+  grid-column: 1 / -1;
 }
 
 .hp-status {
@@ -136,79 +235,126 @@
   color: #f1c40f;
 }
 
-.status-title {
-  margin: 0 0 15px 0;
-  color: #e74c3c;
-}
-
-.inventory-title {
-  margin: 15px 0;
-  color: #e74c3c;
-}
-
-.inventory-list {
+/* ボタン */
+.button-group {
   display: flex;
-  flex-direction: column;
-  gap: 5px;
+  gap: 10px;
+  margin-top: 20px;
 }
 
-.inventory-item {
-  padding: 5px;
-  background-color: #2c3e50;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.inventory-item-clickable {
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.drop-button {
-  background-color: #c0392b;
-  border: none;
-  color: white;
-  padding: 2px 5px;
-  border-radius: 3px;
-  cursor: pointer;
-}
-
-.battle-log {
-  background-color: rgba(52,73,94,0.8);
-  padding: 15px;
-  border-radius: 8px;
-  height: 300px;
-  overflow-y: auto;
-  color: #ecf0f1;
-}
-
-.battle-log-title {
-  margin: 0 0 15px 0;
-  color: #e74c3c;
-}
-
-.battle-log-message {
-  margin-bottom: 8px;
-}
-
-.help-button {
-  background-color: #3498db;
+/* ヘルプとログボタン */
+.help-button,
+.logs-button {
+  background: linear-gradient(135deg, #3498db, #2980b9);
   color: white;
   border: none;
   padding: 8px 15px;
   border-radius: 4px;
   cursor: pointer;
-  margin-top: 20px;
-  font-size: 16px;
-  transition: background-color 0.3s;
+  font-size: 14px;
+  transition: all 0.3s ease;
 }
 
-.help-button:hover {
-  background-color: #2980b9;
+.help-button:hover,
+.logs-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+
+.status-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #e74c3c, transparent);
+}
+
+/* スタイルの整理 */
+
+/* ボタングループ */
+.button-group {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  gap: 10px;
+}
+
+/* ヘルプとログボタン */
+.help-button,
+.logs-button {
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  color: white;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.help-button:hover,
+.logs-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* バトルログ */
+.battle-log {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  right: 320px;
+  background: rgba(0, 0, 0, 0.8);
+  padding: 10px;
+  border-radius: 8px;
+  max-height: 150px;
+  overflow-y: auto;
+  backdrop-filter: blur(5px);
+  color: #ecf0f1;
+  opacity: 1;
+  transition: opacity 0.5s ease;
+  z-index: 100;
+}
+
+.battle-log::-webkit-scrollbar {
+  width: 6px;
+}
+
+.battle-log::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.battle-log::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.battle-log.fade-out {
+  opacity: 0;
+}
+
+.battle-log-message {
+  padding: 4px 8px;
+  margin: 2px 0;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from { transform: translateY(10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
 
 .operation-instructions {
