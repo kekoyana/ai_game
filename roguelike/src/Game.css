@@ -14,8 +14,10 @@
 .battle-log {
   position: fixed;
   bottom: 20px;
-  left: 20px;
-  width: calc(100% - 360px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80%;
+  max-width: 600px;
   background: rgba(0, 0, 0, 0.8);
   padding: 10px;
   border-radius: 8px;
@@ -23,6 +25,8 @@
   overflow-y: auto;
   backdrop-filter: blur(5px);
   color: #ecf0f1;
+  text-align: left;
+  z-index: 100;
 }
 
 @keyframes fadeOut {
@@ -261,13 +265,6 @@
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
 
 .status-title::after {
   content: '';
@@ -313,8 +310,11 @@
 .battle-log {
   position: fixed;
   bottom: 20px;
-  left: 20px;
-  right: 320px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 95%;
+  max-width: 1000px;
+  font-size: 20px;
   background: rgba(0, 0, 0, 0.8);
   padding: 10px;
   border-radius: 8px;
@@ -322,6 +322,7 @@
   overflow-y: auto;
   backdrop-filter: blur(5px);
   color: #ecf0f1;
+  text-align: left;
   opacity: 1;
   transition: opacity 0.5s ease;
   z-index: 100;
