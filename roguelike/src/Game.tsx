@@ -268,9 +268,15 @@ const Game: React.FC = () => {
             borderRadius: '15px',
             fontSize: '32px',
             zIndex: 1000,
+            textAlign: 'center',
           }}
         >
-          🏆 Game Clear!
+          <div>🏆 Game Clear!</div>
+          <div style={{ fontSize: '24px', marginTop: '20px', color: '#ecf0f1' }}>
+            あなたは地下11階に到達し、<br />
+            すべての試練を乗り越えました！<br /><br />
+            おめでとうございます！
+          </div>
         </div>
       )}
     </div>
