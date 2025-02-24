@@ -114,9 +114,20 @@
   justify-content: center;
   font-size: 24px;
   transition: all 0.3s ease;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 2px solid #2c3e50;
   position: relative;
   overflow: hidden;
+  image-rendering: pixelated;
+  background-size: cover;
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.3);
+}
+
+/* ゲームっぽい立体的な見た目を追加 */
+.map-cell[data-type="floor"] {
+  border-top: 2px solid rgba(255, 255, 255, 0.2);
+  border-left: 2px solid rgba(255, 255, 255, 0.1);
+  border-right: 2px solid rgba(0, 0, 0, 0.2);
+  border-bottom: 2px solid rgba(0, 0, 0, 0.3);
 }
 
 .map-cell::before {
@@ -197,25 +208,180 @@
 }
 
 .status-display {
-  background: linear-gradient(135deg, rgba(44, 62, 80, 0.9), rgba(52, 73, 94, 0.9));
-  padding: 12px;
-  border-radius: 8px;
+  background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAH0lEQVQYV2NkQAX/GZH4/xkYGBhhAmAOSBJEwDkgAQCCrgQEqRAS4QAAAABJRU5ErkJggg==');
+  background-color: #2c3e50;
+  padding: 15px;
+  border-radius: 10px;
   color: #ecf0f1;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(5px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 0 2px #34495e, 0 0 0 4px #2c3e50, 0 4px 15px rgba(0, 0, 0, 0.5);
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
-  font-size: 0.9em;
+  gap: 10px;
+  font-size: 1em;
+  border: 2px solid #34495e;
+  position: relative;
+}
+
+.status-display::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
 }
 
 .status-display > div {
-  padding: 4px 8px;
-  border-radius: 4px;
-  background: rgba(0, 0, 0, 0.2);
+  padding: 8px 12px;
+  border-radius: 5px;
+  background: #34495e;
   white-space: nowrap;
   transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.status-display h3 {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: #f1c40f;
+  text-shadow: 0 0 5px rgba(241, 196, 15, 0.5);
+  margin: 0 0 10px 0;
+  font-size: 1.2em;
+  letter-spacing: 2px;
+}
+
+@keyframes barShine {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.progress-container {
+  width: 100%;
+  height: 24px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-bar {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  bottom: 2px;
+  transition: width 0.3s ease;
+  z-index: 1;
+}
+
+.progress-bar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  animation: barShine 2s infinite;
+}
+
+.status-text {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 2;
+  width: 100%;
+  text-align: center;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+  font-weight: bold;
+  color: #fff;
+}
+
+.hp-progress {
+  background: linear-gradient(to right, #c0392b, #e74c3c);
+  box-shadow: 0 0 10px rgba(231, 76, 60, 0.5);
+}
+
+.satiety-progress {
+  background: linear-gradient(to right, #d35400, #e67e22);
+  box-shadow: 0 0 10px rgba(230, 126, 34, 0.5);
+}
+
+.exp-progress {
+  background: linear-gradient(to right, #2980b9, #3498db);
+  box-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
+}
+
+@keyframes dangerPulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 10px rgba(231, 76, 60, 0.5);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 0 20px rgba(231, 76, 60, 0.8), inset 0 0 10px rgba(231, 76, 60, 0.5);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 10px rgba(231, 76, 60, 0.5);
+  }
+}
+
+@keyframes warningFlash {
+  0% { opacity: 1; }
+  50% { opacity: 0.7; }
+  100% { opacity: 1; }
+}
+
+.hp-status.danger .progress-container {
+  animation: dangerPulse 0.8s infinite;
+}
+
+.hp-status.danger .progress-bar {
+  background: linear-gradient(45deg, #c0392b, #e74c3c, #c0392b);
+  background-size: 200% 100%;
+  animation: warningFlash 1s infinite;
+}
+
+.hp-status.warning .progress-bar {
+  background: linear-gradient(45deg, #f39c12, #f1c40f, #f39c12);
+  background-size: 200% 100%;
+  animation: warningFlash 2s infinite;
+}
+
+.hp-status .status-text {
+  transition: color 0.3s ease, text-shadow 0.3s ease;
+}
+
+.hp-status.danger .status-text {
+  color: #e74c3c;
+  text-shadow: 0 0 5px rgba(231, 76, 60, 0.5);
+  font-weight: bold;
+}
+
+.hp-status.warning .status-text {
+  color: #f1c40f;
+  text-shadow: 0 0 5px rgba(241, 196, 15, 0.5);
+}
+
+@keyframes lowHpPulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.6; }
+  100% { opacity: 1; }
+}
+
+.danger .hp-progress {
+  animation: lowHpPulse 1s infinite;
 }
 
 .status-display .hp-status,
@@ -389,15 +555,149 @@
   color: #e74c3c;
 }
 
-.game-over, .game-clear {
+@keyframes clearShine {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes floatIn {
+  0% { transform: translate(-50%, 100vh) scale(0.8); opacity: 0; }
+  50% { transform: translate(-50%, -55%) scale(1.1); opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+
+@keyframes glowPulse {
+  0% { text-shadow: 0 0 10px #f1c40f, 0 0 20px #f1c40f, 0 0 30px #e67e22; }
+  50% { text-shadow: 0 0 20px #f1c40f, 0 0 40px #f1c40f, 0 0 60px #e67e22; }
+  100% { text-shadow: 0 0 10px #f1c40f, 0 0 20px #f1c40f, 0 0 30px #e67e22; }
+}
+
+@keyframes borderRotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes sparkle {
+  0%, 100% { opacity: 0; transform: scale(0.5); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+.sparkle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #fff;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.game-over {
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background-color: rgba(0, 0, 0, 0.9);
+  background-color: rgba(0, 0, 0, 0.95);
   color: #f1c40f;
-  padding: 30px;
+  padding: 40px;
   border-radius: 15px;
   font-size: 32px;
   z-index: 1000;
+  animation: floatIn 1s ease-out;
+  border: 2px solid #f1c40f;
+  box-shadow: 0 0 20px rgba(241, 196, 15, 0.3);
+}
+
+.game-clear {
+  position: absolute; /* 位置を絶対に変更 */
+  top: 50%; /* 画面の中央に移動 */
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0, 0, 0, 0.95);
+  color: #f1c40f;
+  padding: 40px;
+  border-radius: 15px;
+  font-size: 32px;
+  z-index: 1000;
+  animation: floatIn 1s ease-out;
+  border: 2px solid #f1c40f;
+  box-shadow: 0 0 20px rgba(241, 196, 15, 0.3);
+}
+
+.game-clear {
+  background: linear-gradient(
+    135deg,
+    rgba(0, 0, 0, 0.95),
+    rgba(44, 62, 80, 0.95)
+  );
+}
+
+.clear-title {
+  font-size: 48px;
+  margin-bottom: 30px;
+  background: linear-gradient(
+    90deg,
+    #f1c40f,
+    #f39c12,
+    #e67e22,
+    #f39c12,
+    #f1c40f
+  );
+  background-size: 200% auto;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: clearShine 3s linear infinite;
+}
+
+.clear-message {
+  font-size: 24px;
+  color: #ecf0f1;
+  line-height: 1.6;
+  margin-top: 20px;
+}
+
+.clear-congrats {
+  font-size: 36px;
+  color: #ffd700;
+  margin-top: 40px;
+  font-weight: bold;
+  font-family: 'MedievalSharp', cursive;
+  letter-spacing: 3px;
+  animation: glowPulse 2s infinite;
+  transform: scale(1);
+  transition: transform 0.3s ease;
+}
+
+.clear-content {
+  position: relative;
+  z-index: 1;
+  padding: 20px;
+}
+
+.game-clear {
+  overflow: hidden;
+  min-width: 500px;
+}
+
+.game-clear::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: conic-gradient(
+    transparent,
+    rgba(241, 196, 15, 0.3),
+    transparent 30%
+  );
+  animation: borderRotate 4s linear infinite;
+}
+
+.game-clear::after {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  background: inherit;
+  border-radius: 10px;
 }

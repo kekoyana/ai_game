@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react'; // eslint-disable-line no-unused-vars
 import { GameState, Direction, Cell, Monster } from './types/game';
-import { createInitialGameState, movePlayer, applyItem, getPlayerPower, dropItem } from './game/gameLogic';
+import { createInitialGameState, movePlayer, applyItem, getPlayerPower, dropItem, getExpForNextLevel } from './game/gameLogic';
 import './Game.css';
 
 const Game: React.FC = () => {
@@ -203,13 +203,20 @@ const Game: React.FC = () => {
         <div className="status-display">
           <h3 className="status-title">👤 ステータス</h3>
           <div className={`hp-status ${gameState.playerStatus.hp <= gameState.playerStatus.maxHp * 0.25 ? 'danger' : gameState.playerStatus.hp <= gameState.playerStatus.maxHp * 0.5 ? 'warning' : ''}`}>
-            ❤️ HP: {gameState.playerStatus.hp}/{gameState.playerStatus.maxHp}
+            <div className="progress-bar hp-progress" style={{ width: `${(gameState.playerStatus.hp / gameState.playerStatus.maxHp) * 100}%` }} />
+            <div className="status-text">❤️ HP: {gameState.playerStatus.hp}/{gameState.playerStatus.maxHp}</div>
           </div>
           <div className={`hp-status ${gameState.playerStatus.satiety <= gameState.playerStatus.maxSatiety * 0.25 ? 'danger' : gameState.playerStatus.satiety <= gameState.playerStatus.maxSatiety * 0.5 ? 'warning' : ''}`}>
-            🍖 満腹度: {Math.floor(gameState.playerStatus.satiety)}/{gameState.playerStatus.maxSatiety}
+            <div className="progress-bar satiety-progress" style={{ width: `${(gameState.playerStatus.satiety / gameState.playerStatus.maxSatiety) * 100}%` }} />
+            <div className="status-text">🍖 満腹度: {Math.floor(gameState.playerStatus.satiety)}/{gameState.playerStatus.maxSatiety}</div>
           </div>
-          <div>⭐️ Level: {gameState.playerStatus.level}</div>
-          <div>📈 EXP: {gameState.playerStatus.exp}</div>
+          <div>
+            <div className="status-text">⭐️ Level: {gameState.playerStatus.level}</div>
+          </div>
+          <div>
+            <div className="progress-bar exp-progress" style={{ width: `${(gameState.playerStatus.exp / getExpForNextLevel(gameState.playerStatus.level)) * 100}%` }} />
+            <div className="status-text">📈 EXP: {gameState.playerStatus.exp}/{getExpForNextLevel(gameState.playerStatus.level)}</div>
+          </div>
           <div>⚔️ Attack: {getPlayerPower(gameState.playerStatus, gameState).attack}</div>
           <div>🛡️ Defense: {getPlayerPower(gameState.playerStatus, gameState).defense}</div>
         </div>
@@ -249,21 +256,33 @@ const Game: React.FC = () => {
       )}
 
       {gameState.isGameClear && (
-        <div
-          style={{
-            position: 'fixed',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            backgroundColor: 'rgba(0, 0, 0, 0.9)',
-            color: '#f1c40f',
-            padding: '30px',
-            borderRadius: '15px',
-            fontSize: '32px',
-            zIndex: 1000,
-          }}
-        >
-          🏆 Game Clear!
+        <div className="game-clear">
+          <div className="clear-content">
+            <div className="clear-title">
+              🏆 Eternal Glory!
+            </div>
+            <div className="clear-message">
+              遥か地下11階の深層へと至り、<br />
+              数々の強敵を打ち倒し、<br />
+              すべての試練を乗り越えた。<br />
+              かくしてあなたは伝説の勇者となった！
+            </div>
+            <div className="clear-congrats">
+              ✨ Congratulations! ✨
+            </div>
+          </div>
+          {[...Array(10)].map((_, i) => (
+            <div
+              key={i}
+              className="sparkle"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 2}s`,
+                animation: 'sparkle 1.5s infinite'
+              }}
+            />
+          ))}
         </div>
       )}
     </div>
