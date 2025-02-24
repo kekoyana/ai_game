@@ -560,7 +560,7 @@ const processBattle = (
   return { updatedPlayerStatus, updatedMonster, logs };
 };
 
-const generateMonsterDrop = (monster: Monster, position: Position): Item | null => {
+const generateMonsterDrop = (_monster: Monster, position: Position): Item | null => {
   // 10%の確率でアイテムをドロップ
   if (Math.random() > 0.1) return null;
 
@@ -613,11 +613,7 @@ const spawnNewMonster = (state: GameState): Monster | null => {
 
   return {
     position,
-    hp: stats.hp,
-    maxHp: stats.maxHp,
-    attack: stats.attack,
-    defense: stats.defense,
-    exp: stats.exp,
+    ...stats,
     isVisible: isInsideRoom(position, room),
     symbol: monsterType.symbol,
     name: monsterType.name
