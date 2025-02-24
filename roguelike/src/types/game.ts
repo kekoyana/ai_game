@@ -24,6 +24,8 @@ export type Status = {
   defense: number;
   exp: number;
   level: number;
+  satiety: number;     // 現在の満腹度
+  maxSatiety: number;  // 最大満腹度
 };
 
 export type Monster = {
@@ -38,7 +40,7 @@ export type Monster = {
   name: string;
 };
 
-export type ItemType = 'potion' | 'weapon' | 'armor';
+export type ItemType = 'potion' | 'weapon' | 'armor' | 'food';
 
 export type Item = {
   position: Position | null; // nullの場合はインベントリ内

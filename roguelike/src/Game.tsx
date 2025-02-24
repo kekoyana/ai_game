@@ -167,6 +167,12 @@ const Game: React.FC = () => {
           }`}>
             ❤️ HP: {gameState.playerStatus.hp}/{gameState.playerStatus.maxHp}
           </div>
+          <div className={`hp-status ${
+            gameState.playerStatus.satiety <= gameState.playerStatus.maxSatiety * 0.25 ? 'danger' :
+            gameState.playerStatus.satiety <= gameState.playerStatus.maxSatiety * 0.5 ? 'warning' : ''
+          }`}>
+            🍖 満腹度: {Math.floor(gameState.playerStatus.satiety)}/{gameState.playerStatus.maxSatiety}
+          </div>
           <div>⭐️ Level: {gameState.playerStatus.level}</div>
           <div>📈 EXP: {gameState.playerStatus.exp}</div>
           <div>⚔️ Attack: {getPlayerPower(gameState.playerStatus, gameState).attack}</div>

@@ -24,7 +24,9 @@ const MONSTER_TYPES = [
 
 const ITEM_TYPES = [
   { type: 'potion' as ItemType, name: '回復薬', symbol: '🧪', power: 15 },
-  { type: 'potion' as ItemType, name: '上級回復薬', symbol: '🧪', power: 30 },
+  { type: 'potion' as ItemType, name: '上級回復薬', symbol: '🧪', power: 99 },
+  // 食べ物（1種類）
+  { type: 'food' as ItemType, name: 'パン', symbol: '🍞', power: 100 },
   // 武器（8種類）
   { type: 'weapon' as ItemType, name: 'ダガー', symbol: '⚔️', power: 4 },
   { type: 'weapon' as ItemType, name: 'グラディウス', symbol: '⚔️', power: 5 },
@@ -172,6 +174,21 @@ export const applyItem = (state: GameState, itemIndex: number): GameState => {
         }]
       };
     }
+    case 'food': {
+      const newSatiety = Math.min(state.playerStatus.maxSatiety, state.playerStatus.satiety + item.power);
+      return {
+        ...state,
+        playerStatus: { ...state.playerStatus, satiety: newSatiety },
+        inventory: {
+          ...state.inventory,
+          items: state.inventory.items.filter((_, i) => i !== itemIndex)
+        },
+        battleLogs: [...state.battleLogs, {
+          message: `${item.symbol} ${item.name}を食べた！満腹度が${item.power}回復した！`,
+          timestamp: Date.now()
+        }]
+      };
+    }
     case 'weapon': {
       // 現在装備中の武器があれば装備解除
       const newInventoryItems = state.inventory.items.map(invItem => {
@@ -250,7 +267,9 @@ const createInitialPlayerStatus = (): Status => ({
   attack: 5,
   defense: 3,
   exp: 0,
-  level: 1
+  level: 1,
+  satiety: 100,
+  maxSatiety: 100
 });
 
 const getExpForNextLevel = (level: number): number => {
@@ -264,7 +283,9 @@ const levelUp = (status: Status): Status => {
     attack: status.attack + 2,
     defense: status.defense + 1,
     exp: 0,
-    level: status.level + 1
+    level: status.level + 1,
+    satiety: status.satiety,  // 満腹度は現在値を維持
+    maxSatiety: status.maxSatiety  // 最大満腹度は変更なし
   };
 };
 
@@ -440,7 +461,9 @@ const createMonsterStats = (base: typeof MONSTER_TYPES[number], floor: number): 
     attack: base.baseAttack + levelBonus * 2,
     defense: base.baseDefense + levelBonus,
     exp: base.baseExp + levelBonus,
-    level: 1
+    level: 1,
+    satiety: 100,  // モンスターの満腹度（使用しないが型のため必要）
+    maxSatiety: 100
   };
 };
 
@@ -629,31 +652,64 @@ const findMonsterAtPosition = (monsters: Monster[], pos: Position): Monster | un
 };
 
 const processNaturalHealing = (state: GameState): GameState => {
-  if (state.playerStatus.hp >= state.playerStatus.maxHp) {
-    return { ...state, healingPool: 0 };
+  let updatedState = state;
+
+  // 満腹度の減少（移動ごとに0.1減少）
+  updatedState = {
+    ...updatedState,
+    playerStatus: {
+      ...updatedState.playerStatus,
+      satiety: Math.max(0, updatedState.playerStatus.satiety - 0.1)
+    }
+  };
+
+  // 満腹度が0の場合、HPが減少
+  if (updatedState.playerStatus.satiety <= 0) {
+    const damage = 1;
+    updatedState = {
+      ...updatedState,
+      playerStatus: {
+        ...updatedState.playerStatus,
+        hp: Math.max(0, updatedState.playerStatus.hp - damage)
+      },
+      battleLogs: [...updatedState.battleLogs, {
+        message: '🍖 空腹によりHPが減少した！',
+        timestamp: Date.now()
+      }]
+    };
+
+    if (updatedState.playerStatus.hp <= 0) {
+      updatedState.isGameOver = true;
+      return updatedState;
+    }
   }
 
-  const healingRate = Math.max(0.2, state.playerStatus.maxHp * 0.01);
-  const newHealingPool = state.healingPool + healingRate;
+  // HPの自然回復
+  if (updatedState.playerStatus.hp >= updatedState.playerStatus.maxHp) {
+    return updatedState;
+  }
+
+  const healingRate = Math.max(0.2, updatedState.playerStatus.maxHp * 0.01);
+  const newHealingPool = updatedState.healingPool + healingRate;
 
   if (newHealingPool >= 1) {
     const healAmount = Math.floor(newHealingPool);
     const newHp = Math.min(
-      state.playerStatus.maxHp,
-      state.playerStatus.hp + healAmount
+      updatedState.playerStatus.maxHp,
+      updatedState.playerStatus.hp + healAmount
     );
 
     return {
-      ...state,
+      ...updatedState,
       healingPool: newHealingPool - healAmount,
       playerStatus: {
-        ...state.playerStatus,
+        ...updatedState.playerStatus,
         hp: newHp
       }
     };
   }
 
-  return { ...state, healingPool: newHealingPool };
+  return { ...updatedState, healingPool: newHealingPool };
 };
 
 export const createInitialGameState = (width: number, height: number): GameState => {
