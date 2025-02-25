@@ -1,0 +1,62 @@
+.game-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 20px;
+  touch-action: none;
+}
+
+.game-info {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 20px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #333;
+}
+
+.game-board {
+  width: 100%;
+  aspect-ratio: 6/5;
+  background-color: rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  padding: 10px;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+.board-row {
+  display: flex;
+  justify-content: space-between;
+  height: calc(100% / 5);
+  gap: 5px;
+  margin-bottom: 5px;
+}
+
+.board-row:last-child {
+  margin-bottom: 0;
+}
+
+/* スマートフォン向けの調整 */
+@media (max-width: 480px) {
+  .game-container {
+    padding: 10px;
+  }
+
+  .game-info {
+    font-size: 1rem;
+    margin-bottom: 10px;
+  }
+
+  .game-board {
+    padding: 5px;
+  }
+
+  .board-row {
+    gap: 3px;
+    margin-bottom: 3px;
+  }
+}
