@@ -15,8 +15,9 @@
   bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
-  width: 80%;
-  max-width: 600px;
+  width: 95%;
+  max-width: 1000px;
+  font-size: 20px;
   background: rgba(0, 0, 0, 0.8);
   padding: 10px;
   border-radius: 8px;
@@ -24,16 +25,34 @@
   overflow-y: auto;
   color: #ecf0f1;
   text-align: left;
+  opacity: 1;
+  transition: opacity 0.5s ease;
   z-index: 100;
 }
 
-@keyframes fadeOut {
-  from { opacity: 1; }
-  to { opacity: 0; }
+/* スクロールバーのスタイル */
+.battle-log::-webkit-scrollbar {
+  width: 6px;
+}
+
+.battle-log::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.battle-log::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.battle-log.fade-out {
+  opacity: 0;
 }
 
 .battle-log-message {
-  margin: 5px 0;
+  padding: 4px 8px;
+  margin: 2px 0;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
   animation: slideIn 0.3s ease;
 }
 
@@ -403,33 +422,6 @@
   color: #f1c40f;
 }
 
-/* ボタン */
-.button-group {
-  display: flex;
-  gap: 10px;
-  margin-top: 20px;
-}
-
-/* ヘルプとログボタン */
-.help-button,
-.logs-button {
-  background: linear-gradient(135deg, #3498db, #2980b9);
-  color: white;
-  border: none;
-  padding: 8px 15px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.3s ease;
-}
-
-.help-button:hover,
-.logs-button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-}
-
-
 .status-title::after {
   content: '';
   position: absolute;
@@ -444,7 +436,6 @@
 
 /* ボタングループ */
 .button-group {
-  position: fixed;
   top: 20px;
   right: 20px;
   display: flex;
@@ -608,11 +599,15 @@
 }
 
 .game-clear {
-  position: absolute; /* 位置を絶対に変更 */
-  top: 50%; /* 画面の中央に移動 */
+  position: absolute;
+  top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background-color: rgba(0, 0, 0, 0.95);
+  background: linear-gradient(
+    135deg,
+    rgba(0, 0, 0, 0.95),
+    rgba(44, 62, 80, 0.95)
+  );
   color: #f1c40f;
   padding: 40px;
   border-radius: 15px;
@@ -621,14 +616,8 @@
   animation: floatIn 1s ease-out;
   border: 2px solid #f1c40f;
   box-shadow: 0 0 20px rgba(241, 196, 15, 0.3);
-}
-
-.game-clear {
-  background: linear-gradient(
-    135deg,
-    rgba(0, 0, 0, 0.95),
-    rgba(44, 62, 80, 0.95)
-  );
+  min-width: 500px;
+  overflow: hidden;
 }
 
 .clear-title {
