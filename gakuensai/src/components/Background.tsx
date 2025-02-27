@@ -11,13 +11,14 @@ const Background: React.FC<BackgroundProps> = ({ location }) => {
         src={`/src/assets/background/${location}.jpg`}
         alt={`Location ${location}`}
         style={{
-          width: '100%',
-          height: '100vh',
+          width: '1024px',
+          height: '768px',
           objectFit: 'cover',
-          position: 'fixed',
+          position: 'absolute',
           top: 0,
           left: 0,
-          zIndex: 1
+          zIndex: 1,
+          pointerEvents: 'none'
         }}
       />
     </div>

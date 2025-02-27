@@ -1,10 +1,10 @@
 .message-box {
-  position: fixed;
-  bottom: 250px;
+  position: absolute;
+  bottom: 200px;
   left: 50%;
   transform: translateX(-50%);
-  width: 90%;
-  max-width: 800px;
+  width: 900px;
+  max-width: 90%;
   background-color: rgba(0, 0, 0, 0.8);
   border: 2px solid rgba(255, 255, 255, 0.5);
   border-radius: 10px;

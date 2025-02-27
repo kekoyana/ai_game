@@ -1,14 +1,14 @@
 .choices-container {
-  position: fixed;
-  bottom: 20px;
+  position: absolute;
+  bottom: 40px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 3;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  width: 80%;
-  max-width: 600px;
+  gap: 15px;
+  width: 800px;
+  max-width: 85%;
 }
 
 .choice-button {

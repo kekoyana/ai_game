@@ -11,13 +11,14 @@ const Character: React.FC<CharacterProps> = ({ expression }) => {
         src={`/src/assets/character/${expression}.webp`}
         alt={`Character ${expression}`}
         style={{
-          width: '480px',
-          height: '640px',
+          width: '400px',
+          height: '600px',
           position: 'absolute',
-          bottom: '0',
+          bottom: '50px',
           left: '50%',
           transform: 'translateX(-50%)',
-          zIndex: 2
+          zIndex: 2,
+          pointerEvents: 'none'
         }}
       />
     </div>
