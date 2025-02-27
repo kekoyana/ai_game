@@ -1,4 +1,4 @@
-export type TerrainType = 'plain' | 'mountain' | 'forest' | 'water';
+export type TerrainType = 'plain' | 'mountain' | 'forest' | 'water' | 'city' | 'capital';
 
 interface MapTileProps {
   x: number;
@@ -6,6 +6,7 @@ interface MapTileProps {
   size: number;
   terrain: TerrainType;
   isMovable?: boolean;
+  owner?: 'player' | 'enemy' | null;
   onClick?: () => void;
 }
 
@@ -14,6 +15,17 @@ const terrainColors: Record<TerrainType, string> = {
   mountain: '#A0522D', // 茶色
   forest: '#228B22',   // 濃い緑
   water: '#4169E1',    // 青
+  city: '#FFD700',     // 金色
+  capital: '#FF0000',  // 赤
+};
+
+const terrainSymbols: Record<TerrainType, string> = {
+  plain: '',
+  mountain: '▲',
+  forest: '🌲',
+  water: '',
+  city: '🏰',
+  capital: '👑',
 };
 
 export const MapTile: React.FC<MapTileProps> = ({
@@ -22,6 +34,7 @@ export const MapTile: React.FC<MapTileProps> = ({
   size,
   terrain,
   isMovable = false,
+  owner = null,
   onClick
 }) => {
   return (
@@ -37,31 +50,25 @@ export const MapTile: React.FC<MapTileProps> = ({
         backgroundColor: terrainColors[terrain],
         cursor: isMovable ? 'pointer' : 'default',
         userSelect: 'none',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: `${size * 0.6}px`,
       }}
     >
-      {terrain === 'mountain' && (
-        <div style={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          fontSize: `${size * 0.6}px`,
-          userSelect: 'none',
-        }}>
-          ▲
-        </div>
-      )}
-      {terrain === 'forest' && (
-        <div style={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          fontSize: `${size * 0.6}px`,
-          userSelect: 'none',
-        }}>
-          🌲
-        </div>
+      {terrainSymbols[terrain]}
+      {(terrain === 'city' || terrain === 'capital') && owner && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '2px',
+            right: '2px',
+            width: '10px',
+            height: '10px',
+            borderRadius: '50%',
+            backgroundColor: owner === 'player' ? '#0000FF' : '#FF0000',
+          }}
+        />
       )}
     </div>
   );

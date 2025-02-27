@@ -1,6 +1,6 @@
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { MapTile, TerrainType } from './MapTile';
-import { Unit, UnitData, UnitType, UnitSide } from './Unit';
+import { Unit, UnitData, UnitType, UnitSide, unitInitialStats } from './Unit';
 
 interface GameMapProps {
   width: number;
@@ -8,83 +8,149 @@ interface GameMapProps {
   tileSize: number;
 }
 
+// 地形による防御ボーナス
+const terrainDefenseBonus: Record<TerrainType, number> = {
+  plain: 1.0,
+  mountain: 1.5,
+  forest: 1.2,
+  water: 1.0,
+  city: 1.2,
+  capital: 1.5,
+};
+
+interface TerrainOwnership {
+  terrain: TerrainType;
+  owner: UnitSide | null;
+}
+
 // 地形生成関数
-const createInitialTerrain = (width: number, height: number): TerrainType[][] => {
-  const terrain: TerrainType[][] = [];
+const createInitialTerrain = (width: number, height: number): TerrainOwnership[][] => {
+  const terrain: TerrainOwnership[][] = [];
   
   for (let y = 0; y < height; y++) {
     terrain[y] = [];
     for (let x = 0; x < width; x++) {
+      const terrainData: TerrainOwnership = { terrain: 'plain', owner: null };
+
       if (x === 0 || y === 0 || x === width - 1 || y === height - 1) {
-        terrain[y][x] = 'water';
-        continue;
+        terrainData.terrain = 'water';
+      } else if (y === height - 2 && x === width - 3) {
+        terrainData.terrain = 'capital';
+        terrainData.owner = 'player';
+      } else if (y === 2 && x === 2) {
+        terrainData.terrain = 'capital';
+        terrainData.owner = 'enemy';
+      } else if ((y === height - 3 && x === 5) || (y === height - 2 && x === width - 6)) {
+        terrainData.terrain = 'city';
+        terrainData.owner = 'player';
+      } else if ((y === 2 && x === width - 5) || (y === 3 && x === 5)) {
+        terrainData.terrain = 'city';
+        terrainData.owner = 'enemy';
+      } else {
+        const random = Math.random();
+        if (random < 0.1) {
+          terrainData.terrain = 'mountain';
+        } else if (random < 0.3) {
+          terrainData.terrain = 'forest';
+        } else if (random < 0.35) {
+          terrainData.terrain = 'water';
+        }
       }
 
-      const random = Math.random();
-      if (random < 0.1) {
-        terrain[y][x] = 'mountain';
-      } else if (random < 0.3) {
-        terrain[y][x] = 'forest';
-      } else if (random < 0.35) {
-        terrain[y][x] = 'water';
-      } else {
-        terrain[y][x] = 'plain';
-      }
+      terrain[y][x] = terrainData;
     }
   }
-  
+
+  // ユニットの初期位置は必ず平地に
+  for (let i = 0; i < 5; i++) {
+    terrain[height - 2][3 + i * 3] = { terrain: 'plain', owner: null };
+    terrain[2][3 + i * 3] = { terrain: 'plain', owner: null };
+  }
+
   return terrain;
 };
 
-// 初期ユニット生成関数
 const generateInitialUnits = (width: number, height: number): UnitData[] => {
   const units: UnitData[] = [];
   const unitTypes: UnitType[] = ['infantry', 'tank', 'artillery'];
 
   // プレイヤーのユニットを配置（下部）
   for (let i = 0; i < 5; i++) {
+    const type = unitTypes[i % unitTypes.length];
+    const stats = unitInitialStats[type];
     units.push({
-      type: unitTypes[i % unitTypes.length],
+      type,
       side: 'player',
       x: 3 + i * 3,
       y: height - 2,
-      hasActed: false
+      hasActed: false,
+      hp: stats.hp,
+      maxHp: stats.hp,
     });
   }
 
   // 敵ユニットを配置（上部）
   for (let i = 0; i < 5; i++) {
+    const type = unitTypes[i % unitTypes.length];
+    const stats = unitInitialStats[type];
     units.push({
-      type: unitTypes[i % unitTypes.length],
+      type,
       side: 'enemy',
       x: 3 + i * 3,
       y: 2,
-      hasActed: false
+      hasActed: false,
+      hp: stats.hp,
+      maxHp: stats.hp,
     });
   }
 
   return units;
 };
 
-// 2点間の距離を計算
 const calculateDistance = (x1: number, y1: number, x2: number, y2: number): number => {
   return Math.abs(x1 - x2) + Math.abs(y1 - y2);
 };
 
+const getTargetsInRange = (
+  attacker: UnitData,
+  units: UnitData[],
+): UnitData[] => {
+  const range = unitInitialStats[attacker.type].range;
+  return units.filter(unit => 
+    unit.side !== attacker.side &&
+    unit.hp > 0 &&
+    calculateDistance(attacker.x, attacker.y, unit.x, unit.y) <= range
+  );
+};
+
 export const GameMap: React.FC<GameMapProps> = ({ width, height, tileSize }) => {
-  const [terrain] = useState(() => createInitialTerrain(width, height));
+  const [terrain, setTerrain] = useState(() => createInitialTerrain(width, height));
   const [units, setUnits] = useState(() => generateInitialUnits(width, height));
   const [selectedUnit, setSelectedUnit] = useState<UnitData | null>(null);
   const [movablePositions, setMovablePositions] = useState<{ x: number; y: number }[]>([]);
+  const [attackableUnits, setAttackableUnits] = useState<UnitData[]>([]);
   const [currentTurn, setCurrentTurn] = useState<UnitSide>('player');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [gameOver, setGameOver] = useState(false);
+  const [winner, setWinner] = useState<UnitSide | null>(null);
 
-  // 移動可能なマスを計算
+  const executeAttack = useCallback((attacker: UnitData, target: UnitData) => {
+    const baseDamage = unitInitialStats[attacker.type].attack;
+    const defenseBonus = terrainDefenseBonus[terrain[target.y][target.x].terrain];
+    const damage = Math.floor(baseDamage / defenseBonus);
+
+    setUnits(prevUnits =>
+      prevUnits.map(unit =>
+        unit === target ? { ...unit, hp: Math.max(0, unit.hp - damage) } : unit
+      )
+    );
+  }, [terrain]);
+
   const calculateMovablePositions = useCallback((
     unit: UnitData,
     currentUnits: UnitData[],
   ): { x: number; y: number }[] => {
-    if (unit.hasActed || unit.side !== currentTurn) return [];
+    if (unit.hasActed || unit.side !== currentTurn || unit.hp <= 0) return [];
 
     const positions: { x: number; y: number }[] = [];
     const moveRange = unit.type === 'tank' ? 4 : 3;
@@ -95,9 +161,10 @@ export const GameMap: React.FC<GameMapProps> = ({ width, height, tileSize }) => 
         const newY = unit.y + dy;
 
         if (newX < 0 || newY < 0 || newX >= width || newY >= height) continue;
-        if (terrain[newY][newX] === 'water') continue;
+        if (terrain[newY][newX].terrain === 'water') continue;
+        if (terrain[newY][newX].terrain === 'mountain' && unit.type !== 'infantry') continue;
         if (Math.abs(dx) + Math.abs(dy) > moveRange) continue;
-        if (!currentUnits.some(u => u.x === newX && u.y === newY)) {
+        if (!currentUnits.some(u => u.x === newX && u.y === newY && u.hp > 0)) {
           positions.push({ x: newX, y: newY });
         }
       }
@@ -106,89 +173,113 @@ export const GameMap: React.FC<GameMapProps> = ({ width, height, tileSize }) => 
     return positions;
   }, [terrain, width, height, currentTurn]);
 
-  // CPUの行動を実行
-  const executeCPUTurn = useCallback(async () => {
-    setIsProcessing(true);
+  const handleUnitClick = useCallback((clickedUnit: UnitData) => {
+    if (isProcessing || gameOver) return;
 
-    const enemyUnits = units.filter(u => u.side === 'enemy' && !u.hasActed);
-    const playerUnits = units.filter(u => u.side === 'player');
-
-    // 各敵ユニットの行動を順番に実行
-    for (const enemyUnit of enemyUnits) {
-      // 一時停止して動きを見やすくする
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      // 最も近いプレイヤーユニットを見つける
-      let nearestPlayer = playerUnits[0];
-      let minDistance = calculateDistance(enemyUnit.x, enemyUnit.y, nearestPlayer.x, nearestPlayer.y);
-
-      for (const playerUnit of playerUnits) {
-        const distance = calculateDistance(enemyUnit.x, enemyUnit.y, playerUnit.x, playerUnit.y);
-        if (distance < minDistance) {
-          minDistance = distance;
-          nearestPlayer = playerUnit;
-        }
-      }
-
-      // 移動可能な位置を取得
-      const positions = calculateMovablePositions(enemyUnit, units);
-      
-      // 最も近いプレイヤーに近づく位置を選択
-      let bestPosition = positions[0];
-      let bestDistance = Infinity;
-
-      for (const pos of positions) {
-        const distance = calculateDistance(pos.x, pos.y, nearestPlayer.x, nearestPlayer.y);
-        if (distance < bestDistance) {
-          bestDistance = distance;
-          bestPosition = pos;
-        }
-      }
-
-      // 移動を実行
-      if (bestPosition) {
-        setUnits(prevUnits =>
-          prevUnits.map(u =>
-            u === enemyUnit ? { ...u, x: bestPosition.x, y: bestPosition.y, hasActed: true } : u
-          )
-        );
-      }
-    }
-
-    // 全ての行動が終了したらプレイヤーターンへ
-    await new Promise(resolve => setTimeout(resolve, 500));
-    handleEndTurn();
-    setIsProcessing(false);
-  }, [units, calculateMovablePositions]);
-
-  // ターン開始時のCPU処理
-  useEffect(() => {
-    if (currentTurn === 'enemy' && !isProcessing) {
-      executeCPUTurn();
-    }
-  }, [currentTurn, executeCPUTurn, isProcessing]);
-
-  const handleUnitClick = useCallback((unit: UnitData) => {
-    if (!isProcessing && unit.side === currentTurn && !unit.hasActed) {
-      setSelectedUnit(unit);
-      setMovablePositions(calculateMovablePositions(unit, units));
-    }
-  }, [units, calculateMovablePositions, currentTurn, isProcessing]);
-
-  const handleTileClick = useCallback((x: number, y: number) => {
-    if (!isProcessing && selectedUnit && movablePositions.some(pos => pos.x === x && pos.y === y)) {
-      setUnits(prevUnits => 
-        prevUnits.map(u => 
-          u === selectedUnit ? { ...u, x, y, hasActed: true } : u
+    if (selectedUnit && attackableUnits.includes(clickedUnit)) {
+      executeAttack(selectedUnit, clickedUnit);
+      setUnits(prevUnits =>
+        prevUnits.map(u =>
+          u === selectedUnit ? { ...u, hasActed: true } : u
         )
       );
       setSelectedUnit(null);
+      setAttackableUnits([]);
       setMovablePositions([]);
+    } else if (clickedUnit.side === currentTurn && !clickedUnit.hasActed && clickedUnit.hp > 0) {
+      setSelectedUnit(clickedUnit);
+      setMovablePositions(calculateMovablePositions(clickedUnit, units));
+      setAttackableUnits(getTargetsInRange(clickedUnit, units));
     }
-  }, [selectedUnit, movablePositions, isProcessing]);
+  }, [
+    currentTurn,
+    selectedUnit,
+    attackableUnits,
+    units,
+    calculateMovablePositions,
+    executeAttack,
+    isProcessing,
+    gameOver
+  ]);
+
+  const updateTerritoryControl = useCallback((x: number, y: number, side: UnitSide) => {
+    setTerrain(prevTerrain =>
+      prevTerrain.map((row, yIdx) =>
+        row.map((tile, xIdx) =>
+          xIdx === x && yIdx === y && (tile.terrain === 'city' || tile.terrain === 'capital')
+            ? { ...tile, owner: side }
+            : tile
+        )
+      )
+    );
+  }, []);
+
+  const handleTileClick = useCallback((x: number, y: number) => {
+    if (isProcessing || gameOver || !selectedUnit || !movablePositions.some(pos => pos.x === x && pos.y === y)) {
+      return;
+    }
+
+    // 領地の支配権を更新
+    updateTerritoryControl(x, y, selectedUnit.side);
+
+    // ユニットを移動
+    setUnits(prevUnits =>
+      prevUnits.map(u =>
+        u === selectedUnit ? { ...u, x, y } : u
+      )
+    );
+
+    // 移動後に攻撃可能な対象を更新
+    const movedUnit = { ...selectedUnit, x, y };
+    setAttackableUnits(getTargetsInRange(movedUnit, units));
+    setSelectedUnit(movedUnit);
+    setMovablePositions([]);
+  }, [selectedUnit, movablePositions, units, isProcessing, gameOver, updateTerritoryControl]);
+
+  const checkVictoryCondition = useCallback(() => {
+    let playerCapitalCaptured = true;
+    let enemyCapitalCaptured = true;
+
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        const tile = terrain[y][x];
+        if (tile.terrain === 'capital') {
+          if (tile.owner === 'player') playerCapitalCaptured = false;
+          if (tile.owner === 'enemy') enemyCapitalCaptured = false;
+        }
+      }
+    }
+
+    if (playerCapitalCaptured) {
+      setGameOver(true);
+      setWinner('enemy');
+    } else if (enemyCapitalCaptured) {
+      setGameOver(true);
+      setWinner('player');
+    }
+  }, [terrain, height]);
+
+  const handleCityEffects = useCallback(() => {
+    setUnits(prevUnits =>
+      prevUnits.map(unit => {
+        const currentTile = terrain[unit.y][unit.x];
+        if ((currentTile.terrain === 'city' || currentTile.terrain === 'capital') &&
+            currentTile.owner === unit.side) {
+          const healAmount = 20;
+          return {
+            ...unit,
+            hp: Math.min(unit.maxHp, unit.hp + healAmount)
+          };
+        }
+        return unit;
+      })
+    );
+  }, [terrain]);
 
   const handleEndTurn = useCallback(() => {
-    if (!isProcessing) {
+    if (!isProcessing && !gameOver) {
+      handleCityEffects();
+      checkVictoryCondition();
       const nextTurn = currentTurn === 'player' ? 'enemy' : 'player';
       setCurrentTurn(nextTurn);
       setUnits(prevUnits =>
@@ -196,28 +287,20 @@ export const GameMap: React.FC<GameMapProps> = ({ width, height, tileSize }) => 
       );
       setSelectedUnit(null);
       setMovablePositions([]);
+      setAttackableUnits([]);
     }
-  }, [currentTurn, isProcessing]);
+  }, [currentTurn, isProcessing, gameOver, handleCityEffects, checkVictoryCondition]);
 
-  const tiles = useMemo(() => {
-    const tileElements = [];
-    for (let y = 0; y < height; y++) {
-      for (let x = 0; x < width; x++) {
-        tileElements.push(
-          <MapTile
-            key={`${x}-${y}`}
-            x={x}
-            y={y}
-            size={tileSize}
-            terrain={terrain[y][x]}
-            isMovable={!isProcessing && movablePositions.some(pos => pos.x === x && pos.y === y)}
-            onClick={() => handleTileClick(x, y)}
-          />
-        );
-      }
+  useEffect(() => {
+    if (currentTurn === 'enemy' && !isProcessing && !gameOver) {
+      setIsProcessing(true);
+      setTimeout(() => {
+        // ここにCPUの行動を実装
+        handleEndTurn();
+        setIsProcessing(false);
+      }, 1000);
     }
-    return tileElements;
-  }, [height, width, tileSize, terrain, movablePositions, handleTileClick, isProcessing]);
+  }, [currentTurn, isProcessing, gameOver, handleEndTurn]);
 
   return (
     <div
@@ -241,18 +324,26 @@ export const GameMap: React.FC<GameMapProps> = ({ width, height, tileSize }) => 
           userSelect: 'none',
         }}
       >
-        <div>現在のターン: {currentTurn === 'player' ? 'プレイヤー' : '敵'}</div>
-        {currentTurn === 'player' && !isProcessing && (
-          <button
-            onClick={handleEndTurn}
-            style={{
-              marginTop: '5px',
-              padding: '5px 10px',
-              cursor: 'pointer',
-            }}
-          >
-            ターン終了
-          </button>
+        {gameOver ? (
+          <div>
+            ゲーム終了！ {winner === 'player' ? 'プレイヤー' : '敵'}の勝利！
+          </div>
+        ) : (
+          <>
+            <div>現在のターン: {currentTurn === 'player' ? 'プレイヤー' : '敵'}</div>
+            {currentTurn === 'player' && !isProcessing && (
+              <button
+                onClick={handleEndTurn}
+                style={{
+                  marginTop: '5px',
+                  padding: '5px 10px',
+                  cursor: 'pointer',
+                }}
+              >
+                ターン終了
+              </button>
+            )}
+          </>
         )}
       </div>
       <div
@@ -262,13 +353,27 @@ export const GameMap: React.FC<GameMapProps> = ({ width, height, tileSize }) => 
           height: height * tileSize,
         }}
       >
-        {tiles}
-        {units.map((unit, index) => (
+        {Array(height).fill(0).map((_, y) =>
+          Array(width).fill(0).map((_, x) => (
+            <MapTile
+              key={`${x}-${y}`}
+              x={x}
+              y={y}
+              size={tileSize}
+              terrain={terrain[y][x].terrain}
+              owner={terrain[y][x].owner}
+              isMovable={!isProcessing && !gameOver && movablePositions.some(pos => pos.x === x && pos.y === y)}
+              onClick={() => handleTileClick(x, y)}
+            />
+          ))
+        )}
+        {units.filter(unit => unit.hp > 0).map((unit, index) => (
           <Unit
             key={`unit-${index}`}
             unit={unit}
             size={tileSize}
             isSelected={unit === selectedUnit}
+            isTargetable={attackableUnits.includes(unit)}
             onClick={() => handleUnitClick(unit)}
           />
         ))}
