@@ -12,13 +12,14 @@ const Character: React.FC<CharacterProps> = ({ expression }) => {
         alt={`Character ${expression}`}
         style={{
           width: '400px',
-          height: '600px',
+          height: '500px',
           position: 'absolute',
-          bottom: '50px',
+          bottom: '0',
           left: '50%',
           transform: 'translateX(-50%)',
           zIndex: 2,
-          pointerEvents: 'none'
+          pointerEvents: 'none',
+          objectFit: 'contain'
         }}
       />
     </div>
