@@ -1,5 +1,5 @@
 import { Provider } from 'react-redux'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { HashRouter as Router, Routes, Route } from 'react-router-dom'
 import { store } from './features/store'
 import './App.css'
 import TitlePage from './pages/TitlePage'
