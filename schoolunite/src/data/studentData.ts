@@ -1,4 +1,5 @@
 import { Student, FactionSupport, Faction, InterestLevel, PreferenceLevel, TraitPreferences, TraitId } from '../types/student';
+import { ClubId, CLUB_DATA } from '../types/club';
 import { loadStudentsFromCSV } from '../utils/csvLoader';
 
 function determineFaction(support: FactionSupport): Faction {
@@ -46,6 +47,40 @@ class StudentManager {
 
   getFactionMembers(faction: Faction): Student[] {
     return this.students.filter(student => student.faction === faction);
+  }
+
+  // 部活動関連の機能
+
+  // 部活動のメンバー取得
+  getClubMembers(clubId: ClubId): Student[] {
+    return this.students.filter(student => student.clubId === clubId);
+  }
+
+  // 部活動の定員チェック
+  isClubFull(clubId: ClubId): boolean {
+    if (clubId === ClubId.NONE) return false;
+    const club = CLUB_DATA[clubId];
+    const currentMembers = this.getClubMembers(clubId).length;
+    return currentMembers >= club.memberLimit;
+  }
+
+  // 部活動変更
+  changeClub(studentId: number, newClubId: ClubId): boolean {
+    const student = this.getStudent(studentId);
+    if (!student) return false;
+
+    // 無所属以外の場合、定員チェック
+    if (newClubId !== ClubId.NONE && this.isClubFull(newClubId)) {
+      return false;
+    }
+
+    this.updateStudent(studentId, { clubId: newClubId });
+    return true;
+  }
+
+  // 部活動退部
+  leaveClub(studentId: number): boolean {
+    return this.changeClub(studentId, ClubId.NONE);
   }
 
   // 学生データの更新（派閥の自動更新含む）
@@ -169,33 +204,33 @@ class StudentManager {
     return this.students.filter(student => student.traitPreferences[traitKey] === 0);
   }
 
-  // 生徒間の相性を計算（属性の好みに基づく）
-  calculateCompatibility(studentId1: number, studentId2: number): number {
-    const student1 = this.getStudent(studentId1);
-    const student2 = this.getStudent(studentId2);
-    if (!student1 || !student2) return 0;
+  // 部活動の推奨度を計算（生徒の特性と部活動の親和性）
+  calculateClubCompatibility(studentId: number, clubId: ClubId): number {
+    const student = this.getStudent(studentId);
+    if (!student || clubId === ClubId.NONE) return 0;
 
-    let compatibility = 0;
-    let totalFactors = 0;
+    const club = CLUB_DATA[clubId];
+    let score = 0;
 
-    // student2の属性に対するstudent1の好み
-    student2.traitIds.forEach(traitId => {
-      const traitKey = TraitId[traitId].toLowerCase() as keyof TraitPreferences;
-      const preference = student1.traitPreferences[traitKey];
-      compatibility += preference;
-      totalFactors++;
-    });
+    // スポーツ系部活の場合
+    if (club.type === 'sports') {
+      score += student.interests.sports * 20; // 運動への興味
+      score += student.strength; // 体力
+      if (student.traitIds.includes(TraitId.ATHLETIC)) score += 30; // 運動系の特性
+    }
+    // 文化系部活の場合
+    else if (club.type === 'culture') {
+      score += student.interests.music * 10; // 音楽への興味
+      score += student.interests.study * 10; // 学習への興味
+      if (student.traitIds.includes(TraitId.ARTISTIC)) score += 30; // 芸術系の特性
+    }
+    // 委員会の場合
+    else if (club.type === 'committee') {
+      score += student.intelligence; // 知力
+      if (student.traitIds.includes(TraitId.DILIGENT)) score += 30; // 真面目な特性
+    }
 
-    // student1の属性に対するstudent2の好み
-    student1.traitIds.forEach(traitId => {
-      const traitKey = TraitId[traitId].toLowerCase() as keyof TraitPreferences;
-      const preference = student2.traitPreferences[traitKey];
-      compatibility += preference;
-      totalFactors++;
-    });
-
-    // 0-100のスケールに正規化
-    return totalFactors > 0 ? Math.round((compatibility / (totalFactors * 2)) * 100) : 50;
+    return Math.min(100, score);
   }
 }
 

@@ -1,4 +1,5 @@
 import { Student, Gender, Grade, Class, InterestLevel, FactionSupport, Faction, PreferenceLevel, TraitPreferences } from '../types/student';
+import { ClubId } from '../types/club';
 
 function determineFaction(support: FactionSupport): Faction {
   const maxSupport = Math.max(
@@ -91,6 +92,7 @@ export async function loadStudentsFromCSV(): Promise<Student[]> {
           support,
           isLeader: data.isLeader === 'true',
           faction: determineFaction(support),
+          clubId: parseInt(data.clubId) as ClubId,
         };
 
         return student;
@@ -139,6 +141,7 @@ export function convertStudentToCSV(student: Student): string {
     student.traitPreferences.rebellious,
     student.traitPreferences.cheerful,
     student.traitPreferences.quiet,
+    student.clubId,
   ];
   
   return values.join(',');

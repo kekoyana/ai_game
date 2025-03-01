@@ -1,3 +1,5 @@
+import { ClubId } from './club';
+
 export type Gender = 0 | 1; // 0: 男性, 1: 女性
 export type Grade = 1 | 2 | 3;
 export type Class = 'A' | 'B' | 'C' | 'D';
@@ -72,6 +74,7 @@ export interface Student {
   support: FactionSupport; // 支持率
   faction: Faction;       // 所属派閥（最も支持率が高い派閥）
   isLeader: boolean;     // ボスかどうか
+  clubId: ClubId;        // 所属部活動
 }
 
 // 好みレベルの文字列と数値の変換
