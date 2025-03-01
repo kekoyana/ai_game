@@ -1,4 +1,14 @@
-import { Student, FactionSupport, Faction, InterestLevel, PreferenceLevel, TraitPreferences, TraitId } from '../types/student';
+import {
+  Student,
+  FactionSupport,
+  Faction,
+  InterestLevel,
+  PreferenceLevel,
+  TraitPreferences,
+  TraitId,
+  FriendshipMap,
+  FriendshipLevel
+} from '../types/student';
 import { loadStudentsFromCSV } from '../utils/csvLoader';
 
 function determineFaction(support: FactionSupport): Faction {
@@ -16,12 +26,50 @@ function determineFaction(support: FactionSupport): Faction {
 class StudentManager {
   private students: Student[] = [];
   private initialized = false;
+  private friendshipMap: FriendshipMap = {};
+
+  // 親密度の初期化
+  private initializeFriendships(student: Student) {
+    if (!this.friendshipMap[student.id]) {
+      this.friendshipMap[student.id] = {};
+    }
+  }
+
+
+  // 2人の生徒間の親密度を取得
+  getFriendshipLevel(studentId1: number, studentId2: number): number {
+    return this.friendshipMap[studentId1]?.[studentId2] || 0;
+  }
+
+  // 2人の生徒間の親密度を設定（双方向に設定）
+  setFriendshipLevel(studentId1: number, studentId2: number, level: number): void {
+    // 0-100の範囲に収める
+    const normalizedLevel = Math.max(0, Math.min(100, level));
+
+    // 両方の生徒のフレンドシップマップを初期化
+    if (!this.friendshipMap[studentId1]) {
+      this.friendshipMap[studentId1] = {};
+    }
+    if (!this.friendshipMap[studentId2]) {
+      this.friendshipMap[studentId2] = {};
+    }
+
+    // 双方向に親密度を設定
+    this.friendshipMap[studentId1][studentId2] = normalizedLevel;
+    this.friendshipMap[studentId2][studentId1] = normalizedLevel;
+  }
 
   async initialize(): Promise<void> {
     if (this.initialized) return;
     
     try {
       this.students = await loadStudentsFromCSV();
+      
+      // 全生徒の親密度を初期化
+      this.students.forEach(student => {
+        this.friendshipMap[student.id] = {};
+      });
+
       this.initialized = true;
     } catch (error) {
       console.error('Failed to initialize student data:', error);
