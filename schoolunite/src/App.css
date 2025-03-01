@@ -22,6 +22,22 @@
   border: 1px solid #ccc;
   padding: 10px;
   border-radius: 4px;
+  position: relative;
+}
+
+/* 時計表示 */
+.time-display {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: bold;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .status-area {
@@ -49,19 +65,6 @@
 .current-location p {
   margin: 8px 0;
   color: #555;
-}
-
-.movement-info {
-  padding: 15px;
-  background-color: #e3f2fd;
-  border-radius: 4px;
-  margin-bottom: 15px;
-}
-
-.movement-info p {
-  margin: 8px 0;
-  color: #1976d2;
-  font-weight: bold;
 }
 
 .message-area {
