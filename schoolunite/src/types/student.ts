@@ -57,6 +57,16 @@ export interface FactionSupport {
   academic: number;   // 進学派
 }
 
+// 生徒同士の親密度を管理する型
+export interface FriendshipLevel {
+  [studentId: number]: number; // キー: 生徒ID, 値: 親密度(0-100)
+}
+
+// 生徒の親密度マップ
+export interface FriendshipMap {
+  [studentId: number]: FriendshipLevel; // キー: 生徒ID, 値: その生徒の他の生徒との親密度
+}
+
 export interface Student {
   id: number;
   lastName: string;   // 姓
@@ -77,6 +87,7 @@ export interface Student {
   clubId: ClubId;        // 所属部活動
   currentHp: number;     // 現在のHP
   maxHp: number;         // 最大HP
+  friendships?: FriendshipLevel; // 他の生徒との親密度
 }
 
 // 好みレベルの文字列と数値の変換
