@@ -20,7 +20,8 @@ function App() {
     async function initializeApp() {
       try {
         await studentManager.initialize();
-        const students = studentManager.getAllStudents();
+        const allStudents = studentManager.getAllStudents();
+        const students = allStudents.filter(student => student.id !== PLAYER_ID);
         
         // 生徒の位置情報の定期更新を開始（5分ごと）
         locationManager.startPeriodicUpdate(students, 300);
