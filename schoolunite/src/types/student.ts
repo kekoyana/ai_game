@@ -75,6 +75,8 @@ export interface Student {
   faction: Faction;       // 所属派閥（最も支持率が高い派閥）
   isLeader: boolean;     // ボスかどうか
   clubId: ClubId;        // 所属部活動
+  currentHp: number;     // 現在のHP
+  maxHp: number;         // 最大HP
 }
 
 // 好みレベルの文字列と数値の変換

@@ -74,6 +74,10 @@ export async function loadStudentsFromCSV(): Promise<Student[]> {
           .map(id => parseInt(id.trim()))
           .filter(id => !isNaN(id)); // 無効な値を除外
 
+        // HPを数値に変換
+        const maxHp = parseInt(data.maxHp);
+        const currentHp = parseInt(data.currentHp);
+
         // 生徒データを作成
         const student: Student = {
           id: parseInt(data.id),
@@ -93,6 +97,8 @@ export async function loadStudentsFromCSV(): Promise<Student[]> {
           isLeader: data.isLeader === 'true',
           faction: determineFaction(support),
           clubId: parseInt(data.clubId) as ClubId,
+          maxHp,
+          currentHp
         };
 
         return student;
@@ -142,6 +148,8 @@ export function convertStudentToCSV(student: Student): string {
     student.traitPreferences.cheerful,
     student.traitPreferences.quiet,
     student.clubId,
+    student.maxHp,
+    student.currentHp,
   ];
   
   return values.join(',');
