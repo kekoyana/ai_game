@@ -5,6 +5,9 @@ export type Class = 'A' | 'B' | 'C' | 'D';
 // 興味関心レベル: 0: なし, 1: 普通, 2: 高い
 export type InterestLevel = 0 | 1 | 2;
 
+// 好みレベル: 0: 嫌い, 1: 普通, 2: 好き
+export type PreferenceLevel = 0 | 1 | 2;
+
 export interface Interests {
   study: InterestLevel;
   sports: InterestLevel;
@@ -30,6 +33,20 @@ export enum TraitId {
   QUIET = 10      // 静か
 }
 
+// 属性に対する好みを保持する型
+export interface TraitPreferences {
+  glasses: PreferenceLevel;    // メガネ
+  science: PreferenceLevel;    // 理系
+  literature: PreferenceLevel; // 文系
+  athletic: PreferenceLevel;   // 運動系
+  artistic: PreferenceLevel;   // 芸術系
+  leadership: PreferenceLevel; // リーダー気質
+  diligent: PreferenceLevel;   // 真面目
+  rebellious: PreferenceLevel; // 反抗的
+  cheerful: PreferenceLevel;   // 明るい
+  quiet: PreferenceLevel;      // 静か
+}
+
 export type Faction = 'status_quo' | 'sports' | 'academic';
 
 export interface FactionSupport {
@@ -50,11 +67,19 @@ export interface Student {
   strength: number;       // 武力 (0-200)
   charisma: number;       // 魅力 (0-200)
   traitIds: number[];     // 属性ID配列
+  traitPreferences: TraitPreferences; // 属性に対する好み
   interests: Interests;   // 好み（数値で保持）
   support: FactionSupport; // 支持率
   faction: Faction;       // 所属派閥（最も支持率が高い派閥）
   isLeader: boolean;     // ボスかどうか
 }
+
+// 好みレベルの文字列と数値の変換
+export const PreferenceLevelMap = {
+  dislike: 0, // 嫌い
+  normal: 1,  // 普通
+  like: 2,    // 好き
+} as const;
 
 // 興味関心の文字列と数値の変換
 export const InterestLevelMap = {

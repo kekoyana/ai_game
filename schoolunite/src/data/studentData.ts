@@ -1,4 +1,4 @@
-import { Student, FactionSupport, Faction, InterestLevel } from '../types/student';
+import { Student, FactionSupport, Faction, InterestLevel, PreferenceLevel, TraitPreferences, TraitId } from '../types/student';
 import { loadStudentsFromCSV } from '../utils/csvLoader';
 
 function determineFaction(support: FactionSupport): Faction {
@@ -98,6 +98,25 @@ class StudentManager {
     });
   }
 
+  // 属性に対する好みの更新
+  updateTraitPreferences(id: number, updates: Partial<TraitPreferences>): void {
+    const student = this.getStudent(id);
+    if (!student) return;
+
+    const newPreferences = { ...student.traitPreferences, ...updates };
+    this.updateStudent(id, { traitPreferences: newPreferences });
+  }
+
+  // 特定の属性に対する好みの更新
+  updateTraitPreference(id: number, traitId: TraitId, level: PreferenceLevel): void {
+    const student = this.getStudent(id);
+    if (!student) return;
+
+    const traitKey = TraitId[traitId].toLowerCase() as keyof TraitPreferences;
+    const updates = { [traitKey]: level } as Partial<TraitPreferences>;
+    this.updateTraitPreferences(id, updates);
+  }
+
   // 興味関心レベルの更新
   updateInterests(id: number, 
     updates: Partial<{
@@ -136,6 +155,47 @@ class StudentManager {
 
     const newTraits = student.traitIds.filter(t => t !== traitId);
     this.updateStudent(id, { traitIds: newTraits });
+  }
+
+  // 特定の属性を持つ生徒を好む生徒を取得
+  getStudentsWhoLike(traitId: TraitId): Student[] {
+    const traitKey = TraitId[traitId].toLowerCase() as keyof TraitPreferences;
+    return this.students.filter(student => student.traitPreferences[traitKey] === 2);
+  }
+
+  // 特定の属性を持つ生徒を嫌う生徒を取得
+  getStudentsWhoDislike(traitId: TraitId): Student[] {
+    const traitKey = TraitId[traitId].toLowerCase() as keyof TraitPreferences;
+    return this.students.filter(student => student.traitPreferences[traitKey] === 0);
+  }
+
+  // 生徒間の相性を計算（属性の好みに基づく）
+  calculateCompatibility(studentId1: number, studentId2: number): number {
+    const student1 = this.getStudent(studentId1);
+    const student2 = this.getStudent(studentId2);
+    if (!student1 || !student2) return 0;
+
+    let compatibility = 0;
+    let totalFactors = 0;
+
+    // student2の属性に対するstudent1の好み
+    student2.traitIds.forEach(traitId => {
+      const traitKey = TraitId[traitId].toLowerCase() as keyof TraitPreferences;
+      const preference = student1.traitPreferences[traitKey];
+      compatibility += preference;
+      totalFactors++;
+    });
+
+    // student1の属性に対するstudent2の好み
+    student1.traitIds.forEach(traitId => {
+      const traitKey = TraitId[traitId].toLowerCase() as keyof TraitPreferences;
+      const preference = student2.traitPreferences[traitKey];
+      compatibility += preference;
+      totalFactors++;
+    });
+
+    // 0-100のスケールに正規化
+    return totalFactors > 0 ? Math.round((compatibility / (totalFactors * 2)) * 100) : 50;
   }
 }
 

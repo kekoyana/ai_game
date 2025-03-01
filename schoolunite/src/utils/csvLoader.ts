@@ -1,4 +1,4 @@
-import { Student, Gender, Grade, Class, InterestLevel, FactionSupport, Faction } from '../types/student';
+import { Student, Gender, Grade, Class, InterestLevel, FactionSupport, Faction, PreferenceLevel, TraitPreferences } from '../types/student';
 
 function determineFaction(support: FactionSupport): Faction {
   const maxSupport = Math.max(
@@ -45,6 +45,20 @@ export async function loadStudentsFromCSV(): Promise<Student[]> {
           love: parseInt(data.interests_love) as InterestLevel,
         };
 
+        // 属性に対する好みをオブジェクトに変換
+        const traitPreferences: TraitPreferences = {
+          glasses: parseInt(data.trait_glasses) as PreferenceLevel,
+          science: parseInt(data.trait_science) as PreferenceLevel,
+          literature: parseInt(data.trait_literature) as PreferenceLevel,
+          athletic: parseInt(data.trait_athletic) as PreferenceLevel,
+          artistic: parseInt(data.trait_artistic) as PreferenceLevel,
+          leadership: parseInt(data.trait_leadership) as PreferenceLevel,
+          diligent: parseInt(data.trait_diligent) as PreferenceLevel,
+          rebellious: parseInt(data.trait_rebellious) as PreferenceLevel,
+          cheerful: parseInt(data.trait_cheerful) as PreferenceLevel,
+          quiet: parseInt(data.trait_quiet) as PreferenceLevel,
+        };
+
         // 支持率をオブジェクトに変換
         const support = {
           status_quo: parseInt(data.support_status_quo),
@@ -72,6 +86,7 @@ export async function loadStudentsFromCSV(): Promise<Student[]> {
           strength: parseInt(data.strength),
           charisma: parseInt(data.charisma),
           traitIds,
+          traitPreferences,
           interests,
           support,
           isLeader: data.isLeader === 'true',
@@ -114,6 +129,16 @@ export function convertStudentToCSV(student: Student): string {
     student.support.sports,
     student.support.academic,
     student.isLeader,
+    student.traitPreferences.glasses,
+    student.traitPreferences.science,
+    student.traitPreferences.literature,
+    student.traitPreferences.athletic,
+    student.traitPreferences.artistic,
+    student.traitPreferences.leadership,
+    student.traitPreferences.diligent,
+    student.traitPreferences.rebellious,
+    student.traitPreferences.cheerful,
+    student.traitPreferences.quiet,
   ];
   
   return values.join(',');
