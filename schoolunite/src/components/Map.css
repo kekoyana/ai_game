@@ -38,50 +38,70 @@
   font-size: 12px;
 }
 
+/* 立ち入り制限レベルによるスタイル */
+.room[data-access="FREE"] {
+  border-style: solid;
+}
+
+.room[data-access="CAUTION"] {
+  border-style: dashed;
+  border-width: 2px;
+  border-color: #ff9800;
+}
+
+.room[data-access="CAUTION"]::before {
+  content: "⚠";
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  font-size: 10px;
+  color: #ff9800;
+}
+
+.room[data-access="RESTRICTED"] {
+  border-style: double;
+  border-width: 3px;
+  border-color: #f44336;
+}
+
+.room[data-access="RESTRICTED"]::before {
+  content: "⛔";
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  font-size: 10px;
+  color: #f44336;
+}
+
+.room[data-access="FORBIDDEN"] {
+  border-style: solid;
+  border-width: 3px;
+  border-color: #d32f2f;
+  background: repeating-linear-gradient(
+    45deg,
+    #ffebee,
+    #ffebee 10px,
+    #ffcdd2 10px,
+    #ffcdd2 20px
+  );
+}
+
+.room[data-access="FORBIDDEN"]::before {
+  content: "🚫";
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  font-size: 10px;
+}
+
 .room:hover {
-  background-color: #e3f2fd;
   transform: scale(1.02);
 }
 
 .room-name {
   color: #333;
   line-height: 1.2;
-}
-
-/* 教室タイプごとの色分け */
-.room.classroom {
-  background-color: #e3f2fd;
-  border-color: #2196f3;
-}
-
-.room.staffroom {
-  background-color: #fff3e0;
-  border-color: #ff9800;
-}
-
-.room.sciencelab {
-  background-color: #e8f5e9;
-  border-color: #4caf50;
-}
-
-.room.library {
-  background-color: #fff8e1;
-  border-color: #ffc107;
-}
-
-.room.infirmary {
-  background-color: #ffebee;
-  border-color: #f44336;
-}
-
-.room.musicroom, .room.techlab, .room.computerlab, .room.homeeclab, .room.avroom {
-  background-color: #e0f2f1;
-  border-color: #009688;
-}
-
-.room.principalroom, .room.broadcastroom {
-  background-color: #fafafa;
-  border-color: #9e9e9e;
+  z-index: 1;
 }
 
 /* 廊下のスタイル */
@@ -89,10 +109,41 @@
   background-color: #f5f5f5;
   border-color: #9e9e9e;
   border-style: dashed;
+  cursor: default;
+}
+
+/* 教室のスタイル */
+.room.classroom {
+  background-color: #e3f2fd;
+  border-color: #2196f3;
+}
+
+/* 特別教室のスタイル */
+.room.sciencelab, .room.techlab, .room.computerlab {
+  background-color: #e8f5e9;
+  border-color: #4caf50;
+}
+
+.room.artroom, .room.musicroom {
+  background-color: #e0f2f1;
+  border-color: #009688;
+  background-image: linear-gradient(45deg, #e0f2f1 25%, #b2dfdb 25%, #b2dfdb 50%, #e0f2f1 50%, #e0f2f1 75%, #b2dfdb 75%, #b2dfdb 100%);
+  background-size: 20px 20px;
+}
+
+/* 管理系部屋のスタイル */
+.room.staffroom, .room.principalroom {
+  background-color: #fff3e0;
+  border-color: #ff9800;
+}
+
+.room.infirmary {
+  background-color: #ffebee;
+  border-color: #f44336;
 }
 
 /* 階段のスタイル */
-.room.upstairs {
+.room.upstairs, .room.downstairs {
   background-color: #e8eaf6;
   border-color: #3f51b5;
   border-width: 2px;
@@ -105,12 +156,6 @@
   margin-left: 4px;
 }
 
-.room.downstairs {
-  background-color: #e8eaf6;
-  border-color: #3f51b5;
-  border-width: 2px;
-}
-
 .room.downstairs::after {
   content: '↓';
   font-size: 16px;
@@ -118,11 +163,14 @@
   margin-left: 4px;
 }
 
-/* 出入り口のスタイル */
-.room.entrance, .room.schoolgate {
-  background-color: #efebe9;
-  border-color: #795548;
-  border-width: 2px;
+/* 屋上のスタイル */
+.room.roof {
+  background-color: #cfd8dc;
+  border-color: #607d8b;
+  background-image: 
+    linear-gradient(0deg, #b0bec5 2px, transparent 2px),
+    linear-gradient(90deg, #b0bec5 2px, transparent 2px);
+  background-size: 20px 20px;
 }
 
 /* 校庭エリアのスタイル */
@@ -139,4 +187,26 @@
 .room.gymnasium, .room.pool, .room.dojo {
   background-color: #f3e5f5;
   border-color: #9c27b0;
+}
+
+/* 体育館裏のスタイル */
+.room.behind_gym {
+  background-color: #efebe9;
+  border-color: #795548;
+  border-style: dashed;
+  background-image: linear-gradient(45deg, rgba(121, 85, 72, 0.1) 25%, transparent 25%, transparent 50%, rgba(121, 85, 72, 0.1) 50%, rgba(121, 85, 72, 0.1) 75%, transparent 75%, transparent);
+  background-size: 10px 10px;
+}
+
+/* 出入り口のスタイル */
+.room.entrance, .room.schoolgate {
+  background-color: #efebe9;
+  border-color: #795548;
+  border-width: 2px;
+}
+
+/* アクセス不可の部屋 */
+.room[data-access="FORBIDDEN"]:hover {
+  cursor: not-allowed;
+  transform: none;
 }

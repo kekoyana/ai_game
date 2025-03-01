@@ -1,4 +1,4 @@
-export type Floor = 1 | 2 | 3 | "ground";
+export type Floor = "roof" | 3 | 2 | 1 | "ground";
 
 export type RoomType =
   | 'classroom'      // 教室
@@ -23,7 +23,18 @@ export type RoomType =
   | 'entrance'       // 昇降口
   | 'ground'         // グラウンド
   | 'tenniscourt'    // テニスコート
-  | 'schoolgate';    // 正門（校庭から校内への入口）
+  | 'schoolgate'     // 正門
+  | 'roof'           // 屋上
+  | 'artroom'        // 美術室
+  | 'behind_gym';    // 体育館裏
+
+// 部屋への立ち入り制限レベル
+export enum AccessLevel {
+  FREE = 0,          // 自由に入れる
+  CAUTION = 1,       // 注意が必要（保健室など）
+  RESTRICTED = 2,    // 制限付き（職員室など）
+  FORBIDDEN = 3      // 立入禁止（校長室など）
+}
 
 export interface Room {
   id: string;
@@ -34,5 +45,7 @@ export interface Room {
   y: number;
   width: number;
   height: number;
-  targetFloor?: Floor; // 階段を使用した時の移動先フロア
+  targetFloor?: Floor;     // 階段を使用した時の移動先フロア
+  accessLevel: AccessLevel; // 立ち入り制限レベル
+  requiredFromCorridor?: boolean; // 廊下からのみアクセス可能
 }

@@ -1,4 +1,4 @@
-import { Floor, Room } from '../types/school';
+import { Floor, Room, AccessLevel } from '../types/school';
 import { schoolRooms } from '../data/schoolData';
 import './Map.css';
 
@@ -8,7 +8,7 @@ interface MapProps {
   currentFloor: Floor;
 }
 
-const GRID_SIZE = 80; // グリッドの1マスのサイズ（ピクセル）を小さくして調整
+const GRID_SIZE = 80;
 
 export function Map({ onRoomClick, onFloorChange, currentFloor }: MapProps) {
   const getRoomStyle = (room: Room) => {
@@ -20,7 +20,62 @@ export function Map({ onRoomClick, onFloorChange, currentFloor }: MapProps) {
     };
   };
 
+  const isAccessibleFromCurrent = (room: Room, rooms: Room[]): boolean => {
+    if (!room.requiredFromCorridor) return true;
+
+    // 現在のフロアの廊下を取得
+    const corridor = rooms.find(r => 
+      r.floor === currentFloor && 
+      r.type === 'corridor'
+    );
+
+    if (!corridor) return false;
+
+    // 廊下に隣接しているかチェック
+    const roomLeft = room.x;
+    const roomRight = room.x + room.width;
+    const roomTop = room.y;
+    const roomBottom = room.y + room.height;
+    
+    const corridorLeft = corridor.x;
+    const corridorRight = corridor.x + corridor.width;
+    const corridorTop = corridor.y;
+    const corridorBottom = corridor.y + corridor.height;
+
+    // 廊下と部屋が接しているかチェック
+    return (
+      // 左側で接している
+      (roomRight === corridorLeft && 
+        !(roomBottom < corridorTop || roomTop > corridorBottom)) ||
+      // 右側で接している
+      (roomLeft === corridorRight && 
+        !(roomBottom < corridorTop || roomTop > corridorBottom)) ||
+      // 上側で接している
+      (roomBottom === corridorTop && 
+        !(roomRight < corridorLeft || roomLeft > corridorRight)) ||
+      // 下側で接している
+      (roomTop === corridorBottom && 
+        !(roomRight < corridorLeft || roomLeft > corridorRight))
+    );
+  };
+
   const handleRoomClick = (room: Room) => {
+    // 立入禁止の部屋はクリック不可
+    if (room.accessLevel === AccessLevel.FORBIDDEN) {
+      return;
+    }
+
+    // 階段、昇降口、正門は常にアクセス可能
+    const alwaysAccessible = [
+      'upstairs', 'downstairs', 'entrance', 'schoolgate'
+    ].includes(room.type);
+
+    // 廊下からのアクセスが必要な部屋をチェック
+    if (!alwaysAccessible && room.requiredFromCorridor && !isAccessibleFromCurrent(room, currentRooms)) {
+      return;
+    }
+
+    // 階層移動の処理
     if ((room.type === 'upstairs' || room.type === 'downstairs') && room.targetFloor) {
       onFloorChange(room.targetFloor);
       onRoomClick(room);
@@ -47,7 +102,8 @@ export function Map({ onRoomClick, onFloorChange, currentFloor }: MapProps) {
               className={`room ${room.type}`}
               style={getRoomStyle(room)}
               onClick={() => handleRoomClick(room)}
-              title={room.name}
+              data-access={AccessLevel[room.accessLevel]}
+              title={`${room.name}${room.accessLevel > AccessLevel.FREE ? ' (立入制限あり)' : ''}`}
             >
               <span className="room-name">{room.name}</span>
             </div>
