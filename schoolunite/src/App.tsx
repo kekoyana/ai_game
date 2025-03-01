@@ -6,6 +6,8 @@ import { studentManager } from './data/studentData'
 import { locationManager } from './managers/locationManager'
 import { timeManager } from './managers/timeManager'
 
+const PLAYER_ID = 9; // 主人公のID
+
 function App() {
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
   const [currentFloor, setCurrentFloor] = useState<Floor>(1);
@@ -76,6 +78,29 @@ function App() {
     return `${floor}F`;
   };
 
+  const renderPlayerStatus = () => {
+    const player = studentManager.getStudent(PLAYER_ID);
+    if (!player) return null;
+
+    return (
+      <div className="player-status">
+        <h2>プレイヤー情報</h2>
+        <div className="player-info">
+          <p className="player-name">{player.lastName} {player.firstName}</p>
+          <div className="hp-bar">
+            <div 
+              className="hp-bar-fill" 
+              style={{ width: `${studentManager.getHpPercentage(PLAYER_ID)}%` }}
+            ></div>
+            <span className="hp-text">
+              HP: {player.currentHp} / {player.maxHp}
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   if (loading) {
     return (
       <div className="loading-container">
@@ -106,6 +131,7 @@ function App() {
           />
         </div>
         <div className="status-area">
+          {renderPlayerStatus()}
           <h2>現在の場所</h2>
           <div className="current-location">
             <p>フロア: {getFloorDisplay(currentFloor)}</p>
