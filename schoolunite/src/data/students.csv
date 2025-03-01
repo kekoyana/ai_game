@@ -1,0 +1,10 @@
+id,name,gender,grade,class,reputation,intelligence,strength,charisma,traits,interests_study,interests_sports,interests_video,interests_games,interests_fashion,interests_sns,interests_music,interests_love,support_status_quo,support_sports,support_academic,is_leader,faction
+leader_status_quo,山田 翔太,male,2,A,45000,120,100,180,"leadership,cheerful",normal,normal,high,high,high,high,normal,normal,80,10,10,true,status_quo
+leader_sports,鈴木 剛,male,2,C,42000,90,190,160,"athletic,rebellious,leadership",none,high,normal,normal,high,high,high,high,5,85,10,true,sports
+leader_academic,佐藤 美咲,female,2,A,48000,190,80,170,"glasses,science,leadership,diligent",high,none,normal,normal,high,high,high,normal,10,5,85,true,academic
+student1,高橋 遥,female,2,B,32000,150,110,160,"cheerful,artistic",normal,normal,high,normal,high,high,high,high,70,20,10,false,
+student2,中村 大輔,male,2,C,35000,100,170,150,"athletic,cheerful",none,high,normal,high,normal,high,high,high,10,80,10,false,
+student3,木村 琴音,female,2,A,38000,180,90,140,"glasses,science,diligent",high,none,normal,high,normal,normal,high,normal,5,10,85,false,
+student4,渡辺 陽太,male,2,D,25000,130,130,130,"quiet,literature",normal,normal,high,high,normal,none,high,none,40,30,30,false,
+student5,斎藤 美月,female,2,B,28000,140,100,150,"artistic,cheerful",normal,normal,high,normal,high,high,high,high,30,35,35,false,
+player,新見 翔,male,2,B,20000,120,120,120,diligent,normal,normal,normal,normal,normal,normal,normal,normal,34,33,33,false,

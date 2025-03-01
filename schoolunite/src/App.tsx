@@ -1,12 +1,33 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './App.css'
 import { Map } from './components/Map'
 import { Room, Floor } from './types/school'
+import { Student } from './types/student'
+import { studentManager } from './data/studentData'
 
 function App() {
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
   const [currentFloor, setCurrentFloor] = useState<Floor>(1);
   const [message, setMessage] = useState<string>('学校内を探索しましょう！');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [students, setStudents] = useState<Student[]>([]);
+
+  useEffect(() => {
+    async function initializeData() {
+      try {
+        await studentManager.initialize();
+        setStudents(studentManager.getAllStudents());
+        setLoading(false);
+      } catch (err) {
+        setError('生徒データの読み込みに失敗しました。');
+        setLoading(false);
+        console.error('Failed to load student data:', err);
+      }
+    }
+
+    initializeData();
+  }, []);
 
   const handleRoomClick = (room: Room) => {
     setSelectedRoom(room);
@@ -20,7 +41,17 @@ function App() {
     } else if (room.type === 'schoolgate' && currentFloor === 'ground') {
       setMessage('校内に戻ります。');
     } else {
-      setMessage(`${room.name}に移動しました。`);
+      // その教室にいる生徒を表示
+      const roomStudents = students.filter(s => 
+        s.grade === currentFloor && 
+        s.class === room.id.charAt(room.id.length - 1)
+      );
+      
+      if (roomStudents.length > 0) {
+        setMessage(`${room.name}に移動しました。\nここには${roomStudents.length}人の生徒がいます。`);
+      } else {
+        setMessage(`${room.name}に移動しました。`);
+      }
     }
   };
 
@@ -32,6 +63,22 @@ function App() {
     if (floor === 'ground') return '校庭';
     return `${floor}F`;
   };
+
+  if (loading) {
+    return (
+      <div className="loading-container">
+        <p>データを読み込んでいます...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="error-container">
+        <p>{error}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="game-container">
