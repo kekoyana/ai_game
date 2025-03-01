@@ -1,10 +1,10 @@
-id,name,gender,grade,class,reputation,intelligence,strength,charisma,traits,interests_study,interests_sports,interests_video,interests_games,interests_fashion,interests_sns,interests_music,interests_love,support_status_quo,support_sports,support_academic,is_leader,faction
-leader_status_quo,山田 翔太,male,2,A,45000,120,100,180,"leadership,cheerful",normal,normal,high,high,high,high,normal,normal,80,10,10,true,status_quo
-leader_sports,鈴木 剛,male,2,C,42000,90,190,160,"athletic,rebellious,leadership",none,high,normal,normal,high,high,high,high,5,85,10,true,sports
-leader_academic,佐藤 美咲,female,2,A,48000,190,80,170,"glasses,science,leadership,diligent",high,none,normal,normal,high,high,high,normal,10,5,85,true,academic
-student1,高橋 遥,female,2,B,32000,150,110,160,"cheerful,artistic",normal,normal,high,normal,high,high,high,high,70,20,10,false,
-student2,中村 大輔,male,2,C,35000,100,170,150,"athletic,cheerful",none,high,normal,high,normal,high,high,high,10,80,10,false,
-student3,木村 琴音,female,2,A,38000,180,90,140,"glasses,science,diligent",high,none,normal,high,normal,normal,high,normal,5,10,85,false,
-student4,渡辺 陽太,male,2,D,25000,130,130,130,"quiet,literature",normal,normal,high,high,normal,none,high,none,40,30,30,false,
-student5,斎藤 美月,female,2,B,28000,140,100,150,"artistic,cheerful",normal,normal,high,normal,high,high,high,high,30,35,35,false,
-player,新見 翔,male,2,B,20000,120,120,120,diligent,normal,normal,normal,normal,normal,normal,normal,normal,34,33,33,false,
+id,lastName,firstName,gender,grade,class,reputation,intelligence,strength,charisma,traitIds,interests_study,interests_sports,interests_video,interests_games,interests_fashion,interests_sns,interests_music,interests_love,support_status_quo,support_sports,support_academic,isLeader
+1,山田,翔太,0,2,A,45000,120,100,180,"6,9",1,1,2,2,2,2,1,1,80,10,10,true
+2,鈴木,剛,0,2,C,42000,90,190,160,"4,8,6",0,2,1,1,2,2,2,2,5,85,10,true
+3,佐藤,美咲,1,2,A,48000,190,80,170,"1,2,6,7",2,0,1,1,2,2,2,1,10,5,85,true
+4,高橋,遥,1,2,B,32000,150,110,160,"9,5",1,1,2,1,2,2,2,2,70,20,10,false
+5,中村,大輔,0,2,C,35000,100,170,150,"4,9",0,2,1,2,1,2,2,2,10,80,10,false
+6,木村,琴音,1,2,A,38000,180,90,140,"1,2,7",2,0,1,2,1,1,2,1,5,10,85,false
+7,渡辺,陽太,0,2,D,25000,130,130,130,"10,3",1,1,2,2,1,0,2,0,40,30,30,false
+8,斎藤,美月,1,2,B,28000,140,100,150,"5,9",1,1,2,1,2,2,2,2,30,35,35,false
+9,新見,翔,0,2,B,20000,120,120,120,7,1,1,1,1,1,1,1,1,34,33,33,false

@@ -1,4 +1,16 @@
-import { Student, Gender, Grade, Class, Interest, Trait, Faction } from '../types/student';
+import { Student, Gender, Grade, Class, InterestLevel, FactionSupport, Faction } from '../types/student';
+
+function determineFaction(support: FactionSupport): Faction {
+  const maxSupport = Math.max(
+    support.status_quo,
+    support.sports,
+    support.academic
+  );
+  
+  if (maxSupport === support.status_quo) return 'status_quo';
+  if (maxSupport === support.sports) return 'sports';
+  return 'academic';
+}
 
 export async function loadStudentsFromCSV(): Promise<Student[]> {
   try {
@@ -23,14 +35,14 @@ export async function loadStudentsFromCSV(): Promise<Student[]> {
 
         // 興味関心をオブジェクトに変換
         const interests = {
-          study: data.interests_study as Interest,
-          sports: data.interests_sports as Interest,
-          video: data.interests_video as Interest,
-          games: data.interests_games as Interest,
-          fashion: data.interests_fashion as Interest,
-          sns: data.interests_sns as Interest,
-          music: data.interests_music as Interest,
-          love: data.interests_love as Interest,
+          study: parseInt(data.interests_study) as InterestLevel,
+          sports: parseInt(data.interests_sports) as InterestLevel,
+          video: parseInt(data.interests_video) as InterestLevel,
+          games: parseInt(data.interests_games) as InterestLevel,
+          fashion: parseInt(data.interests_fashion) as InterestLevel,
+          sns: parseInt(data.interests_sns) as InterestLevel,
+          music: parseInt(data.interests_music) as InterestLevel,
+          love: parseInt(data.interests_love) as InterestLevel,
         };
 
         // 支持率をオブジェクトに変換
@@ -40,27 +52,31 @@ export async function loadStudentsFromCSV(): Promise<Student[]> {
           academic: parseInt(data.support_academic),
         };
 
+        // 属性IDを配列に変換
+        const traitIds = data.traitIds
+          .replace(/['"]/g, '') // クォートを除去
+          .split(',')
+          .map(id => parseInt(id.trim()))
+          .filter(id => !isNaN(id)); // 無効な値を除外
+
         // 生徒データを作成
         const student: Student = {
-          id: data.id,
-          name: data.name,
-          gender: data.gender as Gender,
+          id: parseInt(data.id),
+          lastName: data.lastName,
+          firstName: data.firstName,
+          gender: parseInt(data.gender) as Gender,
           grade: parseInt(data.grade) as Grade,
           class: data.class as Class,
           reputation: parseInt(data.reputation),
           intelligence: parseInt(data.intelligence),
           strength: parseInt(data.strength),
           charisma: parseInt(data.charisma),
-          traits: data.traits ? data.traits.split('|') as Trait[] : [],
+          traitIds,
           interests,
           support,
-          isLeader: data.is_leader === 'true',
+          isLeader: data.isLeader === 'true',
+          faction: determineFaction(support),
         };
-
-        // ボスの場合は所属派閥を設定
-        if (data.faction) {
-          student.faction = data.faction as Faction;
-        }
 
         return student;
       });
@@ -74,10 +90,10 @@ export async function loadStudentsFromCSV(): Promise<Student[]> {
 
 // CSV文字列への変換関数（デバッグ用）
 export function convertStudentToCSV(student: Student): string {
-  const traits = student.traits.join('|');
   const values = [
     student.id,
-    student.name,
+    student.lastName,
+    student.firstName,
     student.gender,
     student.grade,
     student.class,
@@ -85,7 +101,7 @@ export function convertStudentToCSV(student: Student): string {
     student.intelligence,
     student.strength,
     student.charisma,
-    traits,
+    `"${student.traitIds.join(',')}"`,
     student.interests.study,
     student.interests.sports,
     student.interests.video,
@@ -97,8 +113,7 @@ export function convertStudentToCSV(student: Student): string {
     student.support.status_quo,
     student.support.sports,
     student.support.academic,
-    student.isLeader || false,
-    student.faction || '',
+    student.isLeader,
   ];
   
   return values.join(',');
