@@ -1,5 +1,5 @@
 import React from 'react';
-import { Student } from '../types/student';
+import { Student, FACTION_NAMES } from '../types/student';
 import './StatusModal.css';
 
 interface StatusModalProps {
@@ -32,6 +32,17 @@ export const StatusModal: React.FC<StatusModalProps> = ({ student, isOpen, onClo
     if (affinity >= -10) return '普通';
     if (affinity >= -30) return '悪い';
     return '非常に悪い';
+  };
+
+  const getClubName = (clubId: number) => {
+    switch (clubId) {
+      case 0: return '無所属';
+      case 1: return '野球部';
+      case 2: return 'サッカー部';
+      case 3: return '美術部';
+      case 4: return '図書委員会';
+      default: return `部活ID: ${clubId}`;
+    }
   };
 
   return (
@@ -81,8 +92,16 @@ export const StatusModal: React.FC<StatusModalProps> = ({ student, isOpen, onClo
 
           <div className="status-section">
             <h3>所属</h3>
-            <p>派閥：{student.faction}</p>
-            <p>部活動：{student.clubId === 0 ? '無所属' : `ID: ${student.clubId}`}</p>
+            <p>派閥：{FACTION_NAMES[student.faction]}</p>
+            <p>部活動：{getClubName(student.clubId)}</p>
+            <div className="faction-support">
+              <p>支持率：</p>
+              <ul>
+                <li>穏健派：{student.support.status_quo}%</li>
+                <li>体育派：{student.support.militar}%</li>
+                <li>進学派：{student.support.academic}%</li>
+              </ul>
+            </div>
           </div>
 
           {student.isLeader && (

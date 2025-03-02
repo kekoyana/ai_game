@@ -12,7 +12,7 @@ export type PreferenceLevel = 0 | 1 | 2;
 
 export interface Interests {
   study: InterestLevel;
-  sports: InterestLevel;
+  athletic: InterestLevel;  // 運動への興味
   video: InterestLevel;
   games: InterestLevel;
   fashion: InterestLevel;
@@ -49,12 +49,19 @@ export interface TraitPreferences {
   quiet: PreferenceLevel;      // 静か
 }
 
-export type Faction = 'status_quo' | 'sports' | 'academic';
+export type Faction = 'status_quo' | 'militar' | 'academic';
+
+// 派閥の表示名を定義
+export const FACTION_NAMES: Record<Faction, string> = {
+  'status_quo': '穏健派',
+  'militar': '体育派',
+  'academic': '進学派',
+};
 
 export interface FactionSupport {
-  status_quo: number; // 現状維持派
-  sports: number;     // スポーツ派
-  academic: number;   // 進学派
+  status_quo: number; // 穏健派
+  militar: number;   // 体育派
+  academic: number;  // 進学派
 }
 
 export interface Student {
