@@ -152,6 +152,20 @@
   border-radius: 4px;
   color: #333;
   font-size: 14px;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.students-list li:hover {
+  background-color: #e3f2fd;
+  border-color: #2196f3;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.students-list li:active {
+  transform: translateY(0);
+  box-shadow: none;
 }
 
 .message-area {

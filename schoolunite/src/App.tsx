@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import './App.css'
 import { Map } from './components/Map'
 import { Room, Floor } from './types/school'
+import { Student } from './types/student'
 import { studentManager } from './data/studentData'
 import { locationManager } from './managers/locationManager'
 import { timeManager } from './managers/timeManager'
@@ -45,24 +46,37 @@ function App() {
       locationManager.stopPeriodicUpdate();
     };
   }, []);
+const handleStudentClick = (student: Student) => {
+  const oldFriendship = studentManager.getFriendshipLevel(PLAYER_ID, student.id);
+  studentManager.increaseFriendship(PLAYER_ID, student.id);
+  const newFriendship = studentManager.getFriendshipLevel(PLAYER_ID, student.id);
+  
+  let talkMessage = `${student.lastName}${student.firstName}と話しました。`;
+  if (newFriendship > oldFriendship) {
+    talkMessage += `\n親密度が上がりました！(${oldFriendship}→${newFriendship})`;
+  }
+  setMessage(talkMessage);
+  timeManager.advanceTime(5);
+};
 
-  const handleRoomClick = (room: Room) => {
-    setSelectedRoom(room);
-    
-    const studentsInRoom = locationManager.getStudentsInRoom(room.id);
-    let roomMessage = `${room.name}に移動しました。`;
+const handleRoomClick = (room: Room) => {
+  setSelectedRoom(room);
+  
+  const studentsInRoom = locationManager.getStudentsInRoom(room.id);
+  let roomMessage = `${room.name}に移動しました。`;
 
-    if (studentsInRoom.length > 0) {
-      const studentNames = studentsInRoom
-        .map(student => `${student.lastName}${student.firstName}`)
-        .join('、');
-      roomMessage += `\nここには${studentsInRoom.length}人の生徒がいます：\n${studentNames}`;
-    } else {
-      roomMessage += '\nここには誰もいません。';
-    }
+  if (studentsInRoom.length > 0) {
+    const studentNames = studentsInRoom
+      .map(student => `${student.lastName}${student.firstName}`)
+      .join('、');
+    roomMessage += `\nここには${studentsInRoom.length}人の生徒がいます：\n${studentNames}`;
+  } else {
+    roomMessage += '\nここには誰もいません。';
+  }
 
-    // 移動時に5分進める
-    timeManager.advanceTime(5);
+  // 移動時に5分進める
+  timeManager.advanceTime(5);
+  setMessage(roomMessage);
     setMessage(roomMessage);
   };
 
@@ -146,7 +160,12 @@ function App() {
               {locationManager.getStudentsInRoom(selectedRoom.id).length > 0 ? (
                 <ul className="students-list">
                   {locationManager.getStudentsInRoom(selectedRoom.id).map(student => (
-                    <li key={student.id}>
+                    <li
+                      key={student.id}
+                      onClick={() => handleStudentClick(student)}
+                      className="student-item"
+                      style={{ cursor: 'pointer' }}
+                    >
                       {student.lastName} {student.firstName}
                       {student.isLeader && ' (リーダー)'}
                     </li>
