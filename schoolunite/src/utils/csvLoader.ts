@@ -4,12 +4,12 @@ import { ClubId } from '../types/club';
 function determineFaction(support: FactionSupport): Faction {
   const maxSupport = Math.max(
     support.status_quo,
-    support.sports,
+    support.militar,
     support.academic
   );
   
   if (maxSupport === support.status_quo) return 'status_quo';
-  if (maxSupport === support.sports) return 'sports';
+  if (maxSupport === support.militar) return 'militar';
   return 'academic';
 }
 
@@ -37,7 +37,7 @@ export async function loadStudentsFromCSV(): Promise<Student[]> {
         // 興味関心をオブジェクトに変換
         const interests = {
           study: parseInt(data.interests_study) as InterestLevel,
-          sports: parseInt(data.interests_sports) as InterestLevel,
+          athletic: parseInt(data.interests_athletic) as InterestLevel,
           video: parseInt(data.interests_video) as InterestLevel,
           games: parseInt(data.interests_games) as InterestLevel,
           fashion: parseInt(data.interests_fashion) as InterestLevel,
@@ -61,9 +61,9 @@ export async function loadStudentsFromCSV(): Promise<Student[]> {
         };
 
         // 支持率をオブジェクトに変換
-        const support = {
+        const support: FactionSupport = {
           status_quo: parseInt(data.support_status_quo),
-          sports: parseInt(data.support_sports),
+          militar: parseInt(data.support_militar),
           academic: parseInt(data.support_academic),
         };
 
@@ -77,6 +77,8 @@ export async function loadStudentsFromCSV(): Promise<Student[]> {
         // HPを数値に変換
         const maxHp = parseInt(data.maxHp);
         const currentHp = parseInt(data.currentHp);
+        const friendship = parseInt(data.friendship);
+        const affinity = parseInt(data.affinity);
 
         // 生徒データを作成
         const student: Student = {
@@ -98,7 +100,9 @@ export async function loadStudentsFromCSV(): Promise<Student[]> {
           faction: determineFaction(support),
           clubId: parseInt(data.clubId) as ClubId,
           maxHp,
-          currentHp
+          currentHp,
+          friendship,
+          affinity
         };
 
         return student;
@@ -126,7 +130,7 @@ export function convertStudentToCSV(student: Student): string {
     student.charisma,
     `"${student.traitIds.join(',')}"`,
     student.interests.study,
-    student.interests.sports,
+    student.interests.athletic,
     student.interests.video,
     student.interests.games,
     student.interests.fashion,
@@ -134,7 +138,7 @@ export function convertStudentToCSV(student: Student): string {
     student.interests.music,
     student.interests.love,
     student.support.status_quo,
-    student.support.sports,
+    student.support.militar,
     student.support.academic,
     student.isLeader,
     student.traitPreferences.glasses,
@@ -150,6 +154,8 @@ export function convertStudentToCSV(student: Student): string {
     student.clubId,
     student.maxHp,
     student.currentHp,
+    student.friendship,
+    student.affinity,
   ];
   
   return values.join(',');

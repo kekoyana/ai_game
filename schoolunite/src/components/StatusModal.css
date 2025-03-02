@@ -138,21 +138,45 @@
 .faction-support li {
   display: flex;
   justify-content: space-between;
-  padding: 4px 8px;
-  margin: 2px 0;
+  align-items: center;
+  padding: 8px 12px;
+  margin: 4px 0;
   background-color: white;
   border-radius: 4px;
   font-size: 0.9rem;
+  position: relative;
+  overflow: hidden;
 }
 
-.faction-support li:nth-child(1) {
-  border-left: 4px solid #2196f3;  /* 穏健派 */
+.faction-support li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: var(--support-width);
+  background-color: var(--support-color);
+  opacity: 0.1;
+  z-index: 1;
+  transition: width 0.3s ease;
+}
+
+.faction-support li:first-child {
+  --support-color: #2196f3;
+  border-left: 4px solid #2196f3;
 }
 
 .faction-support li:nth-child(2) {
-  border-left: 4px solid #f44336;  /* 体育派 */
+  --support-color: #f44336;
+  border-left: 4px solid #f44336;
 }
 
-.faction-support li:nth-child(3) {
-  border-left: 4px solid #4caf50;  /* 進学派 */
+.faction-support li:last-child {
+  --support-color: #4caf50;
+  border-left: 4px solid #4caf50;
+}
+
+.faction-support li span {
+  z-index: 2;
+  position: relative;
 }
