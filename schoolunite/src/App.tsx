@@ -2,12 +2,11 @@ import { useState, useEffect } from 'react'
 import './App.css'
 import { Map } from './components/Map'
 import { Room, Floor } from './types/school'
-import { Student } from './types/student'
 import { studentManager } from './data/studentData'
 import { locationManager } from './managers/locationManager'
 import { timeManager } from './managers/timeManager'
-
-const PLAYER_ID = 9; // 主人公のID
+import { StatusModal } from './components/StatusModal'
+import { Student } from './types/student'
 
 function App() {
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
@@ -16,18 +15,17 @@ function App() {
   const [currentTime, setCurrentTime] = useState<string>(timeManager.getFormattedTime());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
 
   useEffect(() => {
     async function initializeApp() {
       try {
         await studentManager.initialize();
-        const allStudents = studentManager.getAllStudents();
-        const students = allStudents.filter(student => student.id !== PLAYER_ID);
+        const students = studentManager.getAllStudents();
         
-        // 生徒の位置情報の定期更新を開始（5分ごと）
         locationManager.startPeriodicUpdate(students, 300);
         
-        // 時間の変更を監視
         timeManager.addTimeListener(() => {
           setCurrentTime(timeManager.getFormattedTime());
         });
@@ -46,74 +44,41 @@ function App() {
       locationManager.stopPeriodicUpdate();
     };
   }, []);
-const handleStudentClick = (student: Student) => {
-  const oldFriendship = studentManager.getFriendshipLevel(PLAYER_ID, student.id);
-  studentManager.increaseFriendship(PLAYER_ID, student.id);
-  const newFriendship = studentManager.getFriendshipLevel(PLAYER_ID, student.id);
-  
-  let talkMessage = `${student.lastName}${student.firstName}と話しました。`;
-  if (newFriendship > oldFriendship) {
-    talkMessage += `\n親密度が上がりました！(${oldFriendship}→${newFriendship})`;
-  }
-  setMessage(talkMessage);
-  timeManager.advanceTime(5);
-};
 
-const handleRoomClick = (room: Room) => {
-  setSelectedRoom(room);
-  
-  const studentsInRoom = locationManager.getStudentsInRoom(room.id);
-  let roomMessage = `${room.name}に移動しました。`;
+  const handleRoomClick = (room: Room) => {
+    setSelectedRoom(room);
+    
+    const studentsInRoom = locationManager.getStudentsInRoom(room.id);
+    let roomMessage = `${room.name}に移動しました。`;
 
-  if (studentsInRoom.length > 0) {
-    const studentNames = studentsInRoom
-      .map(student => `${student.lastName}${student.firstName}`)
-      .join('、');
-    roomMessage += `\nここには${studentsInRoom.length}人の生徒がいます：\n${studentNames}`;
-  } else {
-    roomMessage += '\nここには誰もいません。';
-  }
+    if (studentsInRoom.length > 0) {
+      const studentNames = studentsInRoom
+        .map(student => `${student.lastName}${student.firstName}`)
+        .join('、');
+      roomMessage += `\nここには${studentsInRoom.length}人の生徒がいます：\n${studentNames}`;
+    } else {
+      roomMessage += '\nここには誰もいません。';
+    }
 
-  // 移動時に5分進める
-  timeManager.advanceTime(5);
-  setMessage(roomMessage);
+    timeManager.advanceTime(5);
     setMessage(roomMessage);
   };
 
   const handleFloorChange = (floor: Floor) => {
     setCurrentFloor(floor);
-    // 階層移動時も5分進める
     timeManager.advanceTime(5);
     setMessage(`${typeof floor === 'number' ? floor + 'F' : floor}に移動しました。`);
+  };
+
+  const handleStudentClick = (student: Student) => {
+    setSelectedStudent(student);
+    setIsStatusModalOpen(true);
   };
 
   const getFloorDisplay = (floor: Floor) => {
     if (floor === 'ground') return '校庭';
     if (floor === 'roof') return '屋上';
     return `${floor}F`;
-  };
-
-  const renderPlayerStatus = () => {
-    const player = studentManager.getStudent(PLAYER_ID);
-    if (!player) return null;
-
-    return (
-      <div className="player-status">
-        <h2>プレイヤー情報</h2>
-        <div className="player-info">
-          <p className="player-name">{player.lastName} {player.firstName}</p>
-          <div className="hp-bar">
-            <div 
-              className="hp-bar-fill" 
-              style={{ width: `${studentManager.getHpPercentage(PLAYER_ID)}%` }}
-            ></div>
-            <span className="hp-text">
-              HP: {player.currentHp} / {player.maxHp}
-            </span>
-          </div>
-        </div>
-      </div>
-    );
   };
 
   if (loading) {
@@ -146,7 +111,6 @@ const handleRoomClick = (room: Room) => {
           />
         </div>
         <div className="status-area">
-          {renderPlayerStatus()}
           <h2>現在の場所</h2>
           <div className="current-location">
             <p>フロア: {getFloorDisplay(currentFloor)}</p>
@@ -160,11 +124,10 @@ const handleRoomClick = (room: Room) => {
               {locationManager.getStudentsInRoom(selectedRoom.id).length > 0 ? (
                 <ul className="students-list">
                   {locationManager.getStudentsInRoom(selectedRoom.id).map(student => (
-                    <li
+                    <li 
                       key={student.id}
                       onClick={() => handleStudentClick(student)}
                       className="student-item"
-                      style={{ cursor: 'pointer' }}
                     >
                       {student.lastName} {student.firstName}
                       {student.isLeader && ' (リーダー)'}
@@ -181,6 +144,17 @@ const handleRoomClick = (room: Room) => {
           <div className="message-content">{message}</div>
         </div>
       </div>
+
+      {selectedStudent && (
+        <StatusModal
+          student={selectedStudent}
+          isOpen={isStatusModalOpen}
+          onClose={() => {
+            setIsStatusModalOpen(false);
+            setSelectedStudent(null);
+          }}
+        />
+      )}
     </div>
   )
 }
