@@ -45,6 +45,34 @@ export const StatusModal: React.FC<StatusModalProps> = ({ student, isOpen, onClo
     }
   };
 
+  const renderSupportRates = () => {
+    const rates = [
+      { name: '穏健派', value: student.support.status_quo, color: '#2196f3' },
+      { name: '体育派', value: student.support.militar, color: '#f44336' },
+      { name: '進学派', value: student.support.academic, color: '#4caf50' },
+    ];
+
+    return (
+      <div className="faction-support">
+        <p>支持率：</p>
+        <ul>
+          {rates.map((rate, index) => (
+            <li 
+              key={index}
+              style={{
+                '--support-width': `${rate.value}%`,
+                '--support-color': rate.color,
+              } as React.CSSProperties}
+            >
+              <span>{rate.name}</span>
+              <span>{rate.value}%</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  };
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content" onClick={e => e.stopPropagation()}>
@@ -94,14 +122,7 @@ export const StatusModal: React.FC<StatusModalProps> = ({ student, isOpen, onClo
             <h3>所属</h3>
             <p>派閥：{FACTION_NAMES[student.faction]}</p>
             <p>部活動：{getClubName(student.clubId)}</p>
-            <div className="faction-support">
-              <p>支持率：</p>
-              <ul>
-                <li>穏健派：{student.support.status_quo}%</li>
-                <li>体育派：{student.support.militar}%</li>
-                <li>進学派：{student.support.academic}%</li>
-              </ul>
-            </div>
+            {renderSupportRates()}
           </div>
 
           {student.isLeader && (

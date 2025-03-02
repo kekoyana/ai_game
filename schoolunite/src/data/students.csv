@@ -1,7 +1,7 @@
 id,lastName,firstName,gender,grade,class,reputation,intelligence,strength,charisma,traitIds,interests_study,interests_athletic,interests_video,interests_games,interests_fashion,interests_sns,interests_music,interests_love,support_status_quo,support_militar,support_academic,isLeader,trait_glasses,trait_science,trait_literature,trait_athletic,trait_artistic,trait_leadership,trait_diligent,trait_rebellious,trait_cheerful,trait_quiet,clubId,maxHp,currentHp,friendship,affinity
-1,山田,翔太,0,2,A,45000,120,100,180,"6,9",1,1,2,2,2,2,1,1,80,10,10,true,1,1,1,2,1,2,1,1,2,0,0,150,150,0,10
-2,鈴木,剛,0,2,C,42000,90,190,160,"4,8,6",0,2,1,1,2,2,2,2,5,85,10,true,0,0,0,2,1,2,0,2,1,0,2,150,150,0,-20
-3,佐藤,美咲,1,2,A,48000,190,80,170,"1,2,6,7",2,0,1,1,2,2,2,1,10,5,85,true,2,2,1,0,1,2,2,0,1,1,4,150,150,0,15
+1,源,翔太,0,2,A,45000,120,100,180,"6,9",1,1,2,2,2,2,1,1,80,10,10,true,1,1,1,2,1,2,1,1,2,0,0,150,150,0,10
+2,熊澤,剛,0,2,C,42000,90,190,160,"4,8,6",0,2,1,1,2,2,2,2,5,85,10,true,0,0,0,2,1,2,0,2,1,0,2,150,150,0,-20
+3,九条,美咲,1,2,A,48000,190,80,170,"1,2,6,7",2,0,1,1,2,2,2,1,10,5,85,true,2,2,1,0,1,2,2,0,1,1,4,150,150,0,15
 4,高橋,遥,1,2,B,32000,150,110,160,"9,5",1,1,2,1,2,2,2,2,70,20,10,false,1,1,2,1,2,1,1,0,2,1,3,100,100,0,5
 5,中村,大輔,0,2,C,35000,100,170,150,"4,9",0,2,1,2,1,2,2,2,10,80,10,false,1,0,0,2,1,1,0,1,2,0,1,100,100,0,-10
 6,木村,琴音,1,2,A,38000,180,90,140,"1,2,7",2,0,1,2,1,1,2,1,5,10,85,false,2,2,1,0,1,1,2,0,1,2,4,100,100,0,20
