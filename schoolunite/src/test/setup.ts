@@ -1,20 +1,21 @@
-import { afterEach, beforeEach, vi } from 'vitest'
+import { beforeEach, vi } from 'vitest'
 import '@testing-library/jest-dom'
 
 beforeEach(() => {
   vi.resetAllMocks()
   document.body.innerHTML = ''
-})
+});
 
-afterEach(() => {
-  vi.clearAllMocks()
-  vi.resetModules()
-})
+// fetchのデフォルトモック
+global.fetch = vi.fn();
 
 // CSVローダーのモック
-vi.mock('../utils/csvLoader', () => ({
-  loadStudentsFromCSV: vi.fn(() => Promise.resolve([])),
-}))
+vi.mock('../utils/csvLoader', async (importOriginal) => {
+  const mod = await importOriginal<typeof import('../utils/csvLoader')>();
+  return {
+    ...mod,
+  };
+});
 
 // TimeManagerのモック
 vi.mock('../managers/timeManager', () => ({
@@ -25,4 +26,4 @@ vi.mock('../managers/timeManager', () => ({
     addTimeListener: vi.fn(),
     removeTimeListener: vi.fn(),
   },
-}))
+}));

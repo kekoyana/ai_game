@@ -13,6 +13,56 @@ function determineFaction(support: FactionSupport): Faction {
   return 'academic';
 }
 
+// CSVの1行を解析する関数
+function parseCSVLine(line: string): string[] {
+  const result: string[] = [];
+  let current = '';
+  let inQuotes = false;
+
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    
+    if (char === '"') {
+      if (!inQuotes) {
+        // 引用符開始
+        inQuotes = true;
+      } else if (i + 1 < line.length && line[i + 1] === '"') {
+        // エスケープされた引用符
+        current += '"';
+        i++; // 次の引用符をスキップ
+      } else {
+        // 引用符終了
+        inQuotes = false;
+      }
+      continue;
+    }
+    
+    if (char === ',' && !inQuotes) {
+      result.push(current.trim());
+      current = '';
+      continue;
+    }
+    
+    current += char;
+  }
+  
+  result.push(current.trim());
+  return result;
+}
+
+function parseTraitIds(value: string): number[] {
+  if (!value) return [];
+
+  // 引用符を除去し、カンマで分割
+  const cleaned = value.replace(/^"(.*)"$/, '$1').trim();
+  if (!cleaned) return [];
+
+  return cleaned
+    .split(',')
+    .map(id => parseInt(id.trim()))
+    .filter(id => !isNaN(id));
+}
+
 export async function loadStudentsFromCSV(): Promise<Student[]> {
   try {
     const response = await fetch('/src/data/students.csv');
@@ -20,13 +70,13 @@ export async function loadStudentsFromCSV(): Promise<Student[]> {
     const lines = csvText.split('\n');
     
     // ヘッダー行を取得
-    const headers = lines[0].split(',');
+    const headers = parseCSVLine(lines[0]);
     
     // データ行を処理
     const students: Student[] = lines.slice(1)
       .filter(line => line.trim() !== '') // 空行を除外
       .map(line => {
-        const values = line.split(',');
+        const values = parseCSVLine(line);
         const data: { [key: string]: string } = {};
         
         // ヘッダーと値を組み合わせてオブジェクトを作成
@@ -68,17 +118,14 @@ export async function loadStudentsFromCSV(): Promise<Student[]> {
         };
 
         // 属性IDを配列に変換
-        const traitIds = data.traitIds
-          .replace(/['"]/g, '') // クォートを除去
-          .split(',')
-          .map(id => parseInt(id.trim()))
-          .filter(id => !isNaN(id)); // 無効な値を除外
+        const traitIds = parseTraitIds(data.traitIds);
 
-        // HPを数値に変換
-        const maxHp = parseInt(data.maxHp);
-        const currentHp = parseInt(data.currentHp);
-        const friendship = parseInt(data.friendship);
-        const affinity = parseInt(data.affinity);
+        // デバッグ出力
+        console.log(`Parsing traitIds for ${data.lastName} ${data.firstName}:`, {
+          raw: data.traitIds,
+          cleaned: data.traitIds.replace(/^"(.*)"$/, '$1').trim(),
+          parsed: traitIds
+        });
 
         // 生徒データを作成
         const student: Student = {
@@ -99,10 +146,10 @@ export async function loadStudentsFromCSV(): Promise<Student[]> {
           isLeader: data.isLeader === 'true',
           faction: determineFaction(support),
           clubId: parseInt(data.clubId) as ClubId,
-          maxHp,
-          currentHp,
-          friendship,
-          affinity
+          maxHp: parseInt(data.maxHp),
+          currentHp: parseInt(data.currentHp),
+          friendship: parseInt(data.friendship),
+          affinity: parseInt(data.affinity)
         };
 
         return student;
