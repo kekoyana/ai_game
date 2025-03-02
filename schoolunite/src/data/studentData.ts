@@ -4,12 +4,12 @@ import { loadStudentsFromCSV } from '../utils/csvLoader';
 function determineFaction(support: FactionSupport): Faction {
   const maxSupport = Math.max(
     support.status_quo,
-    support.sports,
+    support.militar,
     support.academic
   );
   
   if (maxSupport === support.status_quo) return 'status_quo';
-  if (maxSupport === support.sports) return 'sports';
+  if (maxSupport === support.militar) return 'militar';
   return 'academic';
 }
 
@@ -131,14 +131,6 @@ class StudentManager {
     this.students[index] = updatedStudent;
   }
 
-  updateReputation(id: number, amount: number): void {
-    const student = this.getStudent(id);
-    if (student) {
-      const newReputation = Math.max(0, Math.min(60000, student.reputation + amount));
-      this.updateStudent(id, { reputation: newReputation });
-    }
-  }
-
   updateSupport(id: number, updates: Partial<FactionSupport>): void {
     const student = this.getStudent(id);
     if (!student) return;
@@ -146,12 +138,12 @@ class StudentManager {
     const currentSupport = student.support;
     const newSupport = { ...currentSupport, ...updates };
     
-    const total = newSupport.status_quo + newSupport.sports + newSupport.academic;
+    const total = newSupport.status_quo + newSupport.militar + newSupport.academic;
     
     if (total > 0) {
       newSupport.status_quo = Math.round((newSupport.status_quo / total) * 100);
-      newSupport.sports = Math.round((newSupport.sports / total) * 100);
-      newSupport.academic = 100 - newSupport.status_quo - newSupport.sports;
+      newSupport.militar = Math.round((newSupport.militar / total) * 100);
+      newSupport.academic = 100 - newSupport.status_quo - newSupport.militar;
     }
 
     this.updateStudent(id, { 
@@ -163,7 +155,7 @@ class StudentManager {
   updateInterests(id: number, 
     updates: Partial<{
       study: InterestLevel;
-      sports: InterestLevel;
+      athletic: InterestLevel;
       video: InterestLevel;
       games: InterestLevel;
       fashion: InterestLevel;

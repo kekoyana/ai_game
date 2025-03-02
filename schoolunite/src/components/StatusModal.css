@@ -116,3 +116,43 @@
   font-size: 0.9rem;
   font-weight: bold;
 }
+
+.faction-support {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed #dee2e6;
+}
+
+.faction-support p {
+  margin: 0 0 5px 0;
+  font-weight: bold;
+  color: #495057;
+}
+
+.faction-support ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.faction-support li {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 8px;
+  margin: 2px 0;
+  background-color: white;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.faction-support li:nth-child(1) {
+  border-left: 4px solid #2196f3;  /* 穏健派 */
+}
+
+.faction-support li:nth-child(2) {
+  border-left: 4px solid #f44336;  /* 体育派 */
+}
+
+.faction-support li:nth-child(3) {
+  border-left: 4px solid #4caf50;  /* 進学派 */
+}

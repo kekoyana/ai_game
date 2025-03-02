@@ -30,7 +30,7 @@ describe('StudentManager: 親密度テスト', () => {
     },
     interests: {
       study: 1,
-      sports: 1,
+      athletic: 1,
       video: 1,
       games: 1,
       fashion: 1,
@@ -40,7 +40,7 @@ describe('StudentManager: 親密度テスト', () => {
     },
     support: {
       status_quo: 34,
-      sports: 33,
+      militar: 33,
       academic: 33,
     },
     faction: 'status_quo',
