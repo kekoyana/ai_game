@@ -101,16 +101,12 @@ function App() {
   return (
     <div className="game-container">
       <div className="game-layout">
-        <div className="map-area">
-          <div className="time-display">
-            現在時刻: {currentTime}
-          </div>
-          <Map 
-            onRoomClick={handleRoomClick}
-            onFloorChange={handleFloorChange}
-            currentFloor={currentFloor}
-          />
-        </div>
+        <Map
+          onRoomClick={handleRoomClick}
+          onFloorChange={handleFloorChange}
+          currentFloor={currentFloor}
+          currentTime={currentTime}
+        />
         <StatusArea
           currentFloor={currentFloor}
           selectedRoom={selectedRoom}
