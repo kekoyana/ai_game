@@ -6,6 +6,7 @@ import { studentManager } from './data/studentData'
 import { locationManager } from './managers/locationManager'
 import { timeManager } from './managers/timeManager'
 import { StatusModal } from './components/StatusModal'
+import { StatusArea } from './components/StatusArea'
 import { Student } from './types/student'
 
 function App() {
@@ -110,68 +111,18 @@ function App() {
             currentFloor={currentFloor}
           />
         </div>
-        <div className="status-area">
-          <div className="player-status">
-            <h2>主人公のステータス</h2>
-            {(() => {
-              const player = studentManager.getPlayer();
-              if (!player) return null;
-              const hpPercentage = studentManager.getHpPercentage(player.id);
-              
-              return (
-                <div className="player-info">
-                  <p className="player-name">{player.lastName} {player.firstName}</p>
-                  <div className="hp-bar">
-                    <div
-                      className="hp-bar-fill"
-                      style={{ width: `${hpPercentage}%` }}
-                    />
-                    <span className="hp-text">{hpPercentage}%</span>
-                  </div>
-                  <button
-                    className="details-button"
-                    onClick={() => {
-                      setSelectedStudent(player);
-                      setIsStatusModalOpen(true);
-                    }}
-                    style={{ marginTop: '10px' }}
-                  >
-                    詳細を表示
-                  </button>
-                </div>
-              );
-            })()}
-          </div>
-
-          <div className="current-location">
-            <h2>現在の場所</h2>
-            <p>フロア: {getFloorDisplay(currentFloor)}</p>
-            {selectedRoom && (
-              <p>場所: {selectedRoom.name}</p>
-            )}
-          </div>
-          {selectedRoom && (
-            <div className="room-info">
-              <h3>この場所にいる生徒</h3>
-              {locationManager.getStudentsInRoom(selectedRoom.id).length > 0 ? (
-                <ul className="students-list">
-                  {locationManager.getStudentsInRoom(selectedRoom.id).map(student => (
-                    <li 
-                      key={student.id}
-                      onClick={() => handleStudentClick(student)}
-                      className="student-item"
-                    >
-                      {student.lastName} {student.firstName}
-                      {student.isLeader && ' (リーダー)'}
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p>誰もいません</p>
-              )}
-            </div>
-          )}
-        </div>
+        <StatusArea
+          currentFloor={currentFloor}
+          selectedRoom={selectedRoom}
+          onStudentClick={handleStudentClick}
+          onPlayerDetailsClick={() => {
+            const player = studentManager.getPlayer();
+            if (player) {
+              setSelectedStudent(player);
+              setIsStatusModalOpen(true);
+            }
+          }}
+        />
         <div className="message-area">
           <div className="message-content">{message}</div>
         </div>
