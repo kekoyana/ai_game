@@ -1,17 +1,21 @@
 import { Student } from '../types/student';
 import { determineLocation, StudentLocation, groupStudentsByRoom } from '../types/location';
 import { schoolRooms } from '../data/schoolData';
+import { timeManager } from './timeManager';
 
 class LocationManager {
   private locations: StudentLocation[] = [];
-  private updateInterval: number | null = null;
+  private students: Student[] = [];
 
   // 生徒の場所を更新
   updateLocations(students: Student[]) {
-    this.locations = students.map(student => ({
-      student,
-      roomId: determineLocation(student, schoolRooms),
-    }));
+    // 主人公を除外して位置情報を更新
+    this.locations = students
+      .filter(student => student.id !== 1) // PLAYER_IDは1
+      .map(student => ({
+        student,
+        roomId: determineLocation(student, schoolRooms),
+      }));
   }
 
   // 特定の部屋にいる生徒を取得
@@ -26,27 +30,22 @@ class LocationManager {
     return groupStudentsByRoom(this.locations);
   }
 
-  // 定期的な位置更新を開始
-  startPeriodicUpdate(students: Student[], intervalSeconds: number = 300) {
-    if (this.updateInterval) {
-      clearInterval(this.updateInterval);
-    }
-
+  // 生徒の移動更新を開始
+  startPeriodicUpdate(students: Student[]) {
+    this.students = students;
+    
     // 初回更新
     this.updateLocations(students);
 
-    // 定期更新を設定
-    this.updateInterval = window.setInterval(() => {
-      this.updateLocations(students);
-    }, intervalSeconds * 1000);
+    // ゲーム内時間の変更を監視
+    timeManager.addTimeListener(() => {
+      this.updateLocations(this.students);
+    });
   }
 
-  // 定期更新を停止
+  // 更新を停止
   stopPeriodicUpdate() {
-    if (this.updateInterval) {
-      clearInterval(this.updateInterval);
-      this.updateInterval = null;
-    }
+    this.students = [];
   }
 
   // 生徒の現在位置を取得

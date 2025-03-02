@@ -24,7 +24,7 @@ function App() {
         await studentManager.initialize();
         const students = studentManager.getAllStudents();
         
-        locationManager.startPeriodicUpdate(students, 300);
+        locationManager.startPeriodicUpdate(students);
         
         timeManager.addTimeListener(() => {
           setCurrentTime(timeManager.getFormattedTime());

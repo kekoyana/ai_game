@@ -1,6 +1,9 @@
 import { Student, FactionSupport, Faction, InterestLevel, PreferenceLevel, TraitPreferences, TraitId } from '../types/student';
 import { loadStudentsFromCSV } from '../utils/csvLoader';
 
+// 主人公のID
+export const PLAYER_ID = 1;
+
 function determineFaction(support: FactionSupport): Faction {
   const maxSupport = Math.max(
     support.status_quo,
@@ -40,12 +43,19 @@ class StudentManager {
     return this.students.find(student => student.id === id);
   }
 
+  getPlayer(): Student | undefined {
+    return this.getStudent(PLAYER_ID);
+  }
+
   // 親密度に関する機能
 
   // 親密度を増加させる（最大100）
   increaseFriendship(targetId: number, amount: number): void {
     const student = this.getStudent(targetId);
     if (!student) return;
+
+    // 自分自身との親密度は変更しない
+    if (targetId === PLAYER_ID) return;
 
     // 相性に基づいて増加量を調整
     const adjustedAmount = this.calculateAdjustedFriendshipIncrease(student, amount);
