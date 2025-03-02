@@ -1,5 +1,8 @@
+import { useState } from 'react';
 import { Floor, Room, AccessLevel } from '../types/school';
 import { schoolRooms } from '../data/schoolData';
+import { Student } from '../types/student';
+import { RoomInfo } from './RoomInfo';
 import './Map.css';
 
 interface MapProps {
@@ -7,11 +10,25 @@ interface MapProps {
   onFloorChange: (floor: Floor) => void;
   currentFloor: Floor;
   currentTime: string;
+  selectedRoom: Room | null;
+  onStudentClick: (student: Student) => void;
 }
 
 const GRID_SIZE = 80;
 
-export function Map({ onRoomClick, onFloorChange, currentFloor, currentTime }: MapProps) {
+export function Map({
+  onRoomClick,
+  onFloorChange,
+  currentFloor,
+  currentTime,
+  selectedRoom,
+  onStudentClick
+}: MapProps) {
+  const [isRoomInfoOpen, setIsRoomInfoOpen] = useState(false);
+
+  const handleRoomInfoClose = () => {
+    setIsRoomInfoOpen(false);
+  };
   const getRoomStyle = (room: Room) => {
     return {
       left: `${room.x * GRID_SIZE}px`,
@@ -88,6 +105,10 @@ export function Map({ onRoomClick, onFloorChange, currentFloor, currentTime }: M
       onRoomClick(room);
     } else {
       onRoomClick(room);
+      // 通常の部屋の場合のみモーダルを表示
+      if (!['upstairs', 'downstairs', 'entrance', 'schoolgate'].includes(room.type)) {
+        setIsRoomInfoOpen(true);
+      }
     }
   };
 
@@ -114,6 +135,12 @@ export function Map({ onRoomClick, onFloorChange, currentFloor, currentTime }: M
           ))}
         </div>
       </div>
+      <RoomInfo
+        room={selectedRoom}
+        onStudentClick={onStudentClick}
+        isOpen={isRoomInfoOpen}
+        onClose={handleRoomInfoClose}
+      />
     </div>
   );
 }

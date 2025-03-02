@@ -106,6 +106,8 @@ function App() {
           onFloorChange={handleFloorChange}
           currentFloor={currentFloor}
           currentTime={currentTime}
+          selectedRoom={selectedRoom}
+          onStudentClick={handleStudentClick}
         />
         <StatusArea
           currentFloor={currentFloor}

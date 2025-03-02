@@ -54,33 +54,12 @@ export const StatusArea = ({
       </div>
 
       <div className="current-location">
-        <h2>現在の場所</h2>
-        <p>フロア: {getFloorDisplay(currentFloor)}</p>
-        {selectedRoom && (
-          <p>場所: {selectedRoom.name}</p>
-        )}
-      </div>
-      {selectedRoom && (
-        <div className="room-info">
-          <h3>この場所にいる生徒</h3>
-          {locationManager.getStudentsInRoom(selectedRoom.id).length > 0 ? (
-            <ul className="students-list">
-              {locationManager.getStudentsInRoom(selectedRoom.id).map(student => (
-                <li 
-                  key={student.id}
-                  onClick={() => onStudentClick(student)}
-                  className="student-item"
-                >
-                  {student.lastName} {student.firstName}
-                  {student.isLeader && ' (リーダー)'}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p>誰もいません</p>
-          )}
-        </div>
-      )}
+       <h2>現在の場所</h2>
+       <p>フロア: {getFloorDisplay(currentFloor)}</p>
+       {selectedRoom && (
+         <p>場所: {selectedRoom.name}</p>
+       )}
+     </div>
     </div>
   )
 }
