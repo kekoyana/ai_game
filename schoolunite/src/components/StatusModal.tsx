@@ -84,16 +84,16 @@ export const StatusModal: React.FC<StatusModalProps> = ({ student, isOpen, onClo
         <div className="status-content">
           <div className="status-section">
             <h3>基本情報</h3>
-            <p>学年：{student.grade}年{student.class}組</p>
-            <p>性別：{student.gender === 0 ? '男子' : '女子'}</p>
+            <p>学年・クラス<span>{student.grade}年{student.class}組</span></p>
+            <p>性別<span>{student.gender === 0 ? '男子' : '女子'}</span></p>
           </div>
 
           <div className="status-section">
             <h3>能力値</h3>
-            <p>知力：{student.intelligence}</p>
-            <p>体力：{student.strength}</p>
-            <p>魅力：{student.charisma}</p>
-            <p>評判：{student.reputation}</p>
+            <p>知力<span>{student.intelligence}</span></p>
+            <p>体力<span>{student.strength}</span></p>
+            <p>魅力<span>{student.charisma}</span></p>
+            <p>評判<span>{student.reputation}</span></p>
           </div>
 
           <div className="status-section">
@@ -114,14 +114,14 @@ export const StatusModal: React.FC<StatusModalProps> = ({ student, isOpen, onClo
 
           <div className="status-section">
             <h3>関係性</h3>
-            <p>親密度：{student.friendship} ({getFriendshipLevel(student.friendship)})</p>
-            <p>相性：{getAffinityText(student.affinity)}</p>
+            <p>親密度<span>{student.friendship} ({getFriendshipLevel(student.friendship)})</span></p>
+            <p>相性<span>{getAffinityText(student.affinity)}</span></p>
           </div>
 
           <div className="status-section">
             <h3>所属</h3>
-            <p>派閥：{FACTION_NAMES[student.faction]}</p>
-            <p>部活動：{getClubName(student.clubId)}</p>
+            <p>派閥<span>{FACTION_NAMES[student.faction]}</span></p>
+            <p>部活動<span>{getClubName(student.clubId)}</span></p>
             {renderSupportRates()}
           </div>
 

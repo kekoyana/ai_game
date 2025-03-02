@@ -7,6 +7,7 @@ import { locationManager } from './managers/locationManager'
 import { timeManager } from './managers/timeManager'
 import { StatusModal } from './components/StatusModal'
 import { StatusArea } from './components/StatusArea'
+import { ActionModal } from './components/ActionModal'
 import { Student } from './types/student'
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
+  const [isActionModalOpen, setIsActionModalOpen] = useState(false);
 
   useEffect(() => {
     async function initializeApp() {
@@ -73,6 +75,10 @@ function App() {
 
   const handleStudentClick = (student: Student) => {
     setSelectedStudent(student);
+    setIsActionModalOpen(true);
+  };
+
+  const handleShowDetails = () => {
     setIsStatusModalOpen(true);
   };
 
@@ -127,14 +133,25 @@ function App() {
       </div>
 
       {selectedStudent && (
-        <StatusModal
-          student={selectedStudent}
-          isOpen={isStatusModalOpen}
-          onClose={() => {
-            setIsStatusModalOpen(false);
-            setSelectedStudent(null);
-          }}
-        />
+        <>
+          <ActionModal
+            student={selectedStudent}
+            isOpen={isActionModalOpen}
+            onClose={() => {
+              setIsActionModalOpen(false);
+              setSelectedStudent(null);
+            }}
+            onShowDetails={handleShowDetails}
+          />
+          <StatusModal
+            student={selectedStudent}
+            isOpen={isStatusModalOpen}
+            onClose={() => {
+              setIsStatusModalOpen(false);
+              setSelectedStudent(null);
+            }}
+          />
+        </>
       )}
     </div>
   )
