@@ -6,11 +6,12 @@ interface MapProps {
   onRoomClick: (room: Room) => void;
   onFloorChange: (floor: Floor) => void;
   currentFloor: Floor;
+  currentTime: string;
 }
 
 const GRID_SIZE = 80;
 
-export function Map({ onRoomClick, onFloorChange, currentFloor }: MapProps) {
+export function Map({ onRoomClick, onFloorChange, currentFloor, currentTime }: MapProps) {
   const getRoomStyle = (room: Room) => {
     return {
       left: `${room.x * GRID_SIZE}px`,
@@ -94,6 +95,9 @@ export function Map({ onRoomClick, onFloorChange, currentFloor }: MapProps) {
 
   return (
     <div className="map-container">
+      <div className="time-display">
+        現在時刻: {currentTime}
+      </div>
       <div className="floor-map">
         <div className="rooms-container">
           {currentRooms.map(room => (
