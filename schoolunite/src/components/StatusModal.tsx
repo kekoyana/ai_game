@@ -26,14 +26,6 @@ export const StatusModal: React.FC<StatusModalProps> = ({ student, isOpen, onClo
     return '他人';
   };
 
-  const getAffinityText = (affinity: number) => {
-    if (affinity > 30) return '非常に良い';
-    if (affinity > 10) return '良い';
-    if (affinity >= -10) return '普通';
-    if (affinity >= -30) return '悪い';
-    return '非常に悪い';
-  };
-
   const getClubName = (clubId: number) => {
     switch (clubId) {
       case 0: return '無所属';
@@ -115,7 +107,6 @@ export const StatusModal: React.FC<StatusModalProps> = ({ student, isOpen, onClo
           <div className="status-section">
             <h3>関係性</h3>
             <p>親密度<span>{student.friendship} ({getFriendshipLevel(student.friendship)})</span></p>
-            <p>相性<span>{getAffinityText(student.affinity)}</span></p>
           </div>
 
           <div className="status-section">
