@@ -139,7 +139,6 @@ function App() {
             isOpen={isActionModalOpen}
             onClose={() => {
               setIsActionModalOpen(false);
-              setSelectedStudent(null);
             }}
             onShowDetails={handleShowDetails}
           />
@@ -148,6 +147,8 @@ function App() {
             isOpen={isStatusModalOpen}
             onClose={() => {
               setIsStatusModalOpen(false);
+              // StatusModalを閉じた時点で生徒との対話を終了する
+              setIsActionModalOpen(false);
               setSelectedStudent(null);
             }}
           />
