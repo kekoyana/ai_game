@@ -118,7 +118,7 @@ export const PersuasionModal: React.FC<PersuasionModalProps> = ({
   const player = studentManager.getPlayer();
   if (!player) return null;
 
-  const performAction = () => {
+  const performAction = async () => {
     if (!selectedAction) return;
 
     let situationChange = 0;
@@ -158,117 +158,121 @@ export const PersuasionModal: React.FC<PersuasionModalProps> = ({
       }
     }
 
-    // AIのターンの場合、実行を遅延させる
-    if (!gameState.isPlayerTurn) {
-      performAIAction();
-      return;
-    }
-
     // プレイヤーのターンの場合は選択をリセット
     setSelectedAction(null);
     setSelectedTopic(null);
     setSelectedElectionAction(null);
 
-    // ターン終了処理
     const newSituation = Math.max(-100, Math.min(100, gameState.situation + situationChange));
     const newTurn = gameState.turn + 0.5;
 
+    // ゲーム終了判定
     if (newTurn > 5) {
-      // ゲーム終了
       const playerWon = newSituation > 0;
       updateFactionSupport(player, student, playerWon, Math.abs(newSituation));
       onClose();
       return;
     }
 
+    // 次のターンの状態をセット
     setGameState({
       atmosphere: newAtmosphere,
       situation: newSituation,
       turn: newTurn,
-      isPlayerTurn: !gameState.isPlayerTurn
+      isPlayerTurn: false
     });
+
+    // AIのターンを開始
+    await performAIAction(newAtmosphere, newSituation, newTurn);
   };
 
-  const performAIAction = async () => {
-    // まずAIの選択を表示
-    const action: ActionType = Math.random() < 0.6 ? 'topic' : 'election';
-    setAiAction(`${student.lastName}は考えています...`);
+  const performAIAction = async (currentAtmosphere: Atmosphere, currentSituation: number, currentTurn: number) => {
+    try {
+      const action: ActionType = Math.random() < 0.6 ? 'topic' : 'election';
+      
+      // "考えています" の表示
+      setAiAction(`${student.lastName}は考えています...`);
+      await new Promise(resolve => setTimeout(resolve, 1500));
 
-    // 選択の表示を遅延
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setAiAction(`${student.lastName}は${action === 'topic' ? '話題' : '選挙の話'}を選びました`);
+      // 選択した行動の表示
+      setAiAction(`${student.lastName}は${action === 'topic' ? '話題' : '選挙の話'}を選びました`);
+      await new Promise(resolve => setTimeout(resolve, 1500));
 
-    // 実際のアクション実行を遅延
-    await new Promise(resolve => setTimeout(resolve, 1500));
+      let situationChange = 0;
+      let newAtmosphere = currentAtmosphere;
 
-    let situationChange = 0;
-    let newAtmosphere = gameState.atmosphere;
+      if (action === 'topic') {
+        const topics = Object.keys(student.interests) as (keyof Interests)[];
+        const topic = topics[Math.floor(Math.random() * topics.length)];
+        const playerInterest = player.interests[topic];
 
-    if (action === 'topic') {
-      // ランダムな話題を選択
-      const topics = Object.keys(student.interests) as (keyof Interests)[];
-      const topic = topics[Math.floor(Math.random() * topics.length)];
-      const playerInterest = player.interests[topic];
-
-      if (playerInterest === 2) {
-        situationChange = -20;
-        newAtmosphere = relaxAtmosphere(newAtmosphere);
-      } else if (playerInterest === 0) {
-        situationChange = 20;
-        newAtmosphere = tenseAtmosphere(newAtmosphere);
-      }
-
-      setAiAction(`${student.lastName}は${INTEREST_NAMES[topic]}について話しました`);
-    } else {
-      // 選挙の話
-      const electionAction: ElectionAction = Math.random() < 0.5 ? 'promote_own' : 'criticize_opponent';
-      if (electionAction === 'promote_own') {
-        const success = Math.random() < calculatePromoteSuccess(student, player, gameState.atmosphere);
-        if (success) {
-          situationChange = -30;
-          setAiAction(`${student.lastName}は${FACTION_NAMES[student.faction]}の良さを熱心に説明しました`);
-        } else {
-          situationChange = 15;
-          setAiAction(`${student.lastName}の説明は説得力に欠けていました`);
-        }
-        newAtmosphere = 'normal';
-      } else {
-        const success = Math.random() < calculateCriticizeSuccess(student, player, gameState.atmosphere);
-        if (success) {
+        if (playerInterest === 2) {
           situationChange = -20;
-          setAiAction(`${student.lastName}は${FACTION_NAMES[player.faction]}の問題点を指摘しました`);
-        } else {
-          situationChange = 30;
-          setAiAction(`${student.lastName}の批判は的外れでした`);
+          newAtmosphere = relaxAtmosphere(newAtmosphere);
+        } else if (playerInterest === 0) {
+          situationChange = 20;
+          newAtmosphere = tenseAtmosphere(newAtmosphere);
         }
-        newAtmosphere = tenseAtmosphere(newAtmosphere);
+
+        setAiAction(`${student.lastName}は${INTEREST_NAMES[topic]}について話しました`);
+      } else {
+        const electionAction: ElectionAction = Math.random() < 0.5 ? 'promote_own' : 'criticize_opponent';
+        if (electionAction === 'promote_own') {
+          const success = Math.random() < calculatePromoteSuccess(student, player, currentAtmosphere);
+          if (success) {
+            situationChange = -30;
+            setAiAction(`${student.lastName}は${FACTION_NAMES[student.faction]}の良さを熱心に説明しました`);
+          } else {
+            situationChange = 15;
+            setAiAction(`${student.lastName}の説明は説得力に欠けていました`);
+          }
+          newAtmosphere = 'normal';
+        } else {
+          const success = Math.random() < calculateCriticizeSuccess(student, player, currentAtmosphere);
+          if (success) {
+            situationChange = -20;
+            setAiAction(`${student.lastName}は${FACTION_NAMES[player.faction]}の問題点を指摘しました`);
+          } else {
+            situationChange = 30;
+            setAiAction(`${student.lastName}の批判は的外れでした`);
+          }
+          newAtmosphere = tenseAtmosphere(newAtmosphere);
+        }
       }
-    }
 
-    // 1秒後にターン終了処理
-    await new Promise(resolve => setTimeout(resolve, 1000));
+      // アクションの結果を2秒間表示
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
-    const newSituation = Math.max(-100, Math.min(100, gameState.situation + situationChange));
-    const newTurn = gameState.turn + 0.5;
+      const newSituation = Math.max(-100, Math.min(100, currentSituation + situationChange));
+      const newTurn = currentTurn + 0.5;
 
-    if (newTurn > 5) {
-      // ゲーム終了
-      const playerWon = newSituation > 0;
-      updateFactionSupport(player, student, playerWon, Math.abs(newSituation));
+      // ゲーム終了判定
+      if (newTurn > 5) {
+        const playerWon = newSituation > 0;
+        updateFactionSupport(player, student, playerWon, Math.abs(newSituation));
+        setAiAction('');
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        onClose();
+        return;
+      }
+
+      // 次のターンの状態をセット
+      setGameState({
+        atmosphere: newAtmosphere,
+        situation: newSituation,
+        turn: newTurn,
+        isPlayerTurn: true
+      });
+
+      // AIのメッセージをクリア
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setAiAction('');
+    } catch (error) {
+      console.error('AI action error:', error);
+      setAiAction('エラーが発生しました。');
+      await new Promise(resolve => setTimeout(resolve, 1500));
       onClose();
-      return;
     }
-
-    setGameState({
-      atmosphere: newAtmosphere,
-      situation: newSituation,
-      turn: newTurn,
-      isPlayerTurn: true
-    });
-
-    // AIのメッセージをクリア
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setAiAction('');
   };
 
   return (
@@ -316,9 +320,9 @@ export const PersuasionModal: React.FC<PersuasionModalProps> = ({
                   {Object.entries(student.interests).map(([key, value]) => (
                     <button
                       key={key}
-                      onClick={() => {
+                      onClick={async () => {
                         setSelectedTopic(key as keyof Interests);
-                        performAction();
+                        await performAction();
                       }}
                     >
                       {INTEREST_NAMES[key]}
@@ -333,17 +337,17 @@ export const PersuasionModal: React.FC<PersuasionModalProps> = ({
                 <h3>アプローチを選んでください</h3>
                 <div className="election-buttons">
                   <button
-                    onClick={() => {
+                    onClick={async () => {
                       setSelectedElectionAction('promote_own');
-                      performAction();
+                      await performAction();
                     }}
                   >
                     {FACTION_NAMES[player.faction]}の良さを説明
                   </button>
                   <button
-                    onClick={() => {
+                    onClick={async () => {
                       setSelectedElectionAction('criticize_opponent');
-                      performAction();
+                      await performAction();
                     }}
                   >
                     {FACTION_NAMES[student.faction]}の問題点を指摘
