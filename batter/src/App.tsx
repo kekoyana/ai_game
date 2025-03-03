@@ -19,25 +19,29 @@ interface GameResult {
   atBats: number
 }
 
+interface InningResult {
+  inning: number
+  hits: number
+  runs: number
+}
+
+interface PlayerGameResult {
+  order: number
+  plateAppearances: number
+  atBats: number
+  hits: number
+  singles: number
+  doubles: number
+  homeruns: number
+  steals: number
+}
+
 interface GameDetails {
   gameId: number
   score: number
   enemyScore: number
-  inningResults: {
-    inning: number
-    hits: number
-    runs: number
-  }[]
-  playerResults: {
-    order: number
-    plateAppearances: number
-    atBats: number
-    hits: number
-    singles: number
-    doubles: number
-    homeruns: number
-    steals: number
-  }[]
+  inningResults: InningResult[]
+  playerResults: PlayerGameResult[]
 }
 
 interface TeamStats {
@@ -54,15 +58,15 @@ interface TeamStats {
 
 function App() {
   const initialStats = [
-    [0.300, 10, 30], // 1番
-    [0.280, 5,  20],  // 2番
-    [0.300, 30, 10], // 3番
-    [0.290, 30, 10],  // 4番
-    [0.280, 30, 5],  // 5番
-    [0.230, 5, 10], // 6番
-    [0.230, 5, 10], // 7番
-    [0.230, 5, 10],  // 8番
-    [0.230, 5, 10],   // 9番
+    [0.320, 15, 30], // 1番
+    [0.285, 8, 25],  // 2番
+    [0.305, 28, 10], // 3番
+    [0.275, 35, 5],  // 4番
+    [0.290, 25, 8],  // 5番
+    [0.265, 18, 12], // 6番
+    [0.250, 12, 15], // 7番
+    [0.235, 5, 10],  // 8番
+    [0.245, 3, 8],   // 9番
   ]
 
   const [players] = useState<Player[]>(
@@ -140,7 +144,7 @@ function App() {
     return runs
   }
 
-  const simulateGames = () => {
+  const simulateGames = (numGames: number, saveGameDetails: boolean = true) => {
     const gameResults: GameDetails[] = []
     const totalResults = players.map(() => ({
       hits: 0,
@@ -156,13 +160,13 @@ function App() {
     let totalRuns = 0
     let totalEnemyRuns = 0
 
-    for (let game = 0; game < 143; game++) {
+    for (let game = 0; game < numGames; game++) {
       let currentBatter = 0
       let outs = 0
       let inning = 1
       let runs = 0
-      const inningResults: { inning: number; hits: number; runs: number }[] = []
-      const playerResults = players.map(p => ({
+      const inningResults: InningResult[] = []
+      const playerResults: PlayerGameResult[] = players.map(p => ({
         order: p.order,
         plateAppearances: 0,
         atBats: 0,
@@ -259,21 +263,28 @@ function App() {
       totalRuns += runs
       totalEnemyRuns += enemyScore
 
-      gameResults.push({
-        gameId: game + 1,
-        score: runs,
-        enemyScore,
-        inningResults,
-        playerResults
-      })
+      if (saveGameDetails) {
+        gameResults.push({
+          gameId: game + 1,
+          score: runs,
+          enemyScore,
+          inningResults,
+          playerResults
+        })
+      }
     }
 
     setResults(totalResults)
-    setGameResults(gameResults)
+    if (saveGameDetails) {
+      setGameResults(gameResults)
+    } else {
+      setGameResults([])
+      setSelectedGame(null)
+    }
     setTeamStats({
-      games: 143,
+      games: numGames,
       wins,
-      losses: 143 - wins,
+      losses: numGames - wins,
       totalRuns,
       totalEnemyRuns,
       totalHits: totalResults.reduce((sum, player) => sum + player.hits, 0),
@@ -286,11 +297,18 @@ function App() {
   return (
     <div className="container">
       <h1>打順シミュレーター</h1>
-      <button onClick={simulateGames} className="simulate-button">143試合シミュレーション</button>
+      <div className="simulate-buttons">
+        <button onClick={() => simulateGames(143, true)} className="simulate-button">
+          143試合シミュレーション
+        </button>
+        <button onClick={() => simulateGames(14300, false)} className="simulate-button large">
+          14300試合シミュレーション
+        </button>
+      </div>
       
       {teamStats.games > 0 && (
         <div className="team-stats">
-          <h2>チーム成績</h2>
+          <h2>チーム成績（{teamStats.games}試合）</h2>
           <div className="team-stats-grid">
             <div className="team-stat-item">
               <span className="label">試合数:</span>
@@ -321,12 +339,12 @@ function App() {
               <span className="value">{teamStats.totalSteals}</span>
             </div>
             <div className="team-stat-item">
-              <span className="label">総得点:</span>
-              <span className="value">{teamStats.totalRuns}</span>
+              <span className="label">試合平均得点:</span>
+              <span className="value">{(teamStats.totalRuns / teamStats.games).toFixed(2)}</span>
             </div>
             <div className="team-stat-item">
-              <span className="label">総失点:</span>
-              <span className="value">{teamStats.totalEnemyRuns}</span>
+              <span className="label">試合平均失点:</span>
+              <span className="value">{(teamStats.totalEnemyRuns / teamStats.games).toFixed(2)}</span>
             </div>
           </div>
         </div>
@@ -362,11 +380,13 @@ function App() {
                 {results[index].atBats > 0 && (
                   <div className="simulation-results">
                     <h4>シーズン成績</h4>
+                    <p>試合数: {teamStats.games}</p>
                     <p>打席数: {results[index].plateAppearances}</p>
                     <p>打数: {results[index].atBats}</p>
                     <p>打率: {(results[index].hits / results[index].atBats).toFixed(3)}</p>
                     <p>安打: {results[index].hits}本 (単: {results[index].singles}, 二: {results[index].doubles}, 本: {results[index].homeruns})</p>
-                    <p>盗塁: {results[index].steals}個</p>
+                    <p>本塁打率: {(results[index].homeruns / teamStats.games * 143).toFixed(1)}/143試合</p>
+                    <p>盗塁: {results[index].steals}個（{(results[index].steals / teamStats.games * 143).toFixed(1)}/143試合）</p>
                   </div>
                 )}
               </div>
