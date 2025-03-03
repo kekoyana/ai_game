@@ -50,24 +50,82 @@ class StudentManager {
   // 親密度に関する機能
 
   // 親密度を増加させる（最大100）
-  increaseFriendship(targetId: number, amount: number): void {
+  increaseFriendship(targetId: number): { amount: number, newFriendship: number } {
     const student = this.getStudent(targetId);
-    if (!student) return;
+    if (!student) return { amount: 0, newFriendship: 0 };
 
     // 自分自身との親密度は変更しない
-    if (targetId === PLAYER_ID) return;
+    if (targetId === PLAYER_ID) return { amount: 0, newFriendship: student.friendship };
 
-    // 相性に基づいて増加量を調整
-    const adjustedAmount = this.calculateAdjustedFriendshipIncrease(student, amount);
+    // 相性に基づいて増加量を計算
+    const adjustedAmount = this.calculateAdjustedFriendshipIncrease(student);
     const newFriendship = Math.min(100, student.friendship + adjustedAmount);
     
     this.updateStudent(targetId, { friendship: newFriendship });
+    
+    return {
+      amount: adjustedAmount,
+      newFriendship: newFriendship
+    };
+  }
+
+  // 相性を計算（興味の一致度、派閥一致、属性の好き嫌いを考慮）
+  private calculateCompatibility(target: Student): number {
+    const player = this.getPlayer();
+    if (!player) return 1.0;
+
+    let compatibility = 1.0;
+
+    // 1. 派閥一致のボーナス
+    if (player.faction === target.faction) {
+      compatibility += 0.2; // 派閥一致で20%ボーナス
+    }
+
+    // 2. 興味の一致度を計算
+    let matchingInterests = 0;
+    let totalInterests = 0;
+    Object.entries(player.interests).forEach(([key, value]) => {
+      const targetValue = target.interests[key as keyof typeof target.interests];
+      if (value === targetValue && value > 0) {
+        matchingInterests++;
+      }
+      if (value > 0 || targetValue > 0) {
+        totalInterests++;
+      }
+    });
+    if (totalInterests > 0) {
+      const interestMatch = matchingInterests / totalInterests;
+      compatibility += interestMatch * 0.3; // 興味完全一致で30%ボーナス
+    }
+
+    // 3. 属性による好き嫌いの影響
+    let traitEffect = 0;
+    player.traitIds.forEach(traitId => {
+      const traitKey = TraitId[traitId].toLowerCase() as keyof TraitPreferences;
+      const preference = target.traitPreferences[traitKey];
+      if (preference === 2) { // 好き
+        traitEffect += 0.1;
+      } else if (preference === 0) { // 嫌い
+        traitEffect -= 0.1;
+      }
+    });
+    compatibility += traitEffect;
+
+    // 最低0.5倍、最大2.0倍に制限
+    return Math.max(0.5, Math.min(2.0, compatibility));
+  }
+
+  // 親密度の増加量を計算
+  private calculateFriendshipIncrease(): number {
+    // 基本値3-15の範囲でランダム
+    return Math.floor(Math.random() * 13) + 3;
   }
 
   // 相性に基づいて親密度の増加量を調整
-  private calculateAdjustedFriendshipIncrease(student: Student, baseAmount: number): number {
-    const affinityMultiplier = 1 + (student.affinity / 100); // -50%～+50%の範囲で調整
-    return Math.round(baseAmount * affinityMultiplier);
+  private calculateAdjustedFriendshipIncrease(student: Student): number {
+    const baseIncrease = this.calculateFriendshipIncrease();
+    const compatibility = this.calculateCompatibility(student);
+    return Math.round(baseIncrease * compatibility);
   }
 
   // HP関連の機能

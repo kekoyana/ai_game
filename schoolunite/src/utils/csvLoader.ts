@@ -120,13 +120,6 @@ export async function loadStudentsFromCSV(): Promise<Student[]> {
         // 属性IDを配列に変換
         const traitIds = parseTraitIds(data.traitIds);
 
-        // デバッグ出力
-        console.log(`Parsing traitIds for ${data.lastName} ${data.firstName}:`, {
-          raw: data.traitIds,
-          cleaned: data.traitIds.replace(/^"(.*)"$/, '$1').trim(),
-          parsed: traitIds
-        });
-
         // 生徒データを作成
         const student: Student = {
           id: parseInt(data.id),

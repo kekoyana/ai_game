@@ -104,3 +104,29 @@
   font-size: 0.9rem;
   color: #666;
 }
+
+.action-result {
+  padding: 16px;
+  text-align: center;
+}
+
+.action-result p {
+  font-size: 1.1rem;
+  color: #333;
+  margin: 0 0 16px 0;
+}
+
+.action-result .action-button {
+  background-color: #4caf50;
+  color: white;
+  padding: 8px 24px;
+  border-radius: 4px;
+  border: none;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.action-result .action-button:hover {
+  background-color: #45a049;
+}

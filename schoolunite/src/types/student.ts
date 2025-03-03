@@ -85,7 +85,6 @@ export interface Student {
   currentHp: number;     // 現在のHP
   maxHp: number;         // 最大HP
   friendship: number;    // 親密度（0-100）
-  affinity: number;      // 相性ボーナス（-50～50）
 }
 
 // 好みレベルの文字列と数値の変換
