@@ -54,15 +54,15 @@ interface TeamStats {
 
 function App() {
   const initialStats = [
-    [0.320, 15, 30], // 1番
-    [0.285, 8, 25],  // 2番
-    [0.305, 28, 10], // 3番
-    [0.275, 35, 5],  // 4番
-    [0.290, 25, 8],  // 5番
-    [0.265, 18, 12], // 6番
-    [0.250, 12, 15], // 7番
-    [0.235, 5, 10],  // 8番
-    [0.245, 3, 8],   // 9番
+    [0.300, 10, 30], // 1番
+    [0.280, 5,  20],  // 2番
+    [0.300, 30, 10], // 3番
+    [0.290, 30, 10],  // 4番
+    [0.280, 30, 5],  // 5番
+    [0.230, 5, 10], // 6番
+    [0.230, 5, 10], // 7番
+    [0.230, 5, 10],  // 8番
+    [0.230, 5, 10],   // 9番
   ]
 
   const [players] = useState<Player[]>(
@@ -161,7 +161,7 @@ function App() {
       let outs = 0
       let inning = 1
       let runs = 0
-      const inningResults = []
+      const inningResults: { inning: number; hits: number; runs: number }[] = []
       const playerResults = players.map(p => ({
         order: p.order,
         plateAppearances: 0,
@@ -396,15 +396,51 @@ function App() {
             {selectedGame && (
               <div className="game-details">
                 <h3>第{selectedGame}戦 詳細</h3>
-                {gameResults
-                  .find(g => g.gameId === selectedGame)
-                  ?.inningResults.map((inning) => (
-                    <div key={inning.inning} className="inning-result">
-                      <span>{inning.inning}回</span>
-                      <span>安打: {inning.hits}</span>
-                      <span>得点: {inning.runs}</span>
-                    </div>
-                  ))}
+                <div className="game-summary">
+                  <h4>試合概要</h4>
+                  {gameResults
+                    .find(g => g.gameId === selectedGame)
+                    ?.inningResults.map((inning) => (
+                      <div key={inning.inning} className="inning-result">
+                        <span>{inning.inning}回</span>
+                        <span>安打: {inning.hits}</span>
+                        <span>得点: {inning.runs}</span>
+                      </div>
+                    ))}
+                </div>
+                <div className="game-player-results">
+                  <h4>選手成績</h4>
+                  <table className="player-results-table">
+                    <thead>
+                      <tr>
+                        <th>打順</th>
+                        <th>打席</th>
+                        <th>打数</th>
+                        <th>安打</th>
+                        <th>二塁打</th>
+                        <th>本塁打</th>
+                        <th>打率</th>
+                        <th>盗塁</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {gameResults
+                        .find(g => g.gameId === selectedGame)
+                        ?.playerResults.map((result) => (
+                          <tr key={result.order}>
+                            <td>{result.order}番</td>
+                            <td>{result.plateAppearances}</td>
+                            <td>{result.atBats}</td>
+                            <td>{result.hits}</td>
+                            <td>{result.doubles}</td>
+                            <td>{result.homeruns}</td>
+                            <td>{result.atBats > 0 ? (result.hits / result.atBats).toFixed(3) : '.000'}</td>
+                            <td>{result.steals}</td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
           </div>

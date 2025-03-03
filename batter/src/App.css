@@ -22,22 +22,28 @@
   }
 }
 
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+body {
+  margin: 0;
   background-color: var(--bg-primary);
   color: var(--text-primary);
 }
 
-.container {
-  padding: 20px;
+#root {
+  width: 100%;
+  margin: 0 auto;
+  padding: 2rem;
+  box-sizing: border-box;
 }
 
-h1, h2, h3 {
+.container {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+h1, h2, h3, h4 {
   color: var(--text-primary);
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .simulate-button {
@@ -66,13 +72,12 @@ h1, h2, h3 {
 
 .team-stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 1rem;
-  margin-top: 1rem;
 }
 
 .team-stat-item {
-  padding: 0.8rem;
+  padding: 1rem;
   border-radius: 4px;
   background-color: var(--bg-primary);
 }
@@ -81,7 +86,7 @@ h1, h2, h3 {
   display: block;
   color: var(--text-secondary);
   font-size: 0.9rem;
-  margin-bottom: 0.3rem;
+  margin-bottom: 0.5rem;
 }
 
 .team-stat-item .value {
@@ -93,16 +98,15 @@ h1, h2, h3 {
 
 .results-container {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 3fr 2fr;
   gap: 2rem;
   align-items: start;
 }
 
 .players-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1.5rem;
-  padding: 1rem;
 }
 
 @media (max-width: 1400px) {
@@ -111,15 +115,17 @@ h1, h2, h3 {
   }
 }
 
-@media (max-width: 1024px) {
-  .players-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
 @media (max-width: 768px) {
+  .container {
+    padding: 0;
+  }
+  
   .players-grid {
     grid-template-columns: 1fr;
+  }
+
+  .team-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
@@ -128,19 +134,13 @@ h1, h2, h3 {
   border-radius: 8px;
   padding: 1.5rem;
   box-shadow: 0 2px 4px var(--card-shadow);
-  transition: transform 0.2s ease;
-}
-
-.player-card:hover {
-  transform: translateY(-2px);
 }
 
 .player-card h3 {
   color: var(--text-primary);
   margin-bottom: 1rem;
-  font-size: 1.2rem;
-  border-bottom: 2px solid var(--border-color);
   padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--border-color);
 }
 
 .stats {
@@ -174,7 +174,6 @@ h1, h2, h3 {
 
 .stat-fill {
   height: 100%;
-  background-color: #4CAF50;
   transition: width 0.3s ease;
 }
 
@@ -197,16 +196,13 @@ h1, h2, h3 {
 }
 
 .simulation-results h4 {
-  color: var(--text-primary);
-  margin-bottom: 0.8rem;
-  font-size: 1rem;
+  margin-bottom: 1rem;
 }
 
 .simulation-results p {
   color: var(--text-secondary);
   font-size: 0.9rem;
   margin: 0.4rem 0;
-  text-align: left;
 }
 
 .games-section {
@@ -214,14 +210,17 @@ h1, h2, h3 {
   border-radius: 8px;
   padding: 1.5rem;
   box-shadow: 0 2px 4px var(--card-shadow);
+  position: sticky;
+  top: 2rem;
 }
 
 .games-list {
-  max-height: 500px;
+  max-height: 300px;
   overflow-y: auto;
   border: 1px solid var(--border-color);
   border-radius: 4px;
   background-color: var(--bg-primary);
+  margin-bottom: 1.5rem;
 }
 
 .game-item {
@@ -245,6 +244,7 @@ h1, h2, h3 {
 
 .game-item .score {
   font-weight: bold;
+  text-align: center;
 }
 
 .game-item .win {
@@ -257,10 +257,11 @@ h1, h2, h3 {
   font-weight: bold;
 }
 
-.game-details {
-  margin-top: 1.5rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--border-color);
+.game-summary {
+  background-color: var(--bg-primary);
+  border-radius: 4px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .inning-result {
@@ -275,6 +276,36 @@ h1, h2, h3 {
   border-bottom: none;
 }
 
-.inning-result span {
+.game-player-results {
+  background-color: var(--bg-primary);
+  border-radius: 4px;
+  padding: 1rem;
+  overflow-x: auto;
+}
+
+.player-results-table {
+  width: 100%;
+  border-collapse: collapse;
   font-size: 0.9rem;
+  min-width: 600px;
+}
+
+.player-results-table th,
+.player-results-table td {
+  padding: 0.8rem;
+  text-align: center;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.player-results-table th {
+  font-weight: bold;
+  background-color: var(--bg-secondary);
+  position: sticky;
+  top: 0;
+}
+
+.player-results-table tbody tr:hover {
+  background-color: var(--bg-secondary);
 }
