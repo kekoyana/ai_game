@@ -79,6 +79,13 @@ function App() {
   };
 
   const handleShowDetails = () => {
+    // 最新のstudentデータを取得して状態を更新
+    if (selectedStudent) {
+      const updatedStudent = studentManager.getStudent(selectedStudent.id);
+      if (updatedStudent) {
+        setSelectedStudent(updatedStudent);
+      }
+    }
     setIsStatusModalOpen(true);
   };
 
