@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Student, Interests, FACTION_NAMES } from '../types/student';
 import { studentManager } from '../data/studentData';
 import {
@@ -112,163 +112,233 @@ export const PersuasionModal: React.FC<PersuasionModalProps> = ({
   const [selectedTopic, setSelectedTopic] = useState<keyof Interests | null>(null);
   const [selectedElectionAction, setSelectedElectionAction] = useState<ElectionAction | null>(null);
   const [aiAction, setAiAction] = useState<string>('');
+  const [actionMessage, setActionMessage] = useState<string>('');
+  const [shouldExecuteAction, setShouldExecuteAction] = useState(false);
+
+  useEffect(() => {
+    if (shouldExecuteAction && (selectedTopic || selectedElectionAction)) {
+      console.log('useEffect内でアクション実行:', {
+        selectedAction,
+        selectedTopic,
+        selectedElectionAction
+      });
+      
+      const executeAction = async () => {
+        await performAction();
+        setShouldExecuteAction(false);
+      };
+      
+      executeAction();
+    }
+  }, [shouldExecuteAction]);
 
   if (!isOpen) return null;
 
   const player = studentManager.getPlayer();
   if (!player) return null;
 
-  const performAction = () => {
+  const performAction = async () => {
     if (!selectedAction) return;
 
-    let situationChange = 0;
-    let newAtmosphere = gameState.atmosphere;
+    try {
+      console.log('プレイヤーのアクション開始:', {
+        selectedAction,
+        selectedTopic,
+        selectedElectionAction,
+        currentState: gameState
+      });
 
-    if (selectedAction === 'topic' && selectedTopic) {
-      // 話題による説得
-      const playerInterest = player.interests[selectedTopic];
-      const targetInterest = student.interests[selectedTopic];
+      let situationChange = 0;
+      let newAtmosphere = gameState.atmosphere;
+      let message = '';
 
-      if (targetInterest === 2) { // 相手の好み
-        situationChange = 20;
-        newAtmosphere = relaxAtmosphere(newAtmosphere);
-      } else if (targetInterest === 0) { // 相手の嫌い
-        situationChange = -20;
-        newAtmosphere = tenseAtmosphere(newAtmosphere);
-      }
-    } else if (selectedAction === 'election' && selectedElectionAction) {
-      // 選挙の話による説得
-      if (selectedElectionAction === 'promote_own') {
-        const success = Math.random() < calculatePromoteSuccess(player, student, gameState.atmosphere);
-        if (success) {
-          situationChange = 30;
-        } else {
-          situationChange = -15;
-        }
-        newAtmosphere = 'normal';
-      } else {
-        const success = Math.random() < calculateCriticizeSuccess(player, student, gameState.atmosphere);
-        if (success) {
+      // プレイヤーのアクション実行
+      if (selectedAction === 'topic' && selectedTopic) {
+        const playerInterest = player.interests[selectedTopic];
+        const targetInterest = student.interests[selectedTopic];
+
+        if (targetInterest === 2) {
           situationChange = 20;
+          newAtmosphere = relaxAtmosphere(newAtmosphere);
+          message = `${student.lastName}は${INTEREST_NAMES[selectedTopic]}に興味を示しています！`;
+        } else if (targetInterest === 0) {
+          situationChange = -20;
           newAtmosphere = tenseAtmosphere(newAtmosphere);
+          message = `${student.lastName}は${INTEREST_NAMES[selectedTopic]}に興味がないようです...`;
         } else {
-          situationChange = -30;
+          message = `${student.lastName}は${INTEREST_NAMES[selectedTopic]}に普通の反応を示しています`;
+        }
+      } else if (selectedAction === 'election' && selectedElectionAction) {
+        if (selectedElectionAction === 'promote_own') {
+          const success = Math.random() < calculatePromoteSuccess(player, student, gameState.atmosphere);
+          if (success) {
+            situationChange = 30;
+            message = `${student.lastName}は${FACTION_NAMES[player.faction]}の主張に興味を示しています！`;
+          } else {
+            situationChange = -15;
+            message = `${student.lastName}は${FACTION_NAMES[player.faction]}の主張に懐疑的な様子です...`;
+          }
+          newAtmosphere = 'normal';
+        } else {
+          const success = Math.random() < calculateCriticizeSuccess(player, student, gameState.atmosphere);
+          if (success) {
+            situationChange = 20;
+            message = `${student.lastName}は${FACTION_NAMES[student.faction]}への批判に納得した様子です！`;
+          } else {
+            situationChange = -30;
+            message = `${student.lastName}は怒っています...`;
+          }
           newAtmosphere = tenseAtmosphere(newAtmosphere);
         }
       }
-    }
 
-    // AIのターンの場合、実行を遅延させる
-    if (!gameState.isPlayerTurn) {
-      performAIAction();
-      return;
-    }
+      // 選択をリセット
+      setSelectedAction(null);
+      setSelectedTopic(null);
+      setSelectedElectionAction(null);
 
-    // プレイヤーのターンの場合は選択をリセット
-    setSelectedAction(null);
-    setSelectedTopic(null);
-    setSelectedElectionAction(null);
+      // メッセージを表示
+      setActionMessage(message);
+      
+      // 新しい状態を計算
+      const newSituation = Math.max(-100, Math.min(100, gameState.situation + situationChange));
+      const newTurn = gameState.turn + 0.5;
 
-    // ターン終了処理
-    const newSituation = Math.max(-100, Math.min(100, gameState.situation + situationChange));
-    const newTurn = gameState.turn + 0.5;
+      // ゲーム終了判定
+      if (newTurn > 5) {
+        const playerWon = newSituation > 0;
+        updateFactionSupport(player, student, playerWon, Math.abs(newSituation));
+        onClose();
+        return;
+      }
 
-    if (newTurn > 5) {
-      // ゲーム終了
-      const playerWon = newSituation > 0;
-      updateFactionSupport(player, student, playerWon, Math.abs(newSituation));
+      // メッセージを表示する時間を確保
+      await new Promise(resolve => setTimeout(resolve, 1500));
+
+      // 状態更新前のログ
+      console.log('プレイヤーのアクション結果:', {
+        situationChange,
+        newAtmosphere,
+        message,
+        newSituation,
+        newTurn
+      });
+
+      // 次のターンに移行
+      setActionMessage('');
+      setGameState({
+        atmosphere: newAtmosphere,
+        situation: newSituation,
+        turn: newTurn,
+        isPlayerTurn: false
+      });
+
+      // AIのターン開始前のログ
+      console.log('状態更新完了、AIのターン開始準備:', {
+        atmosphere: newAtmosphere,
+        situation: newSituation,
+        turn: newTurn
+      });
+
+      // AIのターンを開始
+      await performAIAction(newAtmosphere, newSituation, newTurn);
+    } catch (error) {
+      console.error('Player action error:', error);
+      setActionMessage('エラーが発生しました。');
+      await new Promise(resolve => setTimeout(resolve, 1500));
       onClose();
-      return;
     }
-
-    setGameState({
-      atmosphere: newAtmosphere,
-      situation: newSituation,
-      turn: newTurn,
-      isPlayerTurn: !gameState.isPlayerTurn
-    });
   };
 
-  const performAIAction = async () => {
-    // まずAIの選択を表示
-    const action: ActionType = Math.random() < 0.6 ? 'topic' : 'election';
-    setAiAction(`${student.lastName}は考えています...`);
+  const performAIAction = async (currentAtmosphere: Atmosphere, currentSituation: number, currentTurn: number) => {
+    try {
+      console.log('AIアクション開始:', {
+        currentAtmosphere,
+        currentSituation,
+        currentTurn
+      });
 
-    // 選択の表示を遅延
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setAiAction(`${student.lastName}は${action === 'topic' ? '話題' : '選挙の話'}を選びました`);
+      const action: ActionType = Math.random() < 0.6 ? 'topic' : 'election';
+      console.log('AI選択したアクション:', action);
+      
+      setAiAction(`${student.lastName}は考えています...`);
+      await new Promise(resolve => setTimeout(resolve, 1500));
 
-    // 実際のアクション実行を遅延
-    await new Promise(resolve => setTimeout(resolve, 1500));
+      setAiAction(`${student.lastName}は${action === 'topic' ? '話題' : '選挙の話'}を選びました`);
+      await new Promise(resolve => setTimeout(resolve, 1500));
 
-    let situationChange = 0;
-    let newAtmosphere = gameState.atmosphere;
+      let situationChange = 0;
+      let newAtmosphere = currentAtmosphere;
+      let message = '';
 
-    if (action === 'topic') {
-      // ランダムな話題を選択
-      const topics = Object.keys(student.interests) as (keyof Interests)[];
-      const topic = topics[Math.floor(Math.random() * topics.length)];
-      const playerInterest = player.interests[topic];
+      if (action === 'topic') {
+        const topics = Object.keys(student.interests) as (keyof Interests)[];
+        const topic = topics[Math.floor(Math.random() * topics.length)];
+        const playerInterest = player.interests[topic];
 
-      if (playerInterest === 2) {
-        situationChange = -20;
-        newAtmosphere = relaxAtmosphere(newAtmosphere);
-      } else if (playerInterest === 0) {
-        situationChange = 20;
-        newAtmosphere = tenseAtmosphere(newAtmosphere);
-      }
-
-      setAiAction(`${student.lastName}は${INTEREST_NAMES[topic]}について話しました`);
-    } else {
-      // 選挙の話
-      const electionAction: ElectionAction = Math.random() < 0.5 ? 'promote_own' : 'criticize_opponent';
-      if (electionAction === 'promote_own') {
-        const success = Math.random() < calculatePromoteSuccess(student, player, gameState.atmosphere);
-        if (success) {
-          situationChange = -30;
-          setAiAction(`${student.lastName}は${FACTION_NAMES[student.faction]}の良さを熱心に説明しました`);
-        } else {
-          situationChange = 15;
-          setAiAction(`${student.lastName}の説明は説得力に欠けていました`);
-        }
-        newAtmosphere = 'normal';
-      } else {
-        const success = Math.random() < calculateCriticizeSuccess(student, player, gameState.atmosphere);
-        if (success) {
+        if (playerInterest === 2) {
           situationChange = -20;
-          setAiAction(`${student.lastName}は${FACTION_NAMES[player.faction]}の問題点を指摘しました`);
-        } else {
-          situationChange = 30;
-          setAiAction(`${student.lastName}の批判は的外れでした`);
+          newAtmosphere = relaxAtmosphere(newAtmosphere);
+        } else if (playerInterest === 0) {
+          situationChange = 20;
+          newAtmosphere = tenseAtmosphere(newAtmosphere);
         }
-        newAtmosphere = tenseAtmosphere(newAtmosphere);
+
+        setAiAction(`${student.lastName}は${INTEREST_NAMES[topic]}について話しました`);
+      } else {
+        const electionAction: ElectionAction = Math.random() < 0.5 ? 'promote_own' : 'criticize_opponent';
+        if (electionAction === 'promote_own') {
+          const success = Math.random() < calculatePromoteSuccess(student, player, currentAtmosphere);
+          if (success) {
+            situationChange = -30;
+            setAiAction(`${student.lastName}は${FACTION_NAMES[student.faction]}の良さを熱心に説明しました`);
+          } else {
+            situationChange = 15;
+            setAiAction(`${student.lastName}の説明は説得力に欠けていました`);
+          }
+          newAtmosphere = 'normal';
+        } else {
+          const success = Math.random() < calculateCriticizeSuccess(student, player, currentAtmosphere);
+          if (success) {
+            situationChange = -20;
+            setAiAction(`${student.lastName}は${FACTION_NAMES[player.faction]}の問題点を指摘しました`);
+          } else {
+            situationChange = 30;
+            setAiAction(`${student.lastName}の批判は的外れでした`);
+          }
+          newAtmosphere = tenseAtmosphere(newAtmosphere);
+        }
       }
-    }
 
-    // 1秒後にターン終了処理
-    await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
-    const newSituation = Math.max(-100, Math.min(100, gameState.situation + situationChange));
-    const newTurn = gameState.turn + 0.5;
+      const newSituation = Math.max(-100, Math.min(100, currentSituation + situationChange));
+      const newTurn = currentTurn + 0.5;
 
-    if (newTurn > 5) {
-      // ゲーム終了
-      const playerWon = newSituation > 0;
-      updateFactionSupport(player, student, playerWon, Math.abs(newSituation));
+      if (newTurn > 5) {
+        const playerWon = newSituation > 0;
+        updateFactionSupport(player, student, playerWon, Math.abs(newSituation));
+        setAiAction('');
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        onClose();
+        return;
+      }
+
+      setGameState({
+        atmosphere: newAtmosphere,
+        situation: newSituation,
+        turn: newTurn,
+        isPlayerTurn: true
+      });
+
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setAiAction('');
+    } catch (error) {
+      console.error('AI action error:', error);
+      setAiAction('エラーが発生しました。');
+      await new Promise(resolve => setTimeout(resolve, 1500));
       onClose();
-      return;
     }
-
-    setGameState({
-      atmosphere: newAtmosphere,
-      situation: newSituation,
-      turn: newTurn,
-      isPlayerTurn: true
-    });
-
-    // AIのメッセージをクリア
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setAiAction('');
   };
 
   return (
@@ -302,6 +372,12 @@ export const PersuasionModal: React.FC<PersuasionModalProps> = ({
           </div>
         </div>
 
+        {actionMessage && (
+          <div className="action-message">
+            <p>{actionMessage}</p>
+          </div>
+        )}
+
         {gameState.isPlayerTurn ? (
           <div className="action-selection">
             {!selectedAction ? (
@@ -317,8 +393,9 @@ export const PersuasionModal: React.FC<PersuasionModalProps> = ({
                     <button
                       key={key}
                       onClick={() => {
+                        console.log('話題選択ボタンクリック:', key);
                         setSelectedTopic(key as keyof Interests);
-                        performAction();
+                        setShouldExecuteAction(true);
                       }}
                     >
                       {INTEREST_NAMES[key]}
@@ -334,16 +411,18 @@ export const PersuasionModal: React.FC<PersuasionModalProps> = ({
                 <div className="election-buttons">
                   <button
                     onClick={() => {
+                      console.log('選挙アプローチ選択: promote_own');
                       setSelectedElectionAction('promote_own');
-                      performAction();
+                      setShouldExecuteAction(true);
                     }}
                   >
                     {FACTION_NAMES[player.faction]}の良さを説明
                   </button>
                   <button
                     onClick={() => {
+                      console.log('選挙アプローチ選択: criticize_opponent');
                       setSelectedElectionAction('criticize_opponent');
-                      performAction();
+                      setShouldExecuteAction(true);
                     }}
                   >
                     {FACTION_NAMES[student.faction]}の問題点を指摘

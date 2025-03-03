@@ -79,6 +79,21 @@
   transition: all 0.3s ease;
 }
 
+.action-message {
+  background: #e3f2fd;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.action-message p {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #1976d2;
+  font-weight: 500;
+}
+
 .action-selection {
   display: flex;
   flex-direction: column;
