@@ -1,17 +1,101 @@
+:root {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --text-primary: #333333;
+  --text-secondary: #495057;
+  --border-color: #e9ecef;
+  --card-shadow: rgba(0, 0, 0, 0.1);
+  --win-color: #4CAF50;
+  --lose-color: #f44336;
+  --selected-bg: #e3f2fd;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-primary: #1a1a1a;
+    --bg-secondary: #2d2d2d;
+    --text-primary: #ffffff;
+    --text-secondary: #cccccc;
+    --border-color: #404040;
+    --card-shadow: rgba(0, 0, 0, 0.3);
+    --selected-bg: #3d3d3d;
+  }
+}
+
 #root {
   max-width: 1280px;
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
 }
 
 .container {
   padding: 20px;
 }
 
-h1 {
-  color: #333;
+h1, h2, h3 {
+  color: var(--text-primary);
   margin-bottom: 2rem;
+}
+
+.simulate-button {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-bottom: 2rem;
+  transition: background-color 0.3s ease;
+}
+
+.simulate-button:hover {
+  background-color: #45a049;
+}
+
+.team-stats {
+  background-color: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 4px var(--card-shadow);
+}
+
+.team-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.team-stat-item {
+  padding: 0.8rem;
+  border-radius: 4px;
+  background-color: var(--bg-primary);
+}
+
+.team-stat-item .label {
+  display: block;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-bottom: 0.3rem;
+}
+
+.team-stat-item .value {
+  display: block;
+  color: var(--text-primary);
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.results-container {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+  align-items: start;
 }
 
 .players-grid {
@@ -19,6 +103,12 @@ h1 {
   grid-template-columns: repeat(3, 1fr);
   gap: 1.5rem;
   padding: 1rem;
+}
+
+@media (max-width: 1400px) {
+  .results-container {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 1024px) {
@@ -34,10 +124,10 @@ h1 {
 }
 
 .player-card {
-  background-color: #f8f9fa;
+  background-color: var(--bg-secondary);
   border-radius: 8px;
   padding: 1.5rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px var(--card-shadow);
   transition: transform 0.2s ease;
 }
 
@@ -46,10 +136,10 @@ h1 {
 }
 
 .player-card h3 {
-  color: #2c3e50;
+  color: var(--text-primary);
   margin-bottom: 1rem;
   font-size: 1.2rem;
-  border-bottom: 2px solid #e9ecef;
+  border-bottom: 2px solid var(--border-color);
   padding-bottom: 0.5rem;
 }
 
@@ -68,7 +158,7 @@ h1 {
 
 .stat span {
   font-size: 0.9rem;
-  color: #495057;
+  color: var(--text-secondary);
 }
 
 .stat span:last-child {
@@ -77,7 +167,7 @@ h1 {
 
 .stat-bar {
   height: 10px;
-  background-color: #e9ecef;
+  background-color: var(--border-color);
   border-radius: 5px;
   overflow: hidden;
 }
@@ -88,17 +178,103 @@ h1 {
   transition: width 0.3s ease;
 }
 
-/* 打率のバー */
 .stat:nth-child(1) .stat-fill {
   background-color: #2196F3;
 }
 
-/* 本塁打のバー */
 .stat:nth-child(2) .stat-fill {
   background-color: #FF5722;
 }
 
-/* 盗塁のバー */
 .stat:nth-child(3) .stat-fill {
   background-color: #9C27B0;
+}
+
+.simulation-results {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.simulation-results h4 {
+  color: var(--text-primary);
+  margin-bottom: 0.8rem;
+  font-size: 1rem;
+}
+
+.simulation-results p {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin: 0.4rem 0;
+  text-align: left;
+}
+
+.games-section {
+  background-color: var(--bg-secondary);
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px var(--card-shadow);
+}
+
+.games-list {
+  max-height: 500px;
+  overflow-y: auto;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: var(--bg-primary);
+}
+
+.game-item {
+  display: grid;
+  grid-template-columns: 1fr 1fr 40px;
+  align-items: center;
+  padding: 0.8rem;
+  border-bottom: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  color: var(--text-primary);
+}
+
+.game-item:hover {
+  background-color: var(--border-color);
+}
+
+.game-item.selected {
+  background-color: var(--selected-bg);
+}
+
+.game-item .score {
+  font-weight: bold;
+}
+
+.game-item .win {
+  color: var(--win-color);
+  font-weight: bold;
+}
+
+.game-item .lose {
+  color: var(--lose-color);
+  font-weight: bold;
+}
+
+.game-details {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.inning-result {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  padding: 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-secondary);
+}
+
+.inning-result:last-child {
+  border-bottom: none;
+}
+
+.inning-result span {
+  font-size: 0.9rem;
 }
