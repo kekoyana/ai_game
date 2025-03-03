@@ -8,6 +8,7 @@ import { timeManager } from './managers/timeManager'
 import { StatusModal } from './components/StatusModal'
 import { StatusArea } from './components/StatusArea'
 import { ActionModal } from './components/ActionModal'
+import { PersuasionModal } from './components/PersuasionModal'
 import { Student } from './types/student'
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
   const [isActionModalOpen, setIsActionModalOpen] = useState(false);
+  const [isPersuasionModalOpen, setIsPersuasionModalOpen] = useState(false);
 
   useEffect(() => {
     async function initializeApp() {
@@ -89,6 +91,11 @@ function App() {
     setIsStatusModalOpen(true);
   };
 
+  const handlePersuade = (student: Student) => {
+    setSelectedStudent(student);
+    setIsPersuasionModalOpen(true);
+  };
+
   const getFloorDisplay = (floor: Floor) => {
     if (floor === 'ground') return '校庭';
     if (floor === 'roof') return '屋上';
@@ -148,14 +155,22 @@ function App() {
               setIsActionModalOpen(false);
             }}
             onShowDetails={handleShowDetails}
+            onPersuade={handlePersuade}
           />
           <StatusModal
             student={selectedStudent}
             isOpen={isStatusModalOpen}
             onClose={() => {
               setIsStatusModalOpen(false);
-              // StatusModalを閉じた時点で生徒との対話を終了する
               setIsActionModalOpen(false);
+              setSelectedStudent(null);
+            }}
+          />
+          <PersuasionModal
+            student={selectedStudent}
+            isOpen={isPersuasionModalOpen}
+            onClose={() => {
+              setIsPersuasionModalOpen(false);
               setSelectedStudent(null);
             }}
           />
