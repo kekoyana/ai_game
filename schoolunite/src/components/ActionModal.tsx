@@ -9,17 +9,22 @@ interface ActionModalProps {
   isOpen: boolean;
   onClose: () => void;
   onShowDetails: (student: Student) => void;
+  onPersuade: (student: Student) => void;
 }
 
 export const ActionModal: React.FC<ActionModalProps> = ({
   student,
   isOpen,
   onClose,
-  onShowDetails
+  onShowDetails,
+  onPersuade
 }) => {
   const [message, setMessage] = useState<string | null>(null);
 
   if (!isOpen) return null;
+
+  const player = studentManager.getPlayer();
+  const canPersuade = player && player.faction !== student.faction;
 
   const handleChat = () => {
     const result = studentManager.increaseFriendship(student.id);
@@ -55,6 +60,18 @@ export const ActionModal: React.FC<ActionModalProps> = ({
               <span className="action-label">雑談をする</span>
               <span className="action-effect">親密度が上がります</span>
             </button>
+            {canPersuade && (
+              <button 
+                className="action-button persuade" 
+                onClick={() => {
+                  onPersuade(student);
+                  onClose();
+                }}
+              >
+                <span className="action-label">説得する</span>
+                <span className="action-effect">支持派閥を変えさせます</span>
+              </button>
+            )}
             <button className="action-button details" onClick={handleShowDetails}>
               <span className="action-label">詳細を見る</span>
               <span className="action-effect">生徒の情報を確認</span>
