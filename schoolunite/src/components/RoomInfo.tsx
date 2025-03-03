@@ -1,5 +1,5 @@
 import { Room } from '../types/school'
-import { Student } from '../types/student'
+import { Student, FACTION_NAMES } from '../types/student'
 import { locationManager } from '../managers/locationManager'
 
 import './RoomInfo.css'
@@ -30,8 +30,13 @@ export const RoomInfo = ({ room, onStudentClick, isOpen, onClose }: RoomInfoProp
                 onClick={() => onStudentClick(student)}
                 className="student-item"
               >
-                {student.lastName} {student.firstName}
-                {student.isLeader && ' (リーダー)'}
+                <div className="student-name">
+                  {student.lastName} {student.firstName}
+                  {student.isLeader && ' (リーダー)'}
+                </div>
+                <div className="student-faction">
+                  {FACTION_NAMES[student.faction]}
+                </div>
               </li>
             ))}
           </ul>
