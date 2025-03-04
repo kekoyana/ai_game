@@ -9,13 +9,26 @@ class LocationManager {
 
   // 生徒の場所を更新
   updateLocations(students: Student[]) {
-    // 主人公を除外して位置情報を更新
-    this.locations = students
-      .filter(student => student.id !== 1) // PLAYER_IDは1
-      .map(student => ({
-        student,
-        roomId: determineLocation(student, schoolRooms),
-      }));
+    // 学校が閉まっている場合は生徒を配置しない
+    if (!timeManager.isSchoolOpen()) {
+      this.locations = [];
+      return;
+    }
+
+    // 出現率に基づいて生徒をフィルタリング
+    const presenceRate = timeManager.getStudentPresenceRate();
+    const presentStudents = students.filter(student => {
+      // 主人公は除外
+      if (student.id === 1) return false;
+      // ランダムに生徒を選択（出現率に基づく）
+      return Math.random() < presenceRate;
+    });
+
+    // 位置情報を更新
+    this.locations = presentStudents.map(student => ({
+      student,
+      roomId: determineLocation(student, schoolRooms),
+    }));
   }
 
   // 特定の部屋にいる生徒を取得

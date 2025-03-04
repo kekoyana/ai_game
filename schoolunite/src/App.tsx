@@ -51,6 +51,11 @@ function App() {
   }, []);
 
   const handleRoomClick = (room: Room) => {
+    if (!timeManager.isSchoolOpen()) {
+      setMessage('現在は学校に入れません。');
+      return;
+    }
+
     setSelectedRoom(room);
     
     const studentsInRoom = locationManager.getStudentsInRoom(room.id);
@@ -65,14 +70,38 @@ function App() {
       roomMessage += '\nここには誰もいません。';
     }
 
+    const oldTime = timeManager.getCurrentTime();
     timeManager.advanceTime(5);
+    const newTime = timeManager.getCurrentTime();
+
+    // 18:00になったら自動退出
+    if (oldTime.getHours() < 18 && newTime.getHours() >= 18) {
+      setMessage('18時になりました。下校時刻です。');
+      setSelectedRoom(null);
+      return;
+    }
+
     setMessage(roomMessage);
   };
 
   const handleFloorChange = (floor: Floor) => {
+    if (!timeManager.isSchoolOpen()) {
+      setMessage('現在は学校に入れません。');
+      return;
+    }
+
     setCurrentFloor(floor);
+    const oldTime = timeManager.getCurrentTime();
     timeManager.advanceTime(5);
-    setMessage(`${typeof floor === 'number' ? floor + 'F' : floor}に移動しました。`);
+    const newTime = timeManager.getCurrentTime();
+
+    // 18:00になったら自動退出
+    if (oldTime.getHours() < 18 && newTime.getHours() >= 18) {
+      setMessage('18時になりました。下校時刻です。');
+      return;
+    }
+
+    setMessage(`${getFloorDisplay(floor)}に移動しました。`);
   };
 
   const handleStudentClick = (student: Student) => {

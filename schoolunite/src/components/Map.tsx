@@ -3,6 +3,7 @@ import { Floor, Room, AccessLevel } from '../types/school';
 import { schoolRooms } from '../data/schoolData';
 import { Student } from '../types/student';
 import { RoomInfo } from './RoomInfo';
+import { timeManager } from '../managers/timeManager';
 import './Map.css';
 
 interface MapProps {
@@ -116,8 +117,20 @@ export function Map({
 
   return (
     <div className="map-container">
-      <div className="time-display">
-        現在時刻: {currentTime}
+      <div className={`time-display ${timeManager.isSchoolOpen() ? '' : 'closed'}`}>
+        <span className="date">{currentTime.split(' ')[0]}</span>
+        <span className="time">{currentTime.split(' ')[1]}</span>
+        {!timeManager.isSchoolOpen() && (
+          <button
+            className="skip-button"
+            onClick={() => {
+              timeManager.advanceToNextWeekday();
+              setIsRoomInfoOpen(false);
+            }}
+          >
+            次の平日へ
+          </button>
+        )}
       </div>
       <div className="floor-map">
         <div className="rooms-container">

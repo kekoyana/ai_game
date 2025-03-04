@@ -5,6 +5,38 @@
   flex-direction: column;
 }
 
+.skip-button {
+  margin-top: 8px;
+  padding: 6px 12px;
+  background-color: #2196f3;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.skip-button:hover {
+  background-color: #1976d2;
+}
+
+.skip-button:active {
+  background-color: #0d47a1;
+}
+
+.time-display.closed .skip-button {
+  background-color: #ff5722;
+}
+
+.time-display.closed .skip-button:hover {
+  background-color: #f4511e;
+}
+
+.time-display.closed .skip-button:active {
+  background-color: #d84315;
+}
+
 .floor-map {
   flex: 1;
   background-color: #f5f5f5;
