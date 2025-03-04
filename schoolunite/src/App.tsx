@@ -173,6 +173,7 @@ function App() {
               setIsPersuasionModalOpen(false);
               setSelectedStudent(null);
             }}
+            onSetMessage={setMessage}
           />
         </>
       )}
