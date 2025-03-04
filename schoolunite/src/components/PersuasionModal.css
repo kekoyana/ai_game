@@ -79,21 +79,6 @@
   transition: all 0.3s ease;
 }
 
-.action-message {
-  background: #e3f2fd;
-  padding: 16px;
-  border-radius: 8px;
-  margin-bottom: 24px;
-  text-align: center;
-}
-
-.action-message p {
-  margin: 0;
-  font-size: 1.1rem;
-  color: #1976d2;
-  font-weight: 500;
-}
-
 .action-selection {
   display: flex;
   flex-direction: column;
@@ -151,6 +136,36 @@
 .thinking-dots:after {
   content: '.';
   animation: dots 1.5s infinite;
+}
+
+.game-result {
+  text-align: center;
+  padding: 32px;
+}
+
+.game-result h2 {
+  margin: 0 0 24px 0;
+  color: #333;
+  font-size: 1.4rem;
+  white-space: pre-line;
+  line-height: 1.6;
+}
+
+.ok-button {
+  background: #4caf50;
+  color: white;
+  border: none;
+  padding: 12px 48px;
+  font-size: 1.1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.ok-button:hover {
+  background: #45a049;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 @keyframes pulse {

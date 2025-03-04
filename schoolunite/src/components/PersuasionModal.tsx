@@ -45,9 +45,18 @@ export const PersuasionModal: React.FC<PersuasionModalProps> = ({
 
   const handleGameEnd = (situation: number) => {
     const playerWon = situation > 0;
-    const resultMessage = playerWon
-      ? `${student.lastName}${student.firstName}の説得に成功しました！`
-      : `${student.lastName}${student.firstName}の説得に失敗しました...`;
+    const changeAmount = Math.floor(Math.abs(situation) / 10); // 支持率の変化量
+
+    let resultMessage;
+    if (playerWon) {
+      resultMessage = `${student.lastName}${student.firstName}の説得に成功しました！\n` +
+        `${FACTION_NAMES[player.faction]}の支持: +${changeAmount}%\n` +
+        `${FACTION_NAMES[student.faction]}の支持: -${changeAmount}%`;
+    } else {
+      resultMessage = `${student.lastName}${student.firstName}の説得に失敗しました...\n` +
+        `${FACTION_NAMES[student.faction]}の支持: +${changeAmount}%\n` +
+        `${FACTION_NAMES[player.faction]}の支持: -${changeAmount}%`;
+    }
     
     updateFactionSupport(player, student, playerWon, Math.abs(situation));
     onSetMessage(resultMessage);
@@ -268,6 +277,10 @@ export const PersuasionModal: React.FC<PersuasionModalProps> = ({
 
     const nextTurn = currentTurn + 1; // AIのターン終了後に次のターンへ
 
+    // プレイヤーターンの開始時に選択をリセット
+    setSelectedAction(null);
+    setSelectedTopic(null);
+    setSelectedElectionAction(null);
     setGameState({
       atmosphere: newAtmosphere,
       situation: newSituation,
