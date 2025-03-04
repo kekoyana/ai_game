@@ -141,8 +141,7 @@ export async function loadStudentsFromCSV(): Promise<Student[]> {
           clubId: parseInt(data.clubId) as ClubId,
           maxHp: parseInt(data.maxHp),
           currentHp: parseInt(data.currentHp),
-          friendship: parseInt(data.friendship),
-          affinity: parseInt(data.affinity)
+          friendship: parseInt(data.friendship)
         };
 
         return student;
@@ -194,8 +193,7 @@ export function convertStudentToCSV(student: Student): string {
     student.clubId,
     student.maxHp,
     student.currentHp,
-    student.friendship,
-    student.affinity,
+    student.friendship
   ];
   
   return values.join(',');
