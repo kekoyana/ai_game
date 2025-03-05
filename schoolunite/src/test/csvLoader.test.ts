@@ -6,9 +6,9 @@ describe('CSVLoader', () => {
     vi.resetAllMocks();
   });
 
-  const mockCSVData = `id,lastName,firstName,gender,grade,class,reputation,intelligence,strength,charisma,traitIds,interests_study,interests_athletic,interests_video,interests_games,interests_fashion,interests_sns,interests_music,interests_love,support_status_quo,support_militar,support_academic,isLeader,trait_glasses,trait_science,trait_literature,trait_athletic,trait_artistic,trait_leadership,trait_diligent,trait_rebellious,trait_cheerful,trait_quiet,clubId,maxHp,currentHp,friendship,affinity
-1,山田,翔太,0,2,A,45000,120,100,180,"6,9",1,1,2,2,2,2,1,1,80,10,10,true,1,1,1,2,1,2,1,1,2,0,0,150,150,0,10
-6,木村,琴音,1,2,A,38000,180,90,140,"1,2,7",2,0,1,2,1,1,2,1,5,10,85,false,2,2,1,0,1,1,2,0,1,2,4,100,100,0,20`;
+  const mockCSVData = `id,lastName,firstName,gender,grade,class,reputation,intelligence,strength,charisma,traitIds,interests_study,interests_athletic,interests_video,interests_games,interests_fashion,interests_sns,interests_music,interests_love,support_status_quo,support_militar,support_academic,isLeader,trait_glasses,trait_science,trait_literature,trait_athletic,trait_artistic,trait_leadership,trait_diligent,trait_rebellious,trait_cheerful,trait_quiet,clubId,maxHp,currentHp,friendship
+1,山田,翔太,0,2,A,45000,120,100,180,"6,9",1,1,2,2,2,2,1,1,80,10,10,true,1,1,1,2,1,2,1,1,2,0,0,150,150,0
+6,木村,琴音,1,2,A,38000,180,90,140,"1,2,7",2,0,1,2,1,1,2,1,5,10,85,false,2,2,1,0,1,1,2,0,1,2,4,100,100,0`;
 
   // モックされたResponseを作成
   const mockResponse = {
@@ -91,10 +91,10 @@ describe('CSVLoader', () => {
   });
 
   it('should handle empty or malformed traitIds', async () => {
-    const malformedCSV = `id,lastName,firstName,gender,grade,class,reputation,intelligence,strength,charisma,traitIds,interests_study,interests_athletic,interests_video,interests_games,interests_fashion,interests_sns,interests_music,interests_love,support_status_quo,support_militar,support_academic,isLeader,trait_glasses,trait_science,trait_literature,trait_athletic,trait_artistic,trait_leadership,trait_diligent,trait_rebellious,trait_cheerful,trait_quiet,clubId,maxHp,currentHp,friendship,affinity
-1,Test,Student,0,2,A,1000,100,100,100,,1,1,1,1,1,1,1,1,34,33,33,false,1,1,1,1,1,1,1,1,1,1,0,100,100,0,0
-2,Test,Student2,0,2,A,1000,100,100,100,"",1,1,1,1,1,1,1,1,34,33,33,false,1,1,1,1,1,1,1,1,1,1,0,100,100,0,0
-3,Test,Student3,0,2,A,1000,100,100,100,"invalid",1,1,1,1,1,1,1,1,34,33,33,false,1,1,1,1,1,1,1,1,1,1,0,100,100,0,0`;
+    const malformedCSV = `id,lastName,firstName,gender,grade,class,reputation,intelligence,strength,charisma,traitIds,interests_study,interests_athletic,interests_video,interests_games,interests_fashion,interests_sns,interests_music,interests_love,support_status_quo,support_militar,support_academic,isLeader,trait_glasses,trait_science,trait_literature,trait_athletic,trait_artistic,trait_leadership,trait_diligent,trait_rebellious,trait_cheerful,trait_quiet,clubId,maxHp,currentHp,friendship
+1,Test,Student,0,2,A,1000,100,100,100,,1,1,1,1,1,1,1,1,34,33,33,false,1,1,1,1,1,1,1,1,1,1,0,100,100,0
+2,Test,Student2,0,2,A,1000,100,100,100,"",1,1,1,1,1,1,1,1,34,33,33,false,1,1,1,1,1,1,1,1,1,1,0,100,100,0
+3,Test,Student3,0,2,A,1000,100,100,100,"invalid",1,1,1,1,1,1,1,1,34,33,33,false,1,1,1,1,1,1,1,1,1,1,0,100,100,0`;
 
     const malformedResponse = {
       ok: true,

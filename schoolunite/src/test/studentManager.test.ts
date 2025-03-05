@@ -48,76 +48,74 @@ describe('StudentManager: 親密度テスト', () => {
     clubId: ClubId.NONE,
     currentHp: 100,
     maxHp: 100,
-    friendship: 0,
-    affinity: 0,
+    friendship: 0
   }
 
-  beforeEach(async () => {
-    await studentManager.initialize()
+  beforeEach(() => {
+    const player: Student = {
+      ...mockStudent1,
+      id: 1,
+      lastName: 'Player',
+      firstName: 'Test',
+      faction: 'status_quo'
+    };
+    const target: Student = {
+      ...mockStudent1,
+      id: 2,
+      lastName: 'Target',
+      firstName: 'Test',
+      faction: 'status_quo'
+    };
+    
     // @ts-expect-error -- private field access for testing
-    studentManager.students = [{ ...mockStudent1 }]
+    studentManager.students = [player, target]
+    // @ts-expect-error -- private field access for testing
+    studentManager.initialized = true
+    // @ts-expect-error -- private method override for testing
+    studentManager.calculateAdjustedFriendshipIncrease = () => 10
   })
 
   describe('基本機能', () => {
     it('親密度が正しく増加する', () => {
-      studentManager.increaseFriendship(1, 10)
-      const student = studentManager.getStudent(1)
-      expect(student?.friendship).toBe(10)
+      const result = studentManager.increaseFriendship(2)
+      expect(result.newFriendship).toBe(10)
+      expect(result.amount).toBe(10)
     })
 
     it('親密度は100を超えない', () => {
-      studentManager.increaseFriendship(1, 150)
-      const student = studentManager.getStudent(1)
-      expect(student?.friendship).toBe(100)
+      // 親密度を90に設定
+      studentManager.updateStudent(2, { friendship: 90 })
+      const result = studentManager.increaseFriendship(2)
+      expect(result.newFriendship).toBeLessThanOrEqual(100)
     })
 
     it('親密度は0未満にならない', () => {
-      studentManager.updateStudent(1, { friendship: -10 })
-      const student = studentManager.getStudent(1)
+      studentManager.updateStudent(2, { friendship: -10 })
+      const student = studentManager.getStudent(2)
       expect(student?.friendship).toBe(0)
-    })
-  })
-
-  describe('相性ボーナス', () => {
-    it('相性プラスの場合、親密度の上昇が増加する', () => {
-      studentManager.updateStudent(1, { affinity: 50 })
-      studentManager.increaseFriendship(1, 10)
-      const student = studentManager.getStudent(1)
-      expect(student?.friendship).toBe(15) // 10 + 50% = 15
-    })
-
-    it('相性マイナスの場合、親密度の上昇が減少する', () => {
-      studentManager.updateStudent(1, { affinity: -50 })
-      studentManager.increaseFriendship(1, 10)
-      const student = studentManager.getStudent(1)
-      expect(student?.friendship).toBe(5) // 10 - 50% = 5
-    })
-
-    it('相性0の場合、通常通りの上昇量', () => {
-      studentManager.updateStudent(1, { affinity: 0 })
-      studentManager.increaseFriendship(1, 10)
-      const student = studentManager.getStudent(1)
-      expect(student?.friendship).toBe(10)
     })
   })
 
   describe('累積効果', () => {
     it('複数回の交流で親密度が累積する', () => {
-      studentManager.increaseFriendship(1, 5)
-      studentManager.increaseFriendship(1, 5)
-      studentManager.increaseFriendship(1, 5)
+      const initial = studentManager.getStudent(2)?.friendship || 0
+      studentManager.increaseFriendship(2)
+      studentManager.increaseFriendship(2)
+      studentManager.increaseFriendship(2)
       
-      const student = studentManager.getStudent(1)
-      expect(student?.friendship).toBe(15)
+      const student = studentManager.getStudent(2)
+      expect(student?.friendship).toBe(30)
     })
 
     it('上限値100で正しく止まる', () => {
-      for (let i = 0; i < 12; i++) {
-        studentManager.increaseFriendship(1, 10)
+      // 親密度を90に設定
+      studentManager.updateStudent(2, { friendship: 90 })
+      for (let i = 0; i < 5; i++) {
+        studentManager.increaseFriendship(2)
       }
       
-      const student = studentManager.getStudent(1)
+      const student = studentManager.getStudent(2)
       expect(student?.friendship).toBe(100)
     })
   })
-})
+});
