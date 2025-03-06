@@ -1,5 +1,6 @@
 import React from 'react';
 import { Student, FACTION_NAMES } from '../types/student';
+import { classManager } from '../managers/classManager';
 import './StatusModal.css';
 
 interface StatusModalProps {
@@ -116,10 +117,22 @@ export const StatusModal: React.FC<StatusModalProps> = ({ student, isOpen, onClo
             {renderSupportRates()}
           </div>
 
-          {student.isLeader && (
+          {(student.isLeader || classManager.getStudentRole(student).role) && (
             <div className="status-section leader-section">
               <h3>特別ステータス</h3>
-              <p className="leader-tag">リーダー</p>
+              <div className="leader-tags">
+                {student.isLeader && <p className="leader-tag">リーダー</p>}
+                {(() => {
+                  const { role, classData } = classManager.getStudentRole(student);
+                  if (role === 'representative') {
+                    return <p className="leader-tag">{student.grade}年{student.class}組 クラス代表</p>;
+                  }
+                  if (role === 'viceRepresentative') {
+                    return <p className="leader-tag">{student.grade}年{student.class}組 副代表</p>;
+                  }
+                  return null;
+                })()}
+              </div>
             </div>
           )}
         </div>

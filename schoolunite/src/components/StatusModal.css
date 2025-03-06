@@ -115,12 +115,16 @@
 
 .status-section.leader-section {
   grid-column: 1 / -1;
-  display: flex;
-  align-items: center;
-  gap: 12px;
   background-color: #fff3e0;
   border: 1px solid #ffe0b2;
   padding: 12px 16px;
+}
+
+.status-section.leader-section .leader-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
 }
 
 .leader-tag {

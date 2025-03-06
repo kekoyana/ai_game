@@ -136,6 +136,18 @@ class ClassManager {
   }
 
   // 生徒のクラスデータを取得
+  getStudentRole(student: Student): { role: 'representative' | 'viceRepresentative' | null, classData: ClassData | null } {
+    const classId = this.getClassId(student.grade, student.class);
+    const classData = this.classes.get(classId);
+    if (!classData) return { role: null, classData: null };
+
+    const rep = classData.representatives.find(r => r.studentId === student.id);
+    return {
+      role: rep?.role || null,
+      classData
+    };
+  }
+
   getStudentClass(student: Student): ClassData | undefined {
     const classId = this.getClassId(student.grade, student.class);
     return this.classes.get(classId);
