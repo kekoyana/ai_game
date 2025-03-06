@@ -1,6 +1,7 @@
 import { Room } from '../types/school'
 import { Student, FACTION_NAMES } from '../types/student'
 import { locationManager } from '../managers/locationManager'
+import { studentManager } from '../data/studentData'
 
 import './RoomInfo.css'
 
@@ -13,7 +14,12 @@ interface RoomInfoProps {
 
 export const RoomInfo = ({ room, onStudentClick, isOpen, onClose }: RoomInfoProps) => {
   if (!isOpen || !room) return null
-  const studentsInRoom = locationManager.getStudentsInRoom(room.id)
+  // locationManagerから学生のIDを取得し、studentManagerから最新の情報を取得
+  const studentIds = locationManager.getStudentsInRoom(room.id).map(s => s.id);
+  const studentsInRoom = studentIds.map(id => {
+    const student = studentManager.getStudent(id);
+    return student || locationManager.getStudentsInRoom(room.id).find(s => s.id === id)!;
+  });
 
   return (
     <div className="room-info-modal" onClick={onClose}>

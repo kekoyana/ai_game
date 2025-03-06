@@ -318,7 +318,11 @@ export const PersuasionModal: React.FC<PersuasionModalProps> = ({
       turn: 1,
       isPlayerTurn: true
     });
-    onClose();
+
+    // 画面の更新を確実にするため、少し遅延を入れる
+    setTimeout(() => {
+      onClose();
+    }, 100);
   };
 
   return (
