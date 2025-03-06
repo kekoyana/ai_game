@@ -153,6 +153,25 @@ class ClassManager {
     return this.classes.get(classId);
   }
 
+  // クラスの派閥支持を再計算し、変更があった場合は新旧の派閥を返す
+  recalculateClassFaction(student: Student): { oldFaction: Faction, newFaction: Faction } | null {
+    const classId = this.getClassId(student.grade, student.class);
+    const classData = this.classes.get(classId);
+    if (!classData) return null;
+
+    const oldFaction = classData.faction;
+    const newFaction = this.determineClassFaction(classData);
+    
+    // 変更があった場合のみ更新
+    if (newFaction !== oldFaction) {
+      classData.faction = newFaction;
+      this.classes.set(classId, classData);
+      return { oldFaction, newFaction };
+    }
+
+    return null;
+  }
+
   // クラス一覧を取得
   getAllClasses(): ClassData[] {
     return Array.from(this.classes.values());

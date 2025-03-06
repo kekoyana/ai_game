@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Student, Interests, FACTION_NAMES } from '../types/student';
 import { studentManager } from '../data/studentData';
+import { classManager } from '../managers/classManager';
 import {
   Atmosphere,
   ActionType,
@@ -47,18 +48,27 @@ export const PersuasionModal: React.FC<PersuasionModalProps> = ({
     const playerWon = situation > 0;
     const changeAmount = Math.floor(Math.abs(situation) / 10); // 支持率の変化量
 
-    let resultMessage;
-    if (playerWon) {
-      resultMessage = `${student.lastName}${student.firstName}の説得に成功しました！\n` +
+    let resultMessage = playerWon
+      ? `${student.lastName}${student.firstName}の説得に成功しました！\n` +
         `${FACTION_NAMES[player.faction]}の支持: +${changeAmount}%\n` +
-        `${FACTION_NAMES[student.faction]}の支持: -${changeAmount}%`;
-    } else {
-      resultMessage = `${student.lastName}${student.firstName}の説得に失敗しました...\n` +
+        `${FACTION_NAMES[student.faction]}の支持: -${changeAmount}%`
+      : `${student.lastName}${student.firstName}の説得に失敗しました...\n` +
         `${FACTION_NAMES[student.faction]}の支持: +${changeAmount}%\n` +
         `${FACTION_NAMES[player.faction]}の支持: -${changeAmount}%`;
-    }
-    
+
+    // 支持率を更新
     updateFactionSupport(player, student, playerWon, Math.abs(situation));
+
+    // 説得成功時のみクラスの派閥を再計算
+    if (playerWon) {
+      const factionChange = classManager.recalculateClassFaction(student);
+      if (factionChange) {
+        resultMessage += `\n\n${student.grade}年${student.class}組の支持派閥が` +
+          `${FACTION_NAMES[factionChange.oldFaction]}から` +
+          `${FACTION_NAMES[factionChange.newFaction]}に変わりました！`;
+      }
+    }
+
     onSetMessage(resultMessage);
     setActionMessage(resultMessage);
     setShowResult(true);
