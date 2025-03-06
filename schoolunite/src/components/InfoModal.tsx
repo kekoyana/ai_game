@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { classManager } from '../managers/classManager';
 import { studentManager } from '../data/studentData';
+import { FACTION_NAMES } from '../types/student';
 import './InfoModal.css';
 
 interface InfoModalProps {
@@ -26,7 +27,7 @@ export const InfoModal: React.FC<InfoModalProps> = ({ isOpen, onClose }) => {
             <div key={`${classData.grade}${classData.name}`} className="class-item">
               <div className="class-header">
                 <h4>{classData.grade}年{classData.name}組</h4>
-                <span className="class-faction">{classData.faction}</span>
+                <span className="class-faction">{FACTION_NAMES[classData.faction]}</span>
               </div>
               <div className="class-representatives">
                 <div className="representative">
