@@ -1,5 +1,6 @@
 import { Student, FactionSupport, Faction, InterestLevel, PreferenceLevel, TraitPreferences, TraitId } from '../types/student';
 import { loadStudentsFromCSV } from '../utils/csvLoader';
+import { classManager } from '../managers/classManager';
 
 // 主人公のID
 export const PLAYER_ID = 1;
@@ -25,6 +26,7 @@ class StudentManager {
     
     try {
       this.students = await loadStudentsFromCSV();
+      classManager.initialize(this.students);
       this.initialized = true;
     } catch (error) {
       console.error('Failed to initialize student data:', error);
