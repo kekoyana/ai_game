@@ -24,7 +24,11 @@ export const InfoModal: React.FC<InfoModalProps> = ({ isOpen, onClose }) => {
           const viceReps = classManager.getViceRepresentatives(classData);
           
           return (
-            <div key={`${classData.grade}${classData.name}`} className="class-item">
+            <div
+              key={`${classData.grade}${classData.name}`}
+              className="class-item"
+              data-faction={classData.faction}
+            >
               <div className="class-header">
                 <h4>{classData.grade}年{classData.name}組</h4>
                 <span className="class-faction">{FACTION_NAMES[classData.faction]}</span>
