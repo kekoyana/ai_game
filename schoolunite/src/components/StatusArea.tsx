@@ -2,6 +2,8 @@ import { Student } from '../types/student'
 import { Room, Floor } from '../types/school'
 import { studentManager } from '../data/studentData'
 import { locationManager } from '../managers/locationManager'
+import { InfoModal } from './InfoModal'
+import { useState } from 'react'
 
 interface StatusAreaProps {
   currentFloor: Floor
@@ -16,6 +18,8 @@ export const StatusArea = ({
   onStudentClick,
   onPlayerDetailsClick
 }: StatusAreaProps) => {
+  const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
+
   const getFloorDisplay = (floor: Floor) => {
     if (floor === 'ground') return '校庭'
     if (floor === 'roof') return '屋上'
@@ -41,25 +45,37 @@ export const StatusArea = ({
                 />
                 <span className="hp-text">{hpPercentage}%</span>
               </div>
-              <button
-                className="details-button"
-                onClick={onPlayerDetailsClick}
-                style={{ marginTop: '10px' }}
-              >
-                詳細を表示
-              </button>
+              <div className="button-group">
+                <button
+                  className="details-button"
+                  onClick={onPlayerDetailsClick}
+                >
+                  詳細を表示
+                </button>
+                <button
+                  className="info-button"
+                  onClick={() => setIsInfoModalOpen(true)}
+                >
+                  情報
+                </button>
+              </div>
             </div>
           )
         })()}
       </div>
 
       <div className="current-location">
-       <h2>現在の場所</h2>
-       <p>フロア: {getFloorDisplay(currentFloor)}</p>
-       {selectedRoom && (
-         <p>場所: {selectedRoom.name}</p>
-       )}
-     </div>
+        <h2>現在の場所</h2>
+        <p>フロア: {getFloorDisplay(currentFloor)}</p>
+        {selectedRoom && (
+          <p>場所: {selectedRoom.name}</p>
+        )}
+      </div>
+
+      <InfoModal
+        isOpen={isInfoModalOpen}
+        onClose={() => setIsInfoModalOpen(false)}
+      />
     </div>
   )
 }
