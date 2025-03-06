@@ -118,17 +118,31 @@ export const PersuasionModal: React.FC<PersuasionModalProps> = ({
     const changeAmount = Math.floor(situationStrength / 10);
 
     if (playerWon) {
-      const updates: Partial<Record<keyof typeof opponent.support, number>> = {
-        [player.faction]: opponent.support[player.faction] + changeAmount,
-        [opponent.faction]: opponent.support[opponent.faction] - changeAmount
-      };
-      studentManager.updateSupport(opponent.id, updates);
+      // プレイヤーの勝利時：対象の支持率を更新
+      const currentTarget = studentManager.getStudent(student.id);
+      if (currentTarget) {
+        const targetSupport = { ...currentTarget.support };
+        const playerFactionCurrent = targetSupport[player.faction];
+        const studentFactionCurrent = targetSupport[student.faction];
+
+        targetSupport[player.faction] = playerFactionCurrent + changeAmount;
+        targetSupport[student.faction] = studentFactionCurrent - changeAmount;
+        
+        studentManager.updateSupport(student.id, targetSupport);
+      }
     } else {
-      const updates: Partial<Record<keyof typeof player.support, number>> = {
-        [opponent.faction]: player.support[opponent.faction] + changeAmount,
-        [player.faction]: player.support[player.faction] - changeAmount
-      };
-      studentManager.updateSupport(player.id, updates);
+      // AIの勝利時：プレイヤーの支持率を更新
+      const currentPlayer = studentManager.getPlayer();
+      if (currentPlayer) {
+        const playerSupport = { ...currentPlayer.support };
+        const studentFactionCurrent = playerSupport[student.faction];
+        const playerFactionCurrent = playerSupport[player.faction];
+
+        playerSupport[student.faction] = studentFactionCurrent + changeAmount;
+        playerSupport[player.faction] = playerFactionCurrent - changeAmount;
+        
+        studentManager.updateSupport(player.id, playerSupport);
+      }
     }
   };
 

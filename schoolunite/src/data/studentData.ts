@@ -205,21 +205,55 @@ class StudentManager {
     const student = this.getStudent(id);
     if (!student) return;
 
-    const currentSupport = student.support;
-    const newSupport = { ...currentSupport, ...updates };
+    // 支持率を正規化して合計が100になるように調整
+    const normalizedSupport = { ...student.support, ...updates };
     
-    const total = newSupport.status_quo + newSupport.militar + newSupport.academic;
+    // マイナスの値を0に補正
+    normalizedSupport.status_quo = Math.max(0, normalizedSupport.status_quo);
+    normalizedSupport.militar = Math.max(0, normalizedSupport.militar);
+    normalizedSupport.academic = Math.max(0, normalizedSupport.academic);
+    
+    const total = normalizedSupport.status_quo + normalizedSupport.militar + normalizedSupport.academic;
     
     if (total > 0) {
-      newSupport.status_quo = Math.round((newSupport.status_quo / total) * 100);
-      newSupport.militar = Math.round((newSupport.militar / total) * 100);
-      newSupport.academic = 100 - newSupport.status_quo - newSupport.militar;
+      // パーセンテージに変換（合計100%になるように調整）
+      const rawStatusQuo = Math.round((normalizedSupport.status_quo / total) * 100);
+      const rawMilitar = Math.round((normalizedSupport.militar / total) * 100);
+      const rawAcademic = Math.round((normalizedSupport.academic / total) * 100);
+      
+      // 合計が100になるように調整
+      const rawTotal = rawStatusQuo + rawMilitar + rawAcademic;
+      const adjustment = 100 - rawTotal;
+      
+      // 最大値に調整分を加算
+      if (rawStatusQuo >= rawMilitar && rawStatusQuo >= rawAcademic) {
+        normalizedSupport.status_quo = rawStatusQuo + adjustment;
+        normalizedSupport.militar = rawMilitar;
+        normalizedSupport.academic = rawAcademic;
+      } else if (rawMilitar >= rawStatusQuo && rawMilitar >= rawAcademic) {
+        normalizedSupport.status_quo = rawStatusQuo;
+        normalizedSupport.militar = rawMilitar + adjustment;
+        normalizedSupport.academic = rawAcademic;
+      } else {
+        normalizedSupport.status_quo = rawStatusQuo;
+        normalizedSupport.militar = rawMilitar;
+        normalizedSupport.academic = rawAcademic + adjustment;
+      }
+    } else {
+      // 全ての値が0の場合は均等に配分
+      normalizedSupport.status_quo = 34;
+      normalizedSupport.militar = 33;
+      normalizedSupport.academic = 33;
     }
 
-    this.updateStudent(id, { 
-      support: newSupport,
-      faction: determineFaction(newSupport)
-    });
+    // 更新を適用
+    const updatedStudent = {
+      ...student,
+      support: normalizedSupport,
+      faction: determineFaction(normalizedSupport)
+    };
+    
+    this.students[this.students.findIndex(s => s.id === id)] = updatedStudent;
   }
 
   updateInterests(id: number, 
