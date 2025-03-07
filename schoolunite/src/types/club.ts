@@ -30,6 +30,7 @@ export interface Club {
   memberLimit: number; // 部員数の上限（委員会は少人数）
   baseRoomId: string;  // 拠点となる部屋のID
   faction: Faction;    // 部活動の支持派閥
+  captainId?: number;  // 部長のID（任意）
 }
 
 // 部活動データ
@@ -41,7 +42,8 @@ export const CLUB_DATA: { [key in ClubId]: Club } = {
     description: '部活動に所属していません',
     memberLimit: 0,
     baseRoomId: '',
-    faction: 'status_quo'
+    faction: 'status_quo',
+    captainId: undefined
   },
   [ClubId.BASEBALL]: {
     id: ClubId.BASEBALL,
@@ -50,7 +52,8 @@ export const CLUB_DATA: { [key in ClubId]: Club } = {
     description: '野球部',
     memberLimit: 20,
     baseRoomId: 'baseball',
-    faction: 'militar'
+    faction: 'militar',
+    captainId: 2
   },
   [ClubId.SOCCER]: {
     id: ClubId.SOCCER,
@@ -59,7 +62,8 @@ export const CLUB_DATA: { [key in ClubId]: Club } = {
     description: 'サッカー部',
     memberLimit: 20,
     baseRoomId: 'ground',
-    faction: 'militar'
+    faction: 'militar',
+    captainId: 3
   },
   [ClubId.TENNIS]: {
     id: ClubId.TENNIS,
@@ -68,7 +72,8 @@ export const CLUB_DATA: { [key in ClubId]: Club } = {
     description: 'テニス部',
     memberLimit: 15,
     baseRoomId: 'tennis',
-    faction: 'militar'
+    faction: 'militar',
+    captainId: 10
   },
   [ClubId.BASKETBALL]: {
     id: ClubId.BASKETBALL,
@@ -77,7 +82,8 @@ export const CLUB_DATA: { [key in ClubId]: Club } = {
     description: 'バスケットボール部',
     memberLimit: 15,
     baseRoomId: 'gym',
-    faction: 'militar'
+    faction: 'militar',
+    captainId: 6
   },
   [ClubId.SWIMMING]: {
     id: ClubId.SWIMMING,
@@ -86,7 +92,8 @@ export const CLUB_DATA: { [key in ClubId]: Club } = {
     description: '水泳部',
     memberLimit: 15,
     baseRoomId: 'pool',
-    faction: 'militar'
+    faction: 'militar',
+    captainId: 12
   },
   [ClubId.JUDO]: {
     id: ClubId.JUDO,
@@ -95,7 +102,8 @@ export const CLUB_DATA: { [key in ClubId]: Club } = {
     description: '柔道部',
     memberLimit: 15,
     baseRoomId: 'dojo',
-    faction: 'militar'
+    faction: 'militar',
+    captainId: 26
   },
   [ClubId.SCIENCE]: {
     id: ClubId.SCIENCE,
@@ -104,7 +112,8 @@ export const CLUB_DATA: { [key in ClubId]: Club } = {
     description: '科学部',
     memberLimit: 10,
     baseRoomId: 'science',
-    faction: 'academic'
+    faction: 'academic',
+    captainId: 4
   },
   [ClubId.BRASS_BAND]: {
     id: ClubId.BRASS_BAND,
@@ -113,7 +122,8 @@ export const CLUB_DATA: { [key in ClubId]: Club } = {
     description: '吹奏楽部',
     memberLimit: 20,
     baseRoomId: 'music',
-    faction: 'status_quo'
+    faction: 'status_quo',
+    captainId: 8
   },
   [ClubId.COMPUTER]: {
     id: ClubId.COMPUTER,
@@ -122,7 +132,8 @@ export const CLUB_DATA: { [key in ClubId]: Club } = {
     description: 'パソコン部',
     memberLimit: 10,
     baseRoomId: 'computer',
-    faction: 'academic'
+    faction: 'academic',
+    captainId: 7
   },
   [ClubId.CALLIGRAPHY]: {
     id: ClubId.CALLIGRAPHY,
@@ -131,7 +142,8 @@ export const CLUB_DATA: { [key in ClubId]: Club } = {
     description: '書道部',
     memberLimit: 10,
     baseRoomId: 'tech',
-    faction: 'status_quo'
+    faction: 'status_quo',
+    captainId: 9
   },
   [ClubId.COOKING]: {
     id: ClubId.COOKING,
@@ -140,7 +152,8 @@ export const CLUB_DATA: { [key in ClubId]: Club } = {
     description: '調理部',
     memberLimit: 10,
     baseRoomId: 'homeec',
-    faction: 'status_quo'
+    faction: 'status_quo',
+    captainId: 21
   },
   [ClubId.BROADCAST]: {
     id: ClubId.BROADCAST,
@@ -149,7 +162,8 @@ export const CLUB_DATA: { [key in ClubId]: Club } = {
     description: '放送部',
     memberLimit: 10,
     baseRoomId: 'broadcast',
-    faction: 'status_quo'
+    faction: 'status_quo',
+    captainId: 11
   },
   [ClubId.ART]: {
     id: ClubId.ART,
@@ -158,7 +172,8 @@ export const CLUB_DATA: { [key in ClubId]: Club } = {
     description: '美術部',
     memberLimit: 10,
     baseRoomId: 'art',
-    faction: 'status_quo'
+    faction: 'status_quo',
+    captainId: 5
   },
   [ClubId.STUDENT_COUNCIL]: {
     id: ClubId.STUDENT_COUNCIL,
@@ -167,7 +182,8 @@ export const CLUB_DATA: { [key in ClubId]: Club } = {
     description: '生徒会',
     memberLimit: 8,
     baseRoomId: 'student_council',
-    faction: 'academic'
+    faction: 'academic',
+    captainId: 13
   },
   [ClubId.LIBRARY]: {
     id: ClubId.LIBRARY,
@@ -176,7 +192,8 @@ export const CLUB_DATA: { [key in ClubId]: Club } = {
     description: '図書委員会',
     memberLimit: 6,
     baseRoomId: 'library',
-    faction: 'academic'
+    faction: 'academic',
+    captainId: 15
   },
   [ClubId.DISCIPLINE]: {
     id: ClubId.DISCIPLINE,
@@ -185,6 +202,7 @@ export const CLUB_DATA: { [key in ClubId]: Club } = {
     description: '風紀委員会',
     memberLimit: 6,
     baseRoomId: 'guidance',
-    faction: 'militar'
+    faction: 'militar',
+    captainId: 14
   }
 };

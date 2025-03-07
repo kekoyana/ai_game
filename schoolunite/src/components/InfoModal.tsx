@@ -66,7 +66,7 @@ export const InfoModal: React.FC<InfoModalProps> = ({ isOpen, onClose }) => {
         <h3>部活動一覧</h3>
         {clubs.map(club => {
           const members = studentManager.getAllStudents().filter(s => s.clubId === club.id);
-          const leader = members.find(m => m.isLeader);
+          const captain = members.find(m => m.id === club.captainId);
           
           return (
             <div key={club.id} className="club-item">
@@ -84,10 +84,10 @@ export const InfoModal: React.FC<InfoModalProps> = ({ isOpen, onClose }) => {
                 </div>
                 <div className="club-members">
                   <span className="count">部員数: {members.length}</span>
-                  {leader && (
+                  {captain && (
                     <div className="leader">
                       <span className="role">部長：</span>
-                      <span className="name">{leader.lastName} {leader.firstName}</span>
+                      <span className="name">{captain.lastName} {captain.firstName}</span>
                     </div>
                   )}
                 </div>
