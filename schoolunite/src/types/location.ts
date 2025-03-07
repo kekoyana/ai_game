@@ -1,20 +1,17 @@
-import { ClubId } from './club';
+import { ClubId, CLUB_DATA } from './club';
 import { Room } from './school';
 import { Student } from './student';
 
-// 部活動と関連する場所のマッピング
-export const CLUB_LOCATIONS: { [key in ClubId]: string[] } = {
-  [ClubId.NONE]: [],
-  [ClubId.BASEBALL]: ['ground'],
-  [ClubId.SOCCER]: ['ground'],
-  [ClubId.ART]: ['art'],
-  [ClubId.LIBRARY]: ['library'],
-};
+// 生徒の現在位置を表す型
+export interface StudentLocation {
+  student: Student;
+  roomId: string;
+}
 
 // 特別な場所の配置確率（％）
 export const LOCATION_PROBABILITIES = {
-  CLASSROOM: 70,      // 自分の教室にいる確率
-  CLUB_LOCATION: 20,  // 部活動関連の場所にいる確率
+  CLASSROOM: 60,      // 自分の教室にいる確率
+  CLUB_LOCATION: 30,  // 部活動関連の場所にいる確率（増加）
   RANDOM: 10,         // その他の場所にいる確率
 };
 
@@ -24,20 +21,10 @@ export const RANDOM_LOCATIONS = [
   'corridor2',
   'corridor3',
   'ground',
-  'infirmary',
   'library',
-  'art',
-  'music',
-  'computer',
-  'tech',
-  'science',
+  'infirmary',
+  'student_council'
 ];
-
-// 生徒の現在位置を表す型
-export interface StudentLocation {
-  student: Student;
-  roomId: string;
-}
 
 // 教室IDを生成する関数（例：2年B組 → "2b"）
 export function getClassroomId(grade: number, class_: string): string {
@@ -59,9 +46,10 @@ export function determineLocation(student: Student, rooms: Room[]): string {
 
   // 部活動関連の場所にいる確率
   if (random < LOCATION_PROBABILITIES.CLASSROOM + LOCATION_PROBABILITIES.CLUB_LOCATION) {
-    const clubLocations = CLUB_LOCATIONS[student.clubId];
-    if (clubLocations.length > 0) {
-      return clubLocations[Math.floor(Math.random() * clubLocations.length)];
+    const clubData = CLUB_DATA[student.clubId];
+    if (clubData && clubData.baseRoomId) {
+      // 部活動の拠点に配置
+      return clubData.baseRoomId;
     }
   }
 

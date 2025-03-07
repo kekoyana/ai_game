@@ -84,72 +84,47 @@
   padding: 0 12px;
 }
 
-.class-list h3 {
+/* クラス一覧のスタイル */
+.class-list h3,
+.club-list h3 {
   margin: 0 0 24px 0;
   color: #333;
   font-size: 1.2rem;
 }
 
-.class-item {
+.class-item,
+.club-item {
   background: #f8f9fa;
   border-radius: 8px;
   padding: 16px;
   margin-bottom: 16px;
 }
 
-/* 派閥によって背景色を変更 */
-.class-item[data-faction="status_quo"] {
-  background: #e3f2fd;
-  border-left: 4px solid #2196f3;
-}
-
-.class-item[data-faction="militar"] {
-  background: #ffebee;
-  border-left: 4px solid #f44336;
-}
-
-.class-item[data-faction="academic"] {
-  background: #e8f5e9;
-  border-left: 4px solid #4caf50;
-}
-
-.class-header {
+.class-header,
+.club-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 12px;
 }
 
-.class-header h4 {
+.class-header h4,
+.club-header h4 {
   margin: 0;
   color: #333;
   font-size: 1.1rem;
 }
 
-.class-faction {
+.faction-tag {
   padding: 4px 12px;
+  background: #e9ecef;
   border-radius: 4px;
   font-size: 0.9rem;
-  font-weight: 500;
+  color: #495057;
 }
 
-/* 派閥によって色を変更 */
-.class-item[data-faction="status_quo"] .class-faction {
-  background: #bbdefb;
-  color: #1565c0;
-}
-
-.class-item[data-faction="militar"] .class-faction {
-  background: #ffcdd2;
-  color: #c62828;
-}
-
-.class-item[data-faction="academic"] .class-faction {
-  background: #c8e6c9;
-  color: #2e7d32;
-}
-
-.class-representatives {
+.class-representatives,
+.club-details {
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -157,7 +132,8 @@
 }
 
 .representative,
-.vice-representatives {
+.vice-representatives,
+.club-members .leader {
   display: flex;
   gap: 8px;
 }
@@ -170,4 +146,47 @@
 .name {
   color: #333;
   font-weight: 500;
+}
+
+/* 部活動特有のスタイル */
+.club-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.club-type {
+  display: inline-block;
+  padding: 2px 8px;
+  background-color: #e3f2fd;
+  color: #1976d2;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+.club-members {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.club-members .count {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+/* 派閥カラー */
+.faction-tag[data-faction='status_quo'] {
+  background-color: #e3f2fd;
+  color: #1976d2;
+}
+
+.faction-tag[data-faction='militar'] {
+  background-color: #fbe9e7;
+  color: #d84315;
+}
+
+.faction-tag[data-faction='academic'] {
+  background-color: #e8f5e9;
+  color: #2e7d32;
 }
