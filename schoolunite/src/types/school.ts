@@ -26,14 +26,16 @@ export type RoomType =
   | 'schoolgate'     // 正門
   | 'roof'           // 屋上
   | 'artroom'        // 美術室
-  | 'behind_gym';    // 体育館裏
+  | 'behind_gym'     // 体育館裏
+  | 'baseball_field' // 野球場
+  | 'student_council' // 生徒会室
+  | 'guidance_room'; // 生徒指導室
 
 // 部屋への立ち入り制限レベル
 export enum AccessLevel {
-  FREE = 0,          // 自由に入れる
-  CAUTION = 1,       // 注意が必要（保健室など）
-  RESTRICTED = 2,    // 制限付き（職員室など）
-  FORBIDDEN = 3      // 立入禁止（校長室など）
+  FREE = 0,          // プレイヤー入室可能、生徒も移動可能
+  RESTRICTED = 1,    // プレイヤー入室可能、生徒は移動不可（職員室、保健室など）
+  FORBIDDEN = 2      // プレイヤー入室不可、生徒も移動不可（校長室）
 }
 
 export interface Room {
