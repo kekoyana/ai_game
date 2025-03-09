@@ -6,14 +6,157 @@ import { getGeneralsByLordId } from './types/general'
 import { LordSelection } from './components/LordSelection'
 import { Lord } from './types/lord'
 import { NationStatus } from './components/NationStatus'
+import { CommandPanel } from './components/CommandPanel'
+import { Command, CommandResult } from './types/command'
+import type { NationStatus as NationStatusType } from './types/nation'
 
 function App() {
   const [selectedProvince, setSelectedProvince] = useState<Province | null>(null);
   const [playerLord, setPlayerLord] = useState<Lord | null>(null);
+  const [gameProvinces, setGameProvinces] = useState(provinces);
 
   // プレイヤーの国を取得
   const getPlayerProvince = () => {
-    return provinces.find(p => p.lord?.id === playerLord?.id);
+    return gameProvinces.find(p => p.lord?.id === playerLord?.id);
+  };
+
+  // コマンド実行のハンドラ
+  const handleExecuteCommand = async (command: Command): Promise<CommandResult> => {
+    const playerProvince = getPlayerProvince();
+    if (!playerProvince) {
+      return {
+        success: false,
+        message: "プレイヤーの国が見つかりません"
+      };
+    }
+
+    // コマンドの実行結果を処理
+    const result = executeCommand(command, playerProvince.nation);
+    
+    if (result.success && result.effects) {
+      // 国のステータスを更新
+      const updatedProvinces = gameProvinces.map(province => {
+        if (province.id === playerProvince.id) {
+          const updatedNation = updateNationStatus(province.nation, result.effects!);
+          return { ...province, nation: updatedNation };
+        }
+        return province;
+      });
+      
+      setGameProvinces(updatedProvinces);
+    }
+
+    return result;
+  };
+
+  // 国のステータスを更新
+  const updateNationStatus = (
+    nation: NationStatusType,
+    effects: NonNullable<CommandResult['effects']>
+  ): NationStatusType => {
+    return {
+      ...nation,
+      gold: effects.gold ? nation.gold + effects.gold : nation.gold,
+      food: effects.food ? nation.food + effects.food : nation.food,
+      loyalty: effects.loyalty ? Math.max(0, Math.min(100, nation.loyalty + effects.loyalty)) : nation.loyalty,
+      commerce: effects.commerce ? Math.max(0, Math.min(100, nation.commerce + effects.commerce)) : nation.commerce,
+      agriculture: effects.agriculture ? Math.max(0, Math.min(100, nation.agriculture + effects.agriculture)) : nation.agriculture,
+      military: effects.military ? Math.max(0, nation.military + effects.military) : nation.military,
+      arms: effects.arms ? Math.max(0, Math.min(100, nation.arms + effects.arms)) : nation.arms,
+      training: effects.training ? Math.max(0, Math.min(100, nation.training + effects.training)) : nation.training,
+      population: effects.population ? Math.max(0, nation.population + effects.population) : nation.population
+    };
+  };
+
+  // コマンドの実行
+  const executeCommand = (command: Command, nation: NationStatusType): CommandResult => {
+    // 補助関数
+    const calculateTax = (nation: NationStatusType) => Math.floor(nation.commerce * 10);
+    const calculateRecruits = (nation: NationStatusType) => Math.floor(nation.population * 0.01);
+
+    switch (command.id) {
+      case 'develop_commerce':
+        return {
+          success: true,
+          message: "商業が発展しました",
+          effects: {
+            gold: -(command.cost?.gold || 0),
+            commerce: 5,
+            loyalty: -2
+          }
+        };
+
+      case 'develop_agriculture':
+        return {
+          success: true,
+          message: "土地が開発されました",
+          effects: {
+            gold: -(command.cost?.gold || 0),
+            agriculture: 5,
+            loyalty: -2
+          }
+        };
+
+      case 'collect_tax':
+        return {
+          success: true,
+          message: `${calculateTax(nation)}の金を徴収しました`,
+          effects: {
+            gold: calculateTax(nation),
+            loyalty: -5
+          }
+        };
+
+      case 'conscript':
+        return {
+          success: true,
+          message: `${calculateRecruits(nation)}の兵士を徴用しました`,
+          effects: {
+            military: calculateRecruits(nation),
+            population: -calculateRecruits(nation),
+            loyalty: -3,
+            gold: -(command.cost?.gold || 0)
+          }
+        };
+
+      case 'train_troops':
+        return {
+          success: true,
+          message: "軍事訓練を実施しました",
+          effects: {
+            gold: -(command.cost?.gold || 0),
+            food: -(command.cost?.food || 0),
+            training: 5
+          }
+        };
+
+      case 'improve_arms':
+        return {
+          success: true,
+          message: "武装を強化しました",
+          effects: {
+            gold: -(command.cost?.gold || 0),
+            arms: 5
+          }
+        };
+
+      case 'distribute_food':
+        return {
+          success: true,
+          message: "兵糧を配給しました",
+          effects: {
+            food: -(command.cost?.food || 0),
+            training: 3,
+            loyalty: 2
+          }
+        };
+
+      default:
+        return {
+          success: false,
+          message: "未実装のコマンドです"
+        };
+    }
   };
 
   // ゲームが開始されていない場合（君主未選択）
@@ -31,21 +174,17 @@ function App() {
     setSelectedProvince(province);
   };
 
-  const renderGeneralStats = (stats: { war: number; int: number; lead: number; pol: number }) => {
-    return (
-      <div className="general-stats">
-        <span className="stat">武力: {stats.war}</span>
-        <span className="stat">知力: {stats.int}</span>
-        <span className="stat">統率: {stats.lead}</span>
-        <span className="stat">政治: {stats.pol}</span>
-      </div>
-    );
-  };
-
   return (
     <div className="game-container">
       <div className="game-area">
         <Map onProvinceClick={handleProvinceClick} />
+        <div className="message-area">
+          <h2>メッセージ</h2>
+          <p>現在のターン: {playerLord.name}の作戦フェーズ</p>
+          {selectedProvince && (
+            <p>{selectedProvince.name}が選択されました</p>
+          )}
+        </div>
       </div>
       <div className="status-area">
         <div className="player-info">
@@ -55,7 +194,13 @@ function App() {
             <p>軍事力：{playerLord.strength}</p>
           </div>
           {playerProvince && (
-            <NationStatus status={playerProvince.nation} />
+            <>
+              <NationStatus status={playerProvince.nation} />
+              <CommandPanel
+                nation={playerProvince.nation}
+                onExecuteCommand={handleExecuteCommand}
+              />
+            </>
           )}
         </div>
 
@@ -83,7 +228,12 @@ function App() {
                           <span className="general-name">{general.name}</span>
                           <span className="general-loyalty">忠誠: {general.loyalty}</span>
                         </div>
-                        {renderGeneralStats(general.stats)}
+                        <div className="general-stats">
+                          <span className="stat">武力: {general.stats.war}</span>
+                          <span className="stat">知力: {general.stats.int}</span>
+                          <span className="stat">統率: {general.stats.lead}</span>
+                          <span className="stat">政治: {general.stats.pol}</span>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -94,7 +244,7 @@ function App() {
                 <p>隣接する州:</p>
                 <ul>
                   {selectedProvince.adjacentProvinces.map(id => {
-                    const province = provinces.find(p => p.id === id);
+                    const province = gameProvinces.find(p => p.id === id);
                     return (
                       <li key={id}>
                         {province?.name} ({province?.lord?.name || '空白国'})
@@ -105,13 +255,6 @@ function App() {
               </div>
             </div>
           </>
-        )}
-      </div>
-      <div className="message-area">
-        <h2>メッセージ</h2>
-        <p>現在のターン: {playerLord.name}の作戦フェーズ</p>
-        {selectedProvince && (
-          <p>{selectedProvince.name}が選択されました</p>
         )}
       </div>
     </div>

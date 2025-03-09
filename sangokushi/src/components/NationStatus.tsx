@@ -7,69 +7,49 @@ interface NationStatusProps {
 }
 
 export function NationStatus({ status }: NationStatusProps) {
+  const renderStatItem = (key: keyof NationStatusType, value: number) => {
+    // id と provinceId は表示しない
+    if (key === 'id' || key === 'provinceId') return null;
+
+    // パーセント表示が必要なステータス
+    const isPercentage = ['loyalty', 'commerce', 'agriculture', 'arms', 'training'].includes(key);
+    
+    return (
+      <div key={key} className="status-item">
+        <span className="label">{statusLabels[key]}</span>
+        <span className="value">
+          {isPercentage ? `${value}%` : value.toLocaleString()}
+        </span>
+      </div>
+    );
+  };
+
   return (
     <div className="nation-status">
       <div className="status-section">
         <h4>基本情報</h4>
         <div className="status-grid">
-          <div className="status-item">
-            <span className="label">{statusLabels.civilPower}</span>
-            <span className="value">{status.civilPower}</span>
-          </div>
-          <div className="status-item">
-            <span className="label">{statusLabels.militaryPower}</span>
-            <span className="value">{status.militaryPower}</span>
-          </div>
-          <div className="status-item">
-            <span className="label">{statusLabels.civilLoyalty}</span>
-            <span className="value">{status.civilLoyalty}</span>
-          </div>
-          <div className="status-item">
-            <span className="label">{statusLabels.population}</span>
-            <span className="value">{status.population.toLocaleString()}</span>
-          </div>
+          {renderStatItem('population', status.population)}
+          {renderStatItem('loyalty', status.loyalty)}
+          {renderStatItem('commerce', status.commerce)}
+          {renderStatItem('agriculture', status.agriculture)}
         </div>
       </div>
 
       <div className="status-section">
-        <h4>施設</h4>
+        <h4>軍事</h4>
         <div className="status-grid">
-          {Object.entries(status.facilities).map(([key, value]) => (
-            <div key={key} className="status-item">
-              <span className="label">
-                {statusLabels.facilities[key as keyof typeof status.facilities]}
-              </span>
-              <span className="value">Lv.{value}</span>
-            </div>
-          ))}
+          {renderStatItem('military', status.military)}
+          {renderStatItem('arms', status.arms)}
+          {renderStatItem('training', status.training)}
         </div>
       </div>
 
       <div className="status-section">
         <h4>資源</h4>
         <div className="status-grid">
-          {Object.entries(status.resources).map(([key, value]) => (
-            <div key={key} className="status-item">
-              <span className="label">
-                {statusLabels.resources[key as keyof typeof status.resources]}
-              </span>
-              <span className="value">{value.toLocaleString()}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="status-section">
-        <h4>収入（1ターン）</h4>
-        <div className="status-grid">
-          <div className="status-item">
-            <span className="label">金</span>
-            <span className="value income">+{status.income.gold}</span>
-          </div>
-          <div className="status-item">
-            <span className="label">食料</span>
-            <span className="value income">+{status.income.food}</span>
-          </div>
+          {renderStatItem('gold', status.gold)}
+          {renderStatItem('food', status.food)}
         </div>
       </div>
     </div>
