@@ -13,7 +13,7 @@ body {
   height: 768px;
   display: grid;
   grid-template-columns: 700px 324px;
-  grid-template-rows: 668px 100px;
+  grid-template-rows: 568px 200px;
   background-color: #2c2c2c;
   border: 2px solid #444;
 }

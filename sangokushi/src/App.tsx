@@ -178,13 +178,12 @@ function App() {
     <div className="game-container">
       <div className="game-area">
         <Map onProvinceClick={handleProvinceClick} />
-        <div className="message-area">
-          <h2>メッセージ</h2>
-          <p>現在のターン: {playerLord.name}の作戦フェーズ</p>
-          {selectedProvince && (
-            <p>{selectedProvince.name}が選択されました</p>
-          )}
-        </div>
+      </div>
+      <div className="message-area">
+        <p>現在のターン: {playerLord.name}の作戦フェーズ</p>
+        {selectedProvince && (
+          <p>{selectedProvince.name}が選択されました</p>
+        )}
       </div>
       <div className="status-area">
         <div className="player-info">
@@ -198,6 +197,8 @@ function App() {
               <NationStatus status={playerProvince.nation} />
               <CommandPanel
                 nation={playerProvince.nation}
+                generals={getGeneralsByLordId(playerLord.id)}
+                currentDate={{ year: 1, month: 1 }}
                 onExecuteCommand={handleExecuteCommand}
               />
             </>
