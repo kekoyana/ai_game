@@ -1,34 +1,25 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
+import { Map } from './components/Map'
+import { Province } from './types/province'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const handleProvinceClick = (province: Province) => {
+    console.log(`Clicked province: ${province.name}`);
+    // 今後、クリック時の処理を実装
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+    <div className="game-container">
+      <div className="game-area">
+        <Map onProvinceClick={handleProvinceClick} />
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
+      <div className="status-area">
+        <h2>ステータス表示</h2>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+      <div className="message-area">
+        <h2>メッセージ表示</h2>
+      </div>
+    </div>
   )
 }
 
