@@ -5,6 +5,7 @@ body {
   align-items: center;
   min-height: 100vh;
   background-color: #1a1a1a;
+  font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
 }
 
 .game-container {
@@ -36,6 +37,7 @@ body {
   border: 1px solid #333;
   padding: 15px;
   color: #fff;
+  overflow-y: auto;
 }
 
 .message-area {
@@ -68,29 +70,105 @@ h2 {
 }
 
 .province-info {
-  padding: 10px;
+  padding: 15px;
   background-color: #252525;
   border-radius: 4px;
   margin-top: 10px;
 }
 
 .province-info h3 {
-  margin: 0 0 10px 0;
+  margin: 0 0 15px 0;
   color: #4a90e2;
+  font-size: 1.3em;
+}
+
+.province-info h4 {
+  margin: 15px 0 10px 0;
+  color: #ccc;
   font-size: 1.1em;
 }
 
-.province-info p {
-  margin: 5px 0;
+.lord-info {
+  background-color: #2a2a2a;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 15px;
 }
 
-.province-info ul {
+.lord-info p {
+  margin: 5px 0;
+  font-size: 1.1em;
+}
+
+.generals-info {
+  background-color: #2a2a2a;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 15px;
+}
+
+.generals-list {
+  max-height: 200px;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+
+.general-item {
+  background-color: #333;
+  border-radius: 4px;
+  margin-bottom: 8px;
+  padding: 8px;
+}
+
+.general-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.general-name {
+  font-weight: bold;
+  color: #4a90e2;
+}
+
+.general-loyalty {
+  color: #8bc34a;
+  font-size: 0.9em;
+}
+
+.general-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 5px;
+}
+
+.stat {
+  background-color: #2a2a2a;
+  padding: 4px 8px;
+  border-radius: 3px;
+  font-size: 0.9em;
+  color: #ccc;
+}
+
+.adjacent-info {
+  background-color: #2a2a2a;
+  padding: 10px;
+  border-radius: 4px;
+}
+
+.adjacent-info p {
+  margin: 5px 0;
+  color: #ccc;
+}
+
+.adjacent-info ul {
   margin: 5px 0;
   padding-left: 20px;
   list-style-type: none;
 }
 
-.province-info li {
+.adjacent-info li {
   padding: 3px 0;
   color: #ccc;
 }
@@ -98,4 +176,24 @@ h2 {
 .message-area p {
   color: #ccc;
   margin: 5px 0;
+}
+
+/* スクロールバーのスタイル */
+.generals-list::-webkit-scrollbar,
+.status-area::-webkit-scrollbar,
+.message-area::-webkit-scrollbar {
+  width: 8px;
+}
+
+.generals-list::-webkit-scrollbar-track,
+.status-area::-webkit-scrollbar-track,
+.message-area::-webkit-scrollbar-track {
+  background: #1c1c1c;
+}
+
+.generals-list::-webkit-scrollbar-thumb,
+.status-area::-webkit-scrollbar-thumb,
+.message-area::-webkit-scrollbar-thumb {
+  background-color: #444;
+  border-radius: 4px;
 }
