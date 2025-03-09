@@ -1,4 +1,6 @@
 import { Lord, lords } from './lord';
+import type { NationStatus } from './nation';
+import { createInitialNationStatus } from './nation';
 
 export interface Province {
   id: string;
@@ -7,7 +9,8 @@ export interface Province {
   labelX: number;
   labelY: number;
   adjacentProvinces: string[];
-  lord: Lord | null;  // 君主情報を追加
+  lord: Lord | null;
+  nation: NationStatus;
 }
 
 export const provinces: Province[] = [
@@ -18,7 +21,8 @@ export const provinces: Province[] = [
     labelX: 380,
     labelY: 125,
     adjacentProvinces: ["bing", "ji", "qing"],
-    lord: lords.gongsunzan
+    lord: lords.gongsunzan,
+    nation: createInitialNationStatus("you_nation", "you")
   },
   {
     id: "bing",
@@ -27,7 +31,8 @@ export const provinces: Province[] = [
     labelX: 340,
     labelY: 170,
     adjacentProvinces: ["you", "ji", "silei"],
-    lord: lords.liubei
+    lord: lords.liubei,
+    nation: createInitialNationStatus("bing_nation", "bing")
   },
   {
     id: "ji",
@@ -36,7 +41,8 @@ export const provinces: Province[] = [
     labelX: 430,
     labelY: 175,
     adjacentProvinces: ["you", "bing", "silei", "qing", "yan"],
-    lord: lords.yuanshao
+    lord: lords.yuanshao,
+    nation: createInitialNationStatus("ji_nation", "ji")
   },
   {
     id: "qing",
@@ -45,7 +51,8 @@ export const provinces: Province[] = [
     labelX: 510,
     labelY: 140,
     adjacentProvinces: ["you", "ji", "yan", "xu"],
-    lord: lords.kongrong
+    lord: lords.kongrong,
+    nation: createInitialNationStatus("qing_nation", "qing")
   },
   {
     id: "silei",
@@ -54,7 +61,8 @@ export const provinces: Province[] = [
     labelX: 340,
     labelY: 220,
     adjacentProvinces: ["bing", "yong", "jing", "yu", "yan", "ji"],
-    lord: lords.dongzhuo
+    lord: lords.dongzhuo,
+    nation: createInitialNationStatus("silei_nation", "silei")
   },
   {
     id: "yan",
@@ -63,7 +71,8 @@ export const provinces: Province[] = [
     labelX: 480,
     labelY: 200,
     adjacentProvinces: ["ji", "silei", "yu", "xu", "qing"],
-    lord: lords.caocao
+    lord: lords.caocao,
+    nation: createInitialNationStatus("yan_nation", "yan")
   },
   {
     id: "yu",
@@ -72,7 +81,8 @@ export const provinces: Province[] = [
     labelX: 400,
     labelY: 260,
     adjacentProvinces: ["yan", "silei", "jing", "yang", "xu"],
-    lord: lords.yuanshu
+    lord: lords.yuanshu,
+    nation: createInitialNationStatus("yu_nation", "yu")
   },
   {
     id: "xu",
@@ -81,7 +91,8 @@ export const provinces: Province[] = [
     labelX: 530,
     labelY: 200,
     adjacentProvinces: ["qing", "yan", "yu", "yang"],
-    lord: lords.taoqian
+    lord: lords.taoqian,
+    nation: createInitialNationStatus("xu_nation", "xu")
   },
   {
     id: "yang",
@@ -90,7 +101,8 @@ export const provinces: Province[] = [
     labelX: 480,
     labelY: 290,
     adjacentProvinces: ["xu", "yu", "jing", "jiaozhi"],
-    lord: lords.sunjian
+    lord: lords.sunjian,
+    nation: createInitialNationStatus("yang_nation", "yang")
   },
   {
     id: "yong",
@@ -99,7 +111,8 @@ export const provinces: Province[] = [
     labelX: 220,
     labelY: 230,
     adjacentProvinces: ["liang", "silei", "yi", "jing"],
-    lord: lords.dongzhuo // 董卓が支配
+    lord: lords.dongzhuo,
+    nation: createInitialNationStatus("yong_nation", "yong")
   },
   {
     id: "liang",
@@ -108,7 +121,8 @@ export const provinces: Province[] = [
     labelX: 140,
     labelY: 220,
     adjacentProvinces: ["yong"],
-    lord: lords.mateng
+    lord: lords.mateng,
+    nation: createInitialNationStatus("liang_nation", "liang")
   },
   {
     id: "yi",
@@ -117,7 +131,8 @@ export const provinces: Province[] = [
     labelX: 260,
     labelY: 300,
     adjacentProvinces: ["yong", "jing", "jiaozhi"],
-    lord: lords.liuyan
+    lord: lords.liuyan,
+    nation: createInitialNationStatus("yi_nation", "yi")
   },
   {
     id: "jing",
@@ -126,7 +141,8 @@ export const provinces: Province[] = [
     labelX: 350,
     labelY: 300,
     adjacentProvinces: ["silei", "yong", "yi", "jiaozhi", "yang", "yu"],
-    lord: lords.liubiao
+    lord: lords.liubiao,
+    nation: createInitialNationStatus("jing_nation", "jing")
   },
   {
     id: "jiaozhi",
@@ -135,6 +151,7 @@ export const provinces: Province[] = [
     labelX: 370,
     labelY: 350,
     adjacentProvinces: ["yi", "jing", "yang"],
-    lord: null  // 空白国
+    lord: null,
+    nation: createInitialNationStatus("jiaozhi_nation", "jiaozhi")
   }
 ];

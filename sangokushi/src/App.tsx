@@ -5,10 +5,16 @@ import { Province, provinces } from './types/province'
 import { getGeneralsByLordId } from './types/general'
 import { LordSelection } from './components/LordSelection'
 import { Lord } from './types/lord'
+import { NationStatus } from './components/NationStatus'
 
 function App() {
   const [selectedProvince, setSelectedProvince] = useState<Province | null>(null);
   const [playerLord, setPlayerLord] = useState<Lord | null>(null);
+
+  // プレイヤーの国を取得
+  const getPlayerProvince = () => {
+    return provinces.find(p => p.lord?.id === playerLord?.id);
+  };
 
   // ゲームが開始されていない場合（君主未選択）
   if (!playerLord) {
@@ -18,6 +24,8 @@ function App() {
       </div>
     );
   }
+
+  const playerProvince = getPlayerProvince();
 
   const handleProvinceClick = (province: Province) => {
     setSelectedProvince(province);
@@ -46,47 +54,57 @@ function App() {
             <p>君主：{playerLord.name}</p>
             <p>軍事力：{playerLord.strength}</p>
           </div>
+          {playerProvince && (
+            <NationStatus status={playerProvince.nation} />
+          )}
         </div>
-        <h2>州の情報</h2>
-        {selectedProvince && (
-          <div className="province-info">
-            <h3>{selectedProvince.name}</h3>
-            <div className="lord-info">
-              <p>君主：{selectedProvince.lord?.name || '空白国'}</p>
-              {selectedProvince.lord && (
-                <p>軍事力：{selectedProvince.lord.strength}</p>
-              )}
-            </div>
-            {selectedProvince.lord && (
-              <div className="generals-info">
-                <h4>配下の武将</h4>
-                <div className="generals-list">
-                  {getGeneralsByLordId(selectedProvince.lord.id).map(general => (
-                    <div key={general.id} className="general-item">
-                      <div className="general-header">
-                        <span className="general-name">{general.name}</span>
-                        <span className="general-loyalty">忠誠: {general.loyalty}</span>
-                      </div>
-                      {renderGeneralStats(general.stats)}
-                    </div>
-                  ))}
-                </div>
+
+        {selectedProvince && selectedProvince.id !== playerProvince?.id && (
+          <>
+            <h2>選択中の州の情報</h2>
+            <div className="province-info">
+              <h3>{selectedProvince.name}</h3>
+              <div className="lord-info">
+                <p>君主：{selectedProvince.lord?.name || '空白国'}</p>
+                {selectedProvince.lord && (
+                  <p>軍事力：{selectedProvince.lord.strength}</p>
+                )}
               </div>
-            )}
-            <div className="adjacent-info">
-              <p>隣接する州:</p>
-              <ul>
-                {selectedProvince.adjacentProvinces.map(id => {
-                  const province = provinces.find(p => p.id === id);
-                  return (
-                    <li key={id}>
-                      {province?.name} ({province?.lord?.name || '空白国'})
-                    </li>
-                  );
-                })}
-              </ul>
+              
+              <NationStatus status={selectedProvince.nation} />
+
+              {selectedProvince.lord && (
+                <div className="generals-info">
+                  <h4>配下の武将</h4>
+                  <div className="generals-list">
+                    {getGeneralsByLordId(selectedProvince.lord.id).map(general => (
+                      <div key={general.id} className="general-item">
+                        <div className="general-header">
+                          <span className="general-name">{general.name}</span>
+                          <span className="general-loyalty">忠誠: {general.loyalty}</span>
+                        </div>
+                        {renderGeneralStats(general.stats)}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="adjacent-info">
+                <p>隣接する州:</p>
+                <ul>
+                  {selectedProvince.adjacentProvinces.map(id => {
+                    const province = provinces.find(p => p.id === id);
+                    return (
+                      <li key={id}>
+                        {province?.name} ({province?.lord?.name || '空白国'})
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
             </div>
-          </div>
+          </>
         )}
       </div>
       <div className="message-area">

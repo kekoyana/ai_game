@@ -13,26 +13,26 @@ body {
   height: 768px;
   display: grid;
   grid-template-columns: 700px 324px;
-  grid-template-rows: 384px 384px;
-  gap: 0;
+  grid-template-rows: 668px 100px;
   background-color: #2c2c2c;
   border: 2px solid #444;
 }
 
 .game-area {
   grid-column: 1;
-  grid-row: 1 / span 2;
+  grid-row: 1;
   background-color: #000;
   border: 1px solid #333;
   display: flex;
   justify-content: center;
   align-items: center;
   padding: 20px;
+  position: relative;
 }
 
 .status-area {
   grid-column: 2;
-  grid-row: 1;
+  grid-row: 1 / span 2;
   background-color: #1c1c1c;
   border: 1px solid #333;
   padding: 15px;
@@ -40,33 +40,8 @@ body {
   overflow-y: auto;
 }
 
-.player-info {
-  background-color: #253544;
-  border: 2px solid #4a90e2;
-  border-radius: 4px;
-  padding: 15px;
-  margin-bottom: 20px;
-}
-
-.player-info h2 {
-  color: #4a90e2;
-  margin: 0 0 10px 0;
-}
-
-.player-info .lord-info {
-  background-color: #2c2c2c;
-  padding: 10px;
-  border-radius: 4px;
-}
-
-.player-info .lord-info p {
-  margin: 5px 0;
-  font-size: 1.1em;
-  color: #fff;
-}
-
 .message-area {
-  grid-column: 2;
+  grid-column: 1;
   grid-row: 2;
   background-color: #1c1c1c;
   border: 1px solid #333;
@@ -111,6 +86,31 @@ h2 {
   margin: 15px 0 10px 0;
   color: #ccc;
   font-size: 1.1em;
+}
+
+.player-info {
+  background-color: #253544;
+  border: 2px solid #4a90e2;
+  border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+.player-info h2 {
+  color: #4a90e2;
+  margin: 0 0 10px 0;
+}
+
+.player-info .lord-info {
+  background-color: #2c2c2c;
+  padding: 10px;
+  border-radius: 4px;
+}
+
+.player-info .lord-info p {
+  margin: 5px 0;
+  font-size: 1.1em;
+  color: #fff;
 }
 
 .lord-info {
