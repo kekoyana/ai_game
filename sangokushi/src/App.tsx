@@ -263,6 +263,33 @@ function App() {
         {selectedProvince && (
           <p>{selectedProvince.name}が選択されました</p>
         )}
+        {result && (
+          <>
+            <p>{result.message}</p>
+            {result.effects && (
+              <p>
+                {Object.entries(result.effects).map(([key, value]) => {
+                  const labels: { [key: string]: string } = {
+                    gold: '金',
+                    food: '兵糧',
+                    loyalty: '民忠',
+                    commerce: '商業',
+                    agriculture: '農業',
+                    military: '兵力',
+                    arms: '武器',
+                    training: '訓練',
+                    population: '人口'
+                  };
+                  return value !== undefined ? (
+                    <span key={key} style={{ marginRight: '10px' }}>
+                      {labels[key]}: {value > 0 ? '+' : ''}{value}
+                    </span>
+                  ) : null;
+                })}
+              </p>
+            )}
+          </>
+        )}
       </div>
       <div className="status-area">
         <div className="player-info">
