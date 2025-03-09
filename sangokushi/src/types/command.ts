@@ -1,5 +1,5 @@
 // コマンドの種類を定義
-export type CommandCategory = 'domestic' | 'military';
+export type CommandCategory = 'domestic' | 'military' | 'other';
 
 // コマンドの定義
 export interface Command {
@@ -53,6 +53,16 @@ export const domesticCommands: Command[] = [
 ];
 
 // 軍事コマンド
+// その他のコマンド
+export const otherCommands: Command[] = [
+  {
+    id: 'end_turn',
+    name: '命令終了',
+    category: 'other',
+    description: '今月の命令を終了し、次の月へ進みます'
+  }
+];
+
 export const militaryCommands: Command[] = [
   {
     id: 'train_troops',

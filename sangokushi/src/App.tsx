@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './App.css'
 import { Map } from './components/Map'
 import { Province, provinces } from './types/province'
@@ -14,6 +14,67 @@ function App() {
   const [selectedProvince, setSelectedProvince] = useState<Province | null>(null);
   const [playerLord, setPlayerLord] = useState<Lord | null>(null);
   const [gameProvinces, setGameProvinces] = useState(provinces);
+  const [currentDate, setCurrentDate] = useState({ year: 189, month: 4 });
+
+  // 月の進行処理
+  const advanceMonth = (playerProvince: Province) => {
+    const newDate = { ...currentDate };
+    newDate.month++;
+    if (newDate.month > 12) {
+      newDate.month = 1;
+      newDate.year++;
+    }
+    setCurrentDate(newDate);
+
+    // 1月の商業収入
+    if (newDate.month === 1) {
+      const commerceIncome = Math.floor(playerProvince.nation.commerce * 100);
+      const updatedProvinces = gameProvinces.map(province => {
+        if (province.id === playerProvince.id) {
+          return {
+            ...province,
+            nation: {
+              ...province.nation,
+              gold: province.nation.gold + commerceIncome
+            }
+          };
+        }
+        return province;
+      });
+      setGameProvinces(updatedProvinces);
+      setResult({
+        success: true,
+        message: `商業による収入: ${commerceIncome}`,
+        effects: { gold: commerceIncome }
+      });
+    }
+
+    // 7月の農業収入
+    if (newDate.month === 7) {
+      const agricultureIncome = Math.floor(playerProvince.nation.agriculture * 100);
+      const updatedProvinces = gameProvinces.map(province => {
+        if (province.id === playerProvince.id) {
+          return {
+            ...province,
+            nation: {
+              ...province.nation,
+              food: province.nation.food + agricultureIncome
+            }
+          };
+        }
+        return province;
+      });
+      setGameProvinces(updatedProvinces);
+      setResult({
+        success: true,
+        message: `農業による収入: ${agricultureIncome}`,
+        effects: { food: agricultureIncome }
+      });
+    }
+  };
+
+  // 結果表示用の状態
+  const [result, setResult] = useState<CommandResult | null>(null);
 
   // プレイヤーの国を取得
   const getPlayerProvince = () => {
@@ -74,7 +135,22 @@ function App() {
     const calculateTax = (nation: NationStatusType) => Math.floor(nation.commerce * 10);
     const calculateRecruits = (nation: NationStatusType) => Math.floor(nation.population * 0.01);
 
+    const playerProvince = getPlayerProvince();
+    if (!playerProvince) {
+      return {
+        success: false,
+        message: "プレイヤーの国が見つかりません"
+      };
+    }
+
     switch (command.id) {
+      case 'end_turn':
+        advanceMonth(playerProvince);
+        return {
+          success: true,
+          message: `${currentDate.year}年${currentDate.month}月が経過しました`
+        };
+
       case 'develop_commerce':
         return {
           success: true,
@@ -177,7 +253,10 @@ function App() {
   return (
     <div className="game-container">
       <div className="game-area">
-        <Map onProvinceClick={handleProvinceClick} />
+        <Map
+          onProvinceClick={handleProvinceClick}
+          currentDate={currentDate}
+        />
       </div>
       <div className="message-area">
         <p>現在のターン: {playerLord.name}の作戦フェーズ</p>
@@ -198,7 +277,7 @@ function App() {
               <CommandPanel
                 nation={playerProvince.nation}
                 generals={getGeneralsByLordId(playerLord.id)}
-                currentDate={{ year: 1, month: 1 }}
+                currentDate={currentDate}
                 onExecuteCommand={handleExecuteCommand}
               />
             </>

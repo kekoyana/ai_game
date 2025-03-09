@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Command, CommandCategory, CommandResult, domesticCommands, militaryCommands } from '../types/command';
+import { Command, CommandCategory, CommandResult, domesticCommands, militaryCommands, otherCommands } from '../types/command';
 import type { NationStatus } from '../types/nation';
 import { General } from '../types/general';
 import { GeneralSelector } from './GeneralSelector';
@@ -20,12 +20,36 @@ export function CommandPanel({ nation, generals, currentDate, onExecuteCommand }
   const [executing, setExecuting] = useState(false);
   const [result, setResult] = useState<CommandResult | null>(null);
 
-  const commands = activeCategory === 'domestic' ? domesticCommands : militaryCommands;
+  const getCommandsByCategory = (category: CommandCategory) => {
+    switch (category) {
+      case 'domestic':
+        return domesticCommands;
+      case 'military':
+        return militaryCommands;
+      case 'other':
+        return otherCommands;
+      default:
+        return [];
+    }
+  };
 
-  const handleCommandClick = (command: Command) => {
+  const commands = getCommandsByCategory(activeCategory);
+
+  const handleCommandClick = async (command: Command) => {
     setSelectedCommand(command);
     setResult(null);
-    setShowGeneralSelector(true);
+
+    if (command.category === 'other') {
+      setExecuting(true);
+      try {
+        const result = await onExecuteCommand(command, generals[0]); // 武将は使用しないため、適当な武将を渡す
+        setResult(result);
+      } finally {
+        setExecuting(false);
+      }
+    } else {
+      setShowGeneralSelector(true);
+    }
   };
 
   const handleGeneralSelect = async (general: General) => {
@@ -70,12 +94,24 @@ export function CommandPanel({ nation, generals, currentDate, onExecuteCommand }
   };
 
   const renderEffects = (effects: NonNullable<CommandResult['effects']>) => {
+    const effectLabels: { [key: string]: string } = {
+      gold: '金',
+      food: '兵糧',
+      loyalty: '民忠',
+      commerce: '商業',
+      agriculture: '農業',
+      military: '兵力',
+      arms: '武器',
+      training: '訓練',
+      population: '人口'
+    };
+
     return (
       <div className="effect-list">
         {Object.entries(effects).map(([key, value]) => (
           value !== undefined && (
             <div key={key} className="effect-item">
-              {key}: {value > 0 ? '+' : ''}{value}
+              {effectLabels[key]}: {value > 0 ? '+' : ''}{value}
             </div>
           )
         ))}
@@ -97,6 +133,12 @@ export function CommandPanel({ nation, generals, currentDate, onExecuteCommand }
           onClick={() => setActiveCategory('military')}
         >
           軍事
+        </button>
+        <button
+          className={`category-button ${activeCategory === 'other' ? 'active' : ''}`}
+          onClick={() => setActiveCategory('other')}
+        >
+          その他
         </button>
       </div>
 

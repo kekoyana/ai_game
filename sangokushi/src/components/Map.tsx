@@ -1,12 +1,14 @@
 import { useState } from 'react';
+import '../styles/Map.css';
 import { Province, provinces } from '../types/province';
 import { Lord } from '../types/lord';
 
 interface MapProps {
   onProvinceClick?: (province: Province) => void;
+  currentDate: { year: number; month: number };
 }
 
-export function Map({ onProvinceClick }: MapProps) {
+export function Map({ onProvinceClick, currentDate }: MapProps) {
   const [hoveredProvince, setHoveredProvince] = useState<string | null>(null);
   const [selectedProvince, setSelectedProvince] = useState<string | null>(null);
 
@@ -57,6 +59,9 @@ export function Map({ onProvinceClick }: MapProps) {
 
   return (
     <div className="map-container">
+      <div className="date-display">
+        {currentDate.year}年{currentDate.month}月
+      </div>
       <svg
         viewBox="80 80 500 340"
         width="100%"
