@@ -3,9 +3,21 @@ import './App.css'
 import { Map } from './components/Map'
 import { Province, provinces } from './types/province'
 import { getGeneralsByLordId } from './types/general'
+import { LordSelection } from './components/LordSelection'
+import { Lord } from './types/lord'
 
 function App() {
   const [selectedProvince, setSelectedProvince] = useState<Province | null>(null);
+  const [playerLord, setPlayerLord] = useState<Lord | null>(null);
+
+  // ゲームが開始されていない場合（君主未選択）
+  if (!playerLord) {
+    return (
+      <div className="game-container">
+        <LordSelection onSelect={setPlayerLord} />
+      </div>
+    );
+  }
 
   const handleProvinceClick = (province: Province) => {
     setSelectedProvince(province);
@@ -28,6 +40,13 @@ function App() {
         <Map onProvinceClick={handleProvinceClick} />
       </div>
       <div className="status-area">
+        <div className="player-info">
+          <h2>プレイヤー情報</h2>
+          <div className="lord-info">
+            <p>君主：{playerLord.name}</p>
+            <p>軍事力：{playerLord.strength}</p>
+          </div>
+        </div>
         <h2>州の情報</h2>
         {selectedProvince && (
           <div className="province-info">
@@ -72,6 +91,7 @@ function App() {
       </div>
       <div className="message-area">
         <h2>メッセージ</h2>
+        <p>現在のターン: {playerLord.name}の作戦フェーズ</p>
         {selectedProvince && (
           <p>{selectedProvince.name}が選択されました</p>
         )}
