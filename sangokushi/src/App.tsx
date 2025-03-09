@@ -1,11 +1,13 @@
+import { useState } from 'react'
 import './App.css'
 import { Map } from './components/Map'
-import { Province } from './types/province'
+import { Province, provinces } from './types/province'
 
 function App() {
+  const [selectedProvince, setSelectedProvince] = useState<Province | null>(null);
+
   const handleProvinceClick = (province: Province) => {
-    console.log(`Clicked province: ${province.name}`);
-    // 今後、クリック時の処理を実装
+    setSelectedProvince(province);
   };
 
   return (
@@ -14,10 +16,26 @@ function App() {
         <Map onProvinceClick={handleProvinceClick} />
       </div>
       <div className="status-area">
-        <h2>ステータス表示</h2>
+        <h2>州の情報</h2>
+        {selectedProvince && (
+          <div className="province-info">
+            <h3>{selectedProvince.name}</h3>
+            <p>隣接する州:</p>
+            <ul>
+              {selectedProvince.adjacentProvinces.map(id => (
+                <li key={id}>
+                  {provinces.find((p: Province) => p.id === id)?.name}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
       <div className="message-area">
-        <h2>メッセージ表示</h2>
+        <h2>メッセージ</h2>
+        {selectedProvince && (
+          <p>{selectedProvince.name}が選択されました</p>
+        )}
       </div>
     </div>
   )

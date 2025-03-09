@@ -34,7 +34,7 @@ body {
   grid-row: 1;
   background-color: #1c1c1c;
   border: 1px solid #333;
-  padding: 10px;
+  padding: 15px;
   color: #fff;
 }
 
@@ -43,7 +43,7 @@ body {
   grid-row: 2;
   background-color: #1c1c1c;
   border: 1px solid #333;
-  padding: 10px;
+  padding: 15px;
   overflow-y: auto;
   color: #fff;
 }
@@ -65,4 +65,37 @@ h2 {
   margin: 0 0 15px 0;
   font-size: 1.2em;
   color: #fff;
+}
+
+.province-info {
+  padding: 10px;
+  background-color: #252525;
+  border-radius: 4px;
+  margin-top: 10px;
+}
+
+.province-info h3 {
+  margin: 0 0 10px 0;
+  color: #4a90e2;
+  font-size: 1.1em;
+}
+
+.province-info p {
+  margin: 5px 0;
+}
+
+.province-info ul {
+  margin: 5px 0;
+  padding-left: 20px;
+  list-style-type: none;
+}
+
+.province-info li {
+  padding: 3px 0;
+  color: #ccc;
+}
+
+.message-area p {
+  color: #ccc;
+  margin: 5px 0;
 }
