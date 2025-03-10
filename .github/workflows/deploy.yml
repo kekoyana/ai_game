@@ -125,8 +125,40 @@ jobs:
           path: './menu'
           retention-days: 1
 
+  build-shiritori:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: './shiritori/package-lock.json'
+      
+      - name: Update dependencies
+        working-directory: ./shiritori
+        run: npm install
+      
+      - name: Install dependencies
+        working-directory: ./shiritori
+        run: npm ci
+      
+      - name: Build
+        working-directory: ./shiritori
+        run: npm run build
+
+      - name: Upload shiritori artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: shiritori-build
+          path: './shiritori/dist'
+          retention-days: 1
+
   deploy:
-    needs: [build-evolife, build-roguelike, build-gakuensai, build-menu]
+    needs: [build-evolife, build-roguelike, build-gakuensai, build-menu, build-shiritori]
     environment:
       name: github-pages
       url: ${{ github.io_url }}
@@ -149,6 +181,12 @@ jobs:
         with:
           name: gakuensai-build
           path: './dist/gakuensai'
+
+      - name: Download shiritori build
+        uses: actions/download-artifact@v4
+        with:
+          name: shiritori-build
+          path: './dist/shiritori'
 
       - name: Download menu build
         uses: actions/download-artifact@v4

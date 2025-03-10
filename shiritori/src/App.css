@@ -1,0 +1,123 @@
+.app {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 100vh;
+}
+
+.game-info {
+  background: #fff;
+  padding: 10px;
+  border-radius: 6px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.status-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 0.9em;
+}
+
+.timer {
+  font-weight: bold;
+  color: #e74c3c;
+}
+
+.player-turn {
+  font-weight: bold;
+  color: #2ecc71;
+}
+
+.last-word {
+  font-size: 0.9em;
+  color: #34495e;
+  margin-bottom: 6px;
+}
+
+.message {
+  font-size: 0.9em;
+  color: #3498db;
+  text-align: center;
+  padding: 6px;
+  background: #f8f9fa;
+  border-radius: 4px;
+}
+
+.panels-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+  gap: 8px;
+  padding: 8px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  align-items: start;
+}
+
+.reset-button {
+  padding: 8px 16px;
+  font-size: 0.9em;
+  background-color: #3498db;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin: 10px auto;
+  display: block;
+}
+
+.reset-button:hover {
+  background-color: #2980b9;
+}
+
+/* レスポンシブデザイン */
+@media (max-width: 768px) {
+  .app {
+    padding: 6px;
+  }
+
+  .game-info {
+    padding: 8px;
+  }
+
+  .status-container {
+    flex-direction: row;
+    gap: 8px;
+    font-size: 0.8em;
+  }
+
+  .panels-grid {
+    grid-template-columns: repeat(auto-fill, minmax(55px, 1fr));
+    gap: 6px;
+    padding: 6px;
+  }
+
+  .timer,
+  .player-turn,
+  .last-word,
+  .message {
+    font-size: 0.8em;
+  }
+}
+
+@media (max-width: 480px) {
+  .panels-grid {
+    grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
+    gap: 4px;
+    padding: 4px;
+  }
+
+  .status-container {
+    font-size: 0.7em;
+  }
+
+  .message {
+    font-size: 0.7em;
+    padding: 4px;
+  }
+}
