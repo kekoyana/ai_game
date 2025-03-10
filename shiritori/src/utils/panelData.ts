@@ -19,96 +19,152 @@ const getFirstChar = (word: string): string => {
 
 const panelData: PanelData[] = [
   {
-    words: ['きつね', 'どうぶつ'],
+    words: ['きつね', 'けもの'],
     imageUrl: '🦊'
   },
   {
-    words: ['ねこ', 'どうぶつ'],
+    words: ['ねこ', 'にゃんこ'],
     imageUrl: '🐱'
   },
   {
-    words: ['こうもり', 'どうぶつ'],
+    words: ['こうもり', 'こうもり'],
     imageUrl: '🦇'
   },
   {
-    words: ['りんご', 'くだもの'],
+    words: ['りんご', 'りんご'],
     imageUrl: '🍎'
   },
   {
-    words: ['ごりら', 'どうぶつ'],
+    words: ['ごりら', 'ごりら'],
     imageUrl: '🦍'
   },
   {
-    words: ['らっぱ', 'がっき'],
+    words: ['らっぱ', 'らっぱ'],
     imageUrl: '🎺'
   },
   {
-    words: ['ぱいなっぷる', 'くだもの'],
+    words: ['ぱいなっぷる', 'ぱいなっぷる'],
     imageUrl: '🍍'
   },
   {
-    words: ['るびー', 'ほうせき'],
+    words: ['るびー', 'るびー'],
     imageUrl: '💎'
   },
   {
-    words: ['いか', 'どうぶつ'],
+    words: ['いか', 'いか'],
     imageUrl: '🦑'
   },
   {
-    words: ['かに', 'どうぶつ'],
+    words: ['かに', 'かに'],
     imageUrl: '🦀'
   },
   {
-    words: ['にわとり', 'どうぶつ'],
+    words: ['にわとり', 'にわとり'],
     imageUrl: '🐓'
   },
   {
-    words: ['りす', 'どうぶつ'],
+    words: ['りす', 'りす'],
     imageUrl: '🐿️'
   },
   {
-    words: ['すいか', 'くだもの'],
+    words: ['すいか', 'すいか'],
     imageUrl: '🍉'
   },
   {
-    words: ['かば', 'どうぶつ'],
+    words: ['かば', 'かば'],
     imageUrl: '🦛'
   },
   {
-    words: ['ばなな', 'くだもの'],
+    words: ['ばなな', 'ばなな'],
     imageUrl: '🍌'
   },
   {
-    words: ['なし', 'くだもの'],
+    words: ['なし', 'なし'],
     imageUrl: '🍐'
   },
   {
-    words: ['しか', 'どうぶつ'],
+    words: ['しか', 'しか'],
     imageUrl: '🦌'
   },
   {
-    words: ['かめ', 'どうぶつ'],
+    words: ['かめ', 'かめ'],
     imageUrl: '🐢'
   },
   {
-    words: ['めがね', 'どうぐ'],
+    words: ['めがね', 'めがね'],
     imageUrl: '👓'
   },
   {
-    words: ['ねずみ', 'どうぶつ'],
+    words: ['ねずみ', 'ねずみ'],
     imageUrl: '🐭'
   },
   {
-    words: ['ねっくれす', 'あくせさりー'],
+    words: ['ねっくれす', 'ねっくれす'],
     imageUrl: '📿'
   },
   {
-    words: ['すまほ', 'きき'],
+    words: ['すまほ', 'すまほ'],
     imageUrl: '📱'
   },
   {
-    words: ['ほうき', 'どうぐ'],
+    words: ['ほうき', 'ほうき'],
     imageUrl: '🧹'
+  },
+  {
+    words: ['きりん', 'きりん'],
+    imageUrl: '🦒'
+  },
+  {
+    words: ['んま', 'んま'],
+    imageUrl: '🐎'
+  },
+  {
+    words: ['まんが', 'まんが'],
+    imageUrl: '📚'
+  },
+  {
+    words: ['がちょう', 'がちょう'],
+    imageUrl: '🦢'
+  },
+  {
+    words: ['うさぎ', 'うさぎ'],
+    imageUrl: '🐰'
+  },
+  {
+    words: ['ぎたー', 'ぎたー'],
+    imageUrl: '🎸'
+  },
+  {
+    words: ['たまご', 'たまご'],
+    imageUrl: '🥚'
+  },
+  {
+    words: ['ごりら', 'ごりら'],
+    imageUrl: '🦍'
+  },
+  {
+    words: ['らっこ', 'らっこ'],
+    imageUrl: '🦦'
+  },
+  {
+    words: ['こあら', 'こあら'],
+    imageUrl: '🐨'
+  },
+  {
+    words: ['らむ', 'らむ'],
+    imageUrl: '🐑'
+  },
+  {
+    words: ['むぎ', 'むぎ'],
+    imageUrl: '🌾'
+  },
+  {
+    words: ['ぎんこう', 'ぎんこう'],
+    imageUrl: '🏦'
+  },
+  {
+    words: ['うま', 'うま'],
+    imageUrl: '🐎'
   }
 ];
 
