@@ -18,7 +18,6 @@ export function CommandPanel({ nation, generals, currentDate, onExecuteCommand }
   const [selectedCommand, setSelectedCommand] = useState<Command | null>(null);
   const [showGeneralSelector, setShowGeneralSelector] = useState(false);
   const [executing, setExecuting] = useState(false);
-  const [result, setResult] = useState<CommandResult | null>(null);
 
   const getCommandsByCategory = (category: CommandCategory) => {
     switch (category) {
@@ -37,13 +36,11 @@ export function CommandPanel({ nation, generals, currentDate, onExecuteCommand }
 
   const handleCommandClick = async (command: Command) => {
     setSelectedCommand(command);
-    setResult(null);
 
     if (command.category === 'other') {
       setExecuting(true);
       try {
-        const result = await onExecuteCommand(command, generals[0]); // 武将は使用しないため、適当な武将を渡す
-        setResult(result);
+        await onExecuteCommand(command, generals[0]); // 武将は使用しないため、適当な武将を渡す
       } finally {
         setExecuting(false);
       }
@@ -58,8 +55,7 @@ export function CommandPanel({ nation, generals, currentDate, onExecuteCommand }
     setShowGeneralSelector(false);
     setExecuting(true);
     try {
-      const result = await onExecuteCommand(selectedCommand, general);
-      setResult(result);
+      await onExecuteCommand(selectedCommand, general);
     } finally {
       setExecuting(false);
     }
@@ -91,32 +87,6 @@ export function CommandPanel({ nation, generals, currentDate, onExecuteCommand }
     });
     
     return availableGenerals.length > 0;
-  };
-
-  const renderEffects = (effects: NonNullable<CommandResult['effects']>) => {
-    const effectLabels: { [key: string]: string } = {
-      gold: '金',
-      food: '兵糧',
-      loyalty: '民忠',
-      commerce: '商業',
-      agriculture: '農業',
-      military: '兵力',
-      arms: '武器',
-      training: '訓練',
-      population: '人口'
-    };
-
-    return (
-      <div className="effect-list">
-        {Object.entries(effects).map(([key, value]) => (
-          value !== undefined && (
-            <div key={key} className="effect-item">
-              {effectLabels[key]}: {value > 0 ? '+' : ''}{value}
-            </div>
-          )
-        ))}
-      </div>
-    );
   };
 
   return (
@@ -180,13 +150,6 @@ export function CommandPanel({ nation, generals, currentDate, onExecuteCommand }
           onSelect={handleGeneralSelect}
           onCancel={() => setShowGeneralSelector(false)}
         />
-      )}
-
-      {result && (
-        <div className={`command-result ${result.success ? 'success' : 'failure'}`}>
-          <p>{result.message}</p>
-          {result.effects && renderEffects(result.effects)}
-        </div>
       )}
     </div>
   );

@@ -3,12 +3,12 @@ import './App.css'
 import { Map } from './components/Map'
 import { MessageArea } from './components/MessageArea'
 import { Province, provinces } from './types/province'
-import { getGeneralsByLordId } from './types/general'
+import { getGeneralsByLordId, General } from './types/general'
 import { LordSelection } from './components/LordSelection'
 import { Lord } from './types/lord'
 import { NationStatus } from './components/NationStatus'
 import { CommandPanel } from './components/CommandPanel'
-import { Command, CommandResult } from './types/command'
+import { Command, CommandResult, WarCommand } from './types/command'
 import type { NationStatus as NationStatusType } from './types/nation'
 
 function App() {
@@ -83,7 +83,7 @@ function App() {
   };
 
   // コマンド実行のハンドラ
-  const handleExecuteCommand = async (command: Command): Promise<CommandResult> => {
+  const handleExecuteCommand = async (command: Command, general: General): Promise<CommandResult> => {
     const playerProvince = getPlayerProvince();
     if (!playerProvince) {
       return {
@@ -93,7 +93,7 @@ function App() {
     }
 
     // コマンドの実行結果を処理
-    const result = executeCommand(command, playerProvince.nation);
+    const result = executeCommand(command, playerProvince.nation, general);
     
     if (result.success && result.effects) {
       // 国のステータスを更新
@@ -106,6 +106,8 @@ function App() {
       });
       
       setGameProvinces(updatedProvinces);
+      // コマンド実行結果をメッセージエリアに表示
+      setResult(result);
     }
 
     return result;
@@ -130,8 +132,73 @@ function App() {
     };
   };
 
+  // 戦闘力の計算
+  const calculateBattlePower = (
+    province: Province,
+    general: General
+  ): number => {
+    const nation = province.nation;
+    // 基本戦闘力 = 兵力 × (1 + 訓練度/100) × (1 + 武器/100)
+    const basePower = nation.military * (1 + nation.training / 100) * (1 + nation.arms / 100);
+    // 武将補正 = (武力 + 統率) / 100
+    const generalBonus = (general.stats.war + general.stats.lead) / 100;
+    
+    return Math.floor(basePower * (1 + generalBonus));
+  };
+
+  // 戦闘結果の処理
+  const processBattleResult = (
+    attackerProvince: Province,
+    defenderProvince: Province,
+    attacker: General,
+    battlePowerDiff: number,
+    won: boolean
+  ): CommandResult => {
+    if (won) {
+      // 攻撃側が勝利
+      // 領土を併合（防衛側の州をプレイヤーの支配下に）
+      const updatedProvinces = gameProvinces.map(province => {
+        if (province.id === defenderProvince.id) {
+          return {
+            ...province,
+            lord: attackerProvince.lord,
+            nation: {
+              ...province.nation,
+              military: Math.floor(province.nation.military * 0.5), // 残存兵力は半分に
+              loyalty: Math.floor(province.nation.loyalty * 0.5)  // 民忠も半分に
+            }
+          };
+        }
+        return province;
+      });
+      setGameProvinces(updatedProvinces);
+      
+      // 勝利時の結果をreturn
+      return {
+        success: true,
+        message: `${defenderProvince.name}を征服しました！`,
+        effects: {
+          military: -Math.floor(attackerProvince.nation.military * 0.2), // 兵力の20%を損失
+          food: -(2000 + Math.floor(attackerProvince.nation.military * 0.1)), // 基本消費+兵力に応じた消費
+          loyalty: -10 // 戦争による民忠低下
+        }
+      };
+    } else {
+      // 攻撃側が敗北
+      return {
+        success: false,
+        message: `${defenderProvince.name}との戦いに敗れました...`,
+        effects: {
+          military: -Math.floor(attackerProvince.nation.military * 0.4), // 兵力の40%を損失
+          food: -(2000 + Math.floor(attackerProvince.nation.military * 0.1)), // 基本消費+兵力に応じた消費
+          loyalty: -20 // 大敗による民忠低下
+        }
+      };
+    }
+  };
+
   // コマンドの実行
-  const executeCommand = (command: Command, nation: NationStatusType): CommandResult => {
+  const executeCommand = (command: Command, nation: NationStatusType, general: General): CommandResult => {
     // 補助関数
     const calculateTax = (nation: NationStatusType) => Math.floor(nation.commerce * 10);
     const calculateRecruits = (nation: NationStatusType) => Math.floor(nation.population * 0.01);
@@ -145,6 +212,34 @@ function App() {
     }
 
     switch (command.id) {
+      case 'war':
+        // 攻撃対象の確認
+        if (!selectedProvince || !selectedProvince.lord || selectedProvince.id === playerProvince.id) {
+          return {
+            success: false,
+            message: "攻撃対象の州を選択してください"
+          };
+        }
+
+        // 隣接チェック
+        if (!playerProvince.adjacentProvinces.includes(selectedProvince.id)) {
+          return {
+            success: false,
+            message: "隣接していない州には攻め込めません"
+          };
+        }
+
+        // 戦闘力計算
+        const attackerPower = calculateBattlePower(playerProvince, general);
+        const defenderGenerals = getGeneralsByLordId(selectedProvince.lord.id);
+        const defenderGeneral = defenderGenerals[0]; // 最初の武将を防御側として使用
+        const defenderPower = calculateBattlePower(selectedProvince, defenderGeneral);
+        
+        const battlePowerDiff = attackerPower - defenderPower;
+        const won = battlePowerDiff > 0;
+
+        return processBattleResult(playerProvince, selectedProvince, general, battlePowerDiff, won);
+
       case 'end_turn':
         advanceMonth(playerProvince);
         return {
