@@ -1,71 +1,73 @@
 .app {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 10px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 10px;
   min-height: 100vh;
 }
 
 .game-info {
   background: #fff;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 10px;
+  border-radius: 6px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 .status-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
+  margin-bottom: 8px;
+  font-size: 0.9em;
 }
 
 .timer {
-  font-size: 1.2em;
   font-weight: bold;
   color: #e74c3c;
 }
 
 .player-turn {
-  font-size: 1.2em;
   font-weight: bold;
   color: #2ecc71;
 }
 
 .last-word {
-  font-size: 1.1em;
+  font-size: 0.9em;
   color: #34495e;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
 }
 
 .message {
-  font-size: 1.1em;
+  font-size: 0.9em;
   color: #3498db;
   text-align: center;
-  padding: 10px;
+  padding: 6px;
   background: #f8f9fa;
   border-radius: 4px;
 }
 
 .panels-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 20px;
-  padding: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+  gap: 8px;
+  padding: 8px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  align-items: start;
 }
 
 .reset-button {
-  padding: 12px 24px;
-  font-size: 1.1em;
+  padding: 8px 16px;
+  font-size: 0.9em;
   background-color: #3498db;
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.3s ease;
-  margin: 20px auto;
+  margin: 10px auto;
   display: block;
 }
 
@@ -76,37 +78,46 @@
 /* レスポンシブデザイン */
 @media (max-width: 768px) {
   .app {
-    padding: 10px;
+    padding: 6px;
   }
 
   .game-info {
-    padding: 15px;
+    padding: 8px;
   }
 
   .status-container {
-    flex-direction: column;
-    gap: 10px;
-    text-align: center;
+    flex-direction: row;
+    gap: 8px;
+    font-size: 0.8em;
   }
 
   .panels-grid {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 10px;
-    padding: 10px;
+    grid-template-columns: repeat(auto-fill, minmax(55px, 1fr));
+    gap: 6px;
+    padding: 6px;
   }
 
   .timer,
   .player-turn,
   .last-word,
   .message {
-    font-size: 1em;
+    font-size: 0.8em;
   }
 }
 
 @media (max-width: 480px) {
   .panels-grid {
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 8px;
-    padding: 8px;
+    grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
+    gap: 4px;
+    padding: 4px;
+  }
+
+  .status-container {
+    font-size: 0.7em;
+  }
+
+  .message {
+    font-size: 0.7em;
+    padding: 4px;
   }
 }

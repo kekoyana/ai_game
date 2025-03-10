@@ -5,12 +5,12 @@ import { generatePanels, endsWithN, isValidWord, selectCpuMove } from '../utils/
 export const useShiritoriGame = () => {
   const [gameState, setGameState] = useState<GameState>({
     panels: generatePanels(),
-    currentPlayer: 'USER',
+    currentPlayer: 'CPU',  // CPUから開始
     timeLeft: 30,
     lastWord: '',
     gameOver: false,
     winner: null,
-    message: 'ゲームを開始します。パネルを選択してください。'
+    message: 'CPUの手番です...'
   });
 
   // タイマー処理
@@ -60,6 +60,19 @@ export const useShiritoriGame = () => {
       return () => clearTimeout(cpuTimer);
     }
   }, [gameState.currentPlayer, gameState.gameOver, gameState.lastWord]);
+
+  // 初回のCPUの手を選択
+  useEffect(() => {
+    if (gameState.currentPlayer === 'CPU' && gameState.lastWord === '') {
+      const cpuTimer = setTimeout(() => {
+        const randomIndex = Math.floor(Math.random() * gameState.panels.length);
+        const initialPanel = gameState.panels[randomIndex];
+        handleMove(initialPanel.id, initialPanel.words[0], 'CPU');
+      }, 1000);
+
+      return () => clearTimeout(cpuTimer);
+    }
+  }, []); // 初回のみ実行
 
   // パネル選択の処理
   const handleMove = useCallback((panelId: number, word: string, player: 'USER' | 'CPU') => {
@@ -113,12 +126,12 @@ export const useShiritoriGame = () => {
   const resetGame = useCallback(() => {
     setGameState({
       panels: generatePanels(),
-      currentPlayer: 'USER',
+      currentPlayer: 'CPU',  // リセット時もCPUから開始
       timeLeft: 30,
       lastWord: '',
       gameOver: false,
       winner: null,
-      message: 'ゲームを開始します。パネルを選択してください。'
+      message: 'CPUの手番です...'
     });
   }, []);
 
