@@ -1,0 +1,53 @@
+.message-area {
+  grid-column: 1;
+  grid-row: 2;
+  background-color: #1c1c1c;
+  border: 1px solid #333;
+  padding: 15px;
+  overflow-y: auto;
+  color: #fff;
+}
+
+.message-area p {
+  color: #ccc;
+  margin: 5px 0;
+}
+
+.message-area .command-effects {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 5px;
+  padding: 5px 10px;
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+}
+
+.message-area .effect-item {
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 3px;
+  background-color: rgba(74, 144, 226, 0.2);
+}
+
+.message-area .effect-item.positive {
+  color: #8bc34a;
+}
+
+.message-area .effect-item.negative {
+  color: #f44336;
+}
+
+/* スクロールバーのスタイル */
+.message-area::-webkit-scrollbar {
+  width: 8px;
+}
+
+.message-area::-webkit-scrollbar-track {
+  background: #1c1c1c;
+}
+
+.message-area::-webkit-scrollbar-thumb {
+  background-color: #444;
+  border-radius: 4px;
+}

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import './App.css'
 import { Map } from './components/Map'
+import { MessageArea } from './components/MessageArea'
 import { Province, provinces } from './types/province'
 import { getGeneralsByLordId } from './types/general'
 import { LordSelection } from './components/LordSelection'
@@ -258,12 +259,11 @@ function App() {
           currentDate={currentDate}
         />
       </div>
-      <div className="message-area">
-        <p>現在のターン: {playerLord.name}の作戦フェーズ</p>
-        {selectedProvince && (
-          <p>{selectedProvince.name}が選択されました</p>
-        )}
-      </div>
+      <MessageArea
+        playerName={playerLord.name}
+        selectedProvinceName={selectedProvince?.name}
+        result={result}
+      />
       <div className="status-area">
         <div className="player-info">
           <h2>プレイヤー情報</h2>
