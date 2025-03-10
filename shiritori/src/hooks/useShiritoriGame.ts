@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { GameState, Panel } from '../types/game';
+import { GameState } from '../types/game';
 import { generatePanels, endsWithN, isValidWord, selectCpuMove } from '../utils/panelData';
 
 export const useShiritoriGame = () => {
