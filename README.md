@@ -6,6 +6,7 @@ AIで作ったゲームをあげていく
 - `/evolife` - 生命進化シミュレーションゲーム（ https://kekoyana.github.io/ai_game/evolife/ ）
 - `/roguelike` - ローグライクゲーム（ https://kekoyana.github.io/ai_game/roguelike/ ）
 - `/gakuensai` - 学園祭シミュレーションゲーム（ https://kekoyana.github.io/ai_game/gakuensai/ ）
+- `/shiritori` - しりとりゲーム（ https://kekoyana.github.io/ai_game/shiritori/ ）
 
 ## デプロイ方法
 
@@ -27,6 +28,7 @@ AIで作ったゲームをあげていく
   - Evolife: https://kekoyana.github.io/ai_game/evolife/
   - Roguelike: https://kekoyana.github.io/ai_game/roguelike/
   - 学園祭: https://kekoyana.github.io/ai_game/gakuensai/
+  - しりとり: https://kekoyana.github.io/ai_game/shiritori/
 
 ## 新しいゲームの追加方法
 
