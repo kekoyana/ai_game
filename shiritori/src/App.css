@@ -50,9 +50,9 @@
 
 .panels-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
-  gap: 8px;
-  padding: 8px;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 16px;
+  padding: 16px;
   background: #f8f9fa;
   border-radius: 6px;
   align-items: start;
@@ -92,9 +92,9 @@
   }
 
   .panels-grid {
-    grid-template-columns: repeat(auto-fill, minmax(55px, 1fr));
-    gap: 6px;
-    padding: 6px;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 12px;
+    padding: 12px;
   }
 
   .timer,
@@ -107,9 +107,9 @@
 
 @media (max-width: 480px) {
   .panels-grid {
-    grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
-    gap: 4px;
-    padding: 4px;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 8px;
+    padding: 8px;
   }
 
   .status-container {

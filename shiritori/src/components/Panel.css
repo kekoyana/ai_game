@@ -9,8 +9,8 @@
   align-items: center;
   justify-content: center;
   aspect-ratio: 1;
-  min-width: 60px;
-  max-width: 80px;
+  min-width: 120px;
+  max-width: 160px;
 }
 
 .panel:hover:not(.selected):not(.disabled) {
@@ -37,30 +37,30 @@
 }
 
 .emoji {
-  font-size: 2em;
+  font-size: 4em;
   line-height: 1;
 }
 
 @media (max-width: 768px) {
   .panel {
-    padding: 6px;
-    min-width: 50px;
-    max-width: 60px;
+    padding: 8px;
+    min-width: 100px;
+    max-width: 120px;
   }
 
   .emoji {
-    font-size: 1.5em;
+    font-size: 3em;
   }
 }
 
 @media (max-width: 480px) {
   .panel {
-    padding: 4px;
-    min-width: 40px;
-    max-width: 50px;
+    padding: 6px;
+    min-width: 80px;
+    max-width: 100px;
   }
 
   .emoji {
-    font-size: 1.2em;
+    font-size: 2.5em;
   }
 }
