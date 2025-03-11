@@ -6,7 +6,7 @@ export const useShiritoriGame = () => {
   const [gameState, setGameState] = useState<GameState>({
     panels: generatePanels(),
     currentPlayer: 'CPU',  // CPUから開始
-    timeLeft: 30,
+    timeLeft: 60,
     lastWord: '',
     gameOver: false,
     winner: null,
@@ -127,7 +127,7 @@ export const useShiritoriGame = () => {
     setGameState({
       panels: generatePanels(),
       currentPlayer: 'CPU',  // リセット時もCPUから開始
-      timeLeft: 30,
+      timeLeft: 60,
       lastWord: '',
       gameOver: false,
       winner: null,

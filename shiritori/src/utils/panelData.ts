@@ -19,7 +19,7 @@ const getFirstChar = (word: string): string => {
 
 const panelData: PanelData[] = [
   {
-    words: ['えがお'],
+    words: ['えがお', 'かお'],
     imageUrl: '😊'
   },
   {
@@ -31,7 +31,7 @@ const panelData: PanelData[] = [
     imageUrl: '📔'
   },
   {
-    words: ['とうもろこし'],
+    words: ['とうもろこし','こーん'],
     imageUrl: '🌽'
   },
   {
@@ -39,11 +39,11 @@ const panelData: PanelData[] = [
     imageUrl: '🐻‍❄️'
   },
   {
-    words: ['まいく'],
+    words: ['まいく', 'うた'],
     imageUrl: '🎤'
   },
   {
-    words: ['くりすます'],
+    words: ['くりすます', 'つりー'],
     imageUrl: '🎄'
   },
   {
@@ -67,11 +67,11 @@ const panelData: PanelData[] = [
     imageUrl: '🦇'
   },
   {
-    words: ['りす'],
+    words: ['りす', 'しまりす'],
     imageUrl: '🐿️'
   },
   {
-    words: ['すし'],
+    words: ['すし', 'まぐろ', 'しゃけ'],
     imageUrl: '🍣'
   },
   {
@@ -83,7 +83,7 @@ const panelData: PanelData[] = [
     imageUrl: '🌲'
   },
   {
-    words: ['つき'],
+    words: ['つき', 'みかづき'],
     imageUrl: '🌙'
   },
   {
@@ -111,7 +111,7 @@ export const generatePanels = (): Panel[] => {
     .sort((a, b) => a.sort - b.sort)
     .map(({ value }) => value);
 
-  return shuffled.map((data, index) => ({
+  return shuffled.map((data, index: number) => ({
     id: index,
     words: data.words,
     imageUrl: data.imageUrl,
