@@ -20,6 +20,13 @@ export interface Command {
 // 内政コマンド
 export const domesticCommands: Command[] = [
   {
+    id: 'charity',
+    name: '施し',
+    category: 'domestic',
+    description: '兵糧を分け与え、民の信頼を得る',
+    cost: { food: 300 },
+  },
+  {
     id: 'develop_commerce',
     name: '商業開発',
     category: 'domestic',

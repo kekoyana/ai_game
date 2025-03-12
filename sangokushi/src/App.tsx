@@ -323,12 +323,39 @@ function App() {
           }
         };
 
+      case 'charity':
+        return {
+          success: true,
+          message: "民に兵糧を施しました",
+          effects: {
+            food: -(command.cost?.food || 0),
+            loyalty: 10
+          }
+        };
+
       default:
         return {
           success: false,
           message: "未実装のコマンドです"
         };
     }
+  };
+
+  // 君主を武将として扱うためのヘルパー関数
+  const convertLordToGeneral = (lord: Lord): General => {
+    return {
+      id: `lord_${lord.id}`,
+      name: `${lord.name}（君主）`,
+      stats: {
+        war: lord.strength,
+        int: lord.strength,
+        lead: lord.strength,
+        pol: lord.strength
+      },
+      loyalty: 100,
+      lordId: lord.id,
+      available: true
+    };
   };
 
   // ゲームが開始されていない場合（君主未選択）
@@ -371,7 +398,7 @@ function App() {
               <NationStatus status={playerProvince.nation} />
               <CommandPanel
                 nation={playerProvince.nation}
-                generals={getGeneralsByLordId(playerLord.id)}
+                generals={[convertLordToGeneral(playerLord), ...getGeneralsByLordId(playerLord.id)]}
                 currentDate={currentDate}
                 onExecuteCommand={handleExecuteCommand}
               />
