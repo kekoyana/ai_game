@@ -17,6 +17,8 @@ function App() {
   const [gameProvinces, setGameProvinces] = useState(provinces);
   const [currentDate, setCurrentDate] = useState({ year: 189, month: 4 });
   const [generals, setGenerals] = useState<General[]>(initialGenerals);
+  const [isViewingNation, setIsViewingNation] = useState(false);
+  const [activeCommand, setActiveCommand] = useState<Command | null>(null);
 
   useEffect(() => {
     if (playerLord) {
@@ -108,8 +110,19 @@ function App() {
       };
     }
 
+    setActiveCommand(command);
+    
     // コマンドの実行結果を処理
     const result = executeCommand(command, playerProvince.nation, general);
+
+    // 結果が返ってきたらコマンドをクリア
+    if (result.success) {
+      // 他国閲覧コマンド以外なら閲覧モードを解除
+      if (command.id !== 'view_nation') {
+        setIsViewingNation(false);
+      }
+    }
+    setActiveCommand(null);
     
     if (result.success && result.effects) {
       // 国のステータスを更新
@@ -354,6 +367,13 @@ function App() {
           }
         };
 
+      case 'view_nation':
+        setIsViewingNation(true);
+        return {
+          success: true,
+          message: "他国の情報を見ることができます"
+        };
+
       default:
         return {
           success: false,
@@ -391,7 +411,13 @@ function App() {
   const playerProvince = getPlayerProvince();
 
   const handleProvinceClick = (province: Province) => {
+    if (!isViewingNation && playerProvince && province.id !== playerProvince.id) return;
     setSelectedProvince(province);
+
+    // 他国閲覧コマンド実行中でなければ、選択をクリア
+    if (!isViewingNation) {
+      setTimeout(() => setSelectedProvince(null), 0);
+    }
   };
 
   return (
