@@ -388,10 +388,10 @@ function App() {
       id: `lord_${lord.id}`,
       name: `${lord.name}（君主）`,
       stats: {
-        war: lord.strength,
-        int: lord.strength,
-        lead: lord.strength,
-        pol: lord.strength
+        war: 70,    // 君主の基本能力値
+        int: 70,
+        lead: 70,
+        pol: 70
       },
       loyalty: 100,
       lordId: lord.id,
@@ -435,7 +435,6 @@ function App() {
       />
       <div className="status-area">
         <div className="player-info">
-          <h2>プレイヤー情報</h2>
           <div className="lord-info">
             <p>君主：{playerLord.name}</p>
           </div>
@@ -444,7 +443,10 @@ function App() {
               <NationStatus status={playerProvince.nation} />
               <CommandPanel
                 nation={playerProvince.nation}
-                generals={generals.filter(g => g.id === `lord_${playerLord.id}` || g.lordId === playerLord.id)}
+                generals={[
+                  convertLordToGeneral(playerLord),
+                  ...generals.filter(g => g.lordId === playerLord.id && !g.id.startsWith('lord_'))
+                ]}
                 currentDate={currentDate}
                 onExecuteCommand={handleExecuteCommand}
               />
@@ -460,44 +462,7 @@ function App() {
               <div className="lord-info">
                 <p>君主：{selectedProvince.lord?.name || '空白国'}</p>
               </div>
-              
               <NationStatus status={selectedProvince.nation} />
-
-              {selectedProvince.lord && (
-                <div className="generals-info">
-                  <h4>配下の武将</h4>
-                  <div className="generals-list">
-                    {generals.filter(g => g.lordId === selectedProvince.lord!.id).map(general => (
-                      <div key={general.id} className="general-item">
-                        <div className="general-header">
-                          <span className="general-name">{general.name}</span>
-                          <span className="general-loyalty">忠誠: {general.loyalty}</span>
-                        </div>
-                        <div className="general-stats">
-                          <span className="stat">武力: {general.stats.war}</span>
-                          <span className="stat">知力: {general.stats.int}</span>
-                          <span className="stat">統率: {general.stats.lead}</span>
-                          <span className="stat">政治: {general.stats.pol}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div className="adjacent-info">
-                <p>隣接する州:</p>
-                <ul>
-                  {selectedProvince.adjacentProvinces.map(id => {
-                    const province = gameProvinces.find(p => p.id === id);
-                    return (
-                      <li key={id}>
-                        {province?.name} ({province?.lord?.name || '空白国'})
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
             </div>
           </>
         )}
