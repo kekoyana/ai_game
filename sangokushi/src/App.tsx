@@ -438,7 +438,6 @@ function App() {
           <h2>プレイヤー情報</h2>
           <div className="lord-info">
             <p>君主：{playerLord.name}</p>
-            <p>軍事力：{playerLord.strength}</p>
           </div>
           {playerProvince && (
             <>
@@ -460,9 +459,6 @@ function App() {
               <h3>{selectedProvince.name}</h3>
               <div className="lord-info">
                 <p>君主：{selectedProvince.lord?.name || '空白国'}</p>
-                {selectedProvince.lord && (
-                  <p>軍事力：{selectedProvince.lord.strength}</p>
-                )}
               </div>
               
               <NationStatus status={selectedProvince.nation} />

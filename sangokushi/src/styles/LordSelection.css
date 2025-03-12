@@ -7,6 +7,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  overflow-y: auto;
 }
 
 .lord-selection h1 {
@@ -17,11 +18,11 @@
 
 .lords-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 15px;
   width: 100%;
   max-width: 1200px;
-  padding: 20px;
+  padding: 10px;
   margin-bottom: 20px;
 }
 
@@ -32,6 +33,7 @@
   padding: 15px;
   cursor: pointer;
   transition: all 0.3s ease;
+  text-align: center;
 }
 
 .lord-card:hover {
@@ -47,38 +49,9 @@
 }
 
 .lord-card h3 {
-  margin: 0 0 10px 0;
+  margin: 0;
   color: #4a90e2;
   font-size: 1.4em;
-}
-
-.lord-strength {
-  color: #8bc34a;
-  margin-bottom: 15px;
-  font-size: 1.1em;
-}
-
-.generals-preview {
-  background-color: #252525;
-  border-radius: 4px;
-  padding: 10px;
-}
-
-.generals-preview h4 {
-  margin: 0 0 10px 0;
-  color: #ccc;
-}
-
-.generals-preview ul {
-  margin: 0;
-  padding-left: 20px;
-  list-style-type: none;
-}
-
-.generals-preview li {
-  color: #aaa;
-  margin: 5px 0;
-  font-size: 0.9em;
 }
 
 .lord-detail {

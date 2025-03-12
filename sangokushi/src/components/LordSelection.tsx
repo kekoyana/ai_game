@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Lord, lords } from '../types/lord';
-import { getGeneralsByLordId } from '../types/general';
 import '../styles/LordSelection.css';
 
 interface LordSelectionProps {
@@ -39,17 +38,6 @@ export function LordSelection({ onSelect }: LordSelectionProps) {
             onClick={() => handleLordClick(lord)}
           >
             <h3>{lord.name}</h3>
-            <div className="lord-strength">軍事力: {lord.strength}</div>
-            <div className="generals-preview">
-              <h4>配下の武将</h4>
-              <ul>
-                {getGeneralsByLordId(lord.id).map(general => (
-                  <li key={general.id}>
-                    {general.name} (武:{general.stats.war})
-                  </li>
-                ))}
-              </ul>
-            </div>
           </div>
         ))}
       </div>
