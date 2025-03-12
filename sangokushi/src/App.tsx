@@ -3,7 +3,7 @@ import './App.css'
 import { Map } from './components/Map'
 import { MessageArea } from './components/MessageArea'
 import { Province, provinces } from './types/province'
-import { getGeneralsByLordId, General } from './types/general'
+import { getGeneralsByLordId, General, updateGeneralActionDate, generals as initialGenerals } from './types/general'
 import { LordSelection } from './components/LordSelection'
 import { Lord } from './types/lord'
 import { NationStatus } from './components/NationStatus'
@@ -16,6 +16,15 @@ function App() {
   const [playerLord, setPlayerLord] = useState<Lord | null>(null);
   const [gameProvinces, setGameProvinces] = useState(provinces);
   const [currentDate, setCurrentDate] = useState({ year: 189, month: 4 });
+  const [generals, setGenerals] = useState<General[]>(initialGenerals);
+
+  useEffect(() => {
+    if (playerLord) {
+      // 君主を武将として追加
+      const lordGeneral = convertLordToGeneral(playerLord);
+      setGenerals(prev => [...prev, lordGeneral]);
+    }
+  }, [playerLord]);
 
   // 月の進行処理
   const advanceMonth = (playerProvince: Province) => {
@@ -26,6 +35,13 @@ function App() {
       newDate.year++;
     }
     setCurrentDate(newDate);
+
+    // 武将の行動状態をリセット
+    setGenerals(prev => prev.map(general => ({
+      ...general,
+      available: true,
+      lastActionDate: undefined
+    })));
 
     // 1月の商業収入
     if (newDate.month === 1) {
@@ -104,6 +120,11 @@ function App() {
         }
         return province;
       });
+
+      // 武将の行動履歴を更新
+      const updatedGeneral = updateGeneralActionDate(general, currentDate.year, currentDate.month);
+      const updatedGenerals = generals.map(g => g.id === general.id ? updatedGeneral : g);
+      setGenerals(updatedGenerals);
       
       setGameProvinces(updatedProvinces);
       // コマンド実行結果をメッセージエリアに表示
@@ -398,7 +419,7 @@ function App() {
               <NationStatus status={playerProvince.nation} />
               <CommandPanel
                 nation={playerProvince.nation}
-                generals={[convertLordToGeneral(playerLord), ...getGeneralsByLordId(playerLord.id)]}
+                generals={generals.filter(g => g.id === `lord_${playerLord.id}` || g.lordId === playerLord.id)}
                 currentDate={currentDate}
                 onExecuteCommand={handleExecuteCommand}
               />
@@ -424,7 +445,7 @@ function App() {
                 <div className="generals-info">
                   <h4>配下の武将</h4>
                   <div className="generals-list">
-                    {getGeneralsByLordId(selectedProvince.lord.id).map(general => (
+                    {generals.filter(g => g.lordId === selectedProvince.lord!.id).map(general => (
                       <div key={general.id} className="general-item">
                         <div className="general-header">
                           <span className="general-name">{general.name}</span>
