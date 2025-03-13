@@ -1,14 +1,16 @@
 .nation-status {
   background-color: #252525;
   border-radius: 4px;
-  padding: 10px;
+  padding: 8px;
   width: 100%;
+  box-sizing: border-box;
+  font-size: 0.9em;
 }
 
 .status-row {
   display: flex;
-  gap: 10px;
-  margin-bottom: 8px;
+  gap: 6px;
+  margin-bottom: 6px;
 }
 
 .status-row:last-child {
@@ -18,20 +20,25 @@
 .status-item {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   background-color: #2c2c2c;
-  padding: 4px 8px;
+  padding: 3px 6px;
   border-radius: 3px;
   flex: 1;
+  min-width: 0;
 }
 
 .status-item .label {
   color: #aaa;
   font-size: 0.9em;
+  white-space: nowrap;
 }
 
 .status-item .value {
   color: #fff;
   font-weight: bold;
   margin-left: auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
