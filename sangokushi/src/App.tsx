@@ -444,8 +444,8 @@ function App() {
               <CommandPanel
                 nation={playerProvince.nation}
                 generals={[
-                  convertLordToGeneral(playerLord),
-                  ...generals.filter(g => g.lordId === playerLord.id && !g.id.startsWith('lord_'))
+                  ...getGeneralsByLordId(playerLord.id),
+                  convertLordToGeneral(playerLord)
                 ]}
                 currentDate={currentDate}
                 onExecuteCommand={handleExecuteCommand}
