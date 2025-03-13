@@ -24,16 +24,14 @@ export const domesticCommands: Command[] = [
     name: '開発',
     category: 'domestic',
     description: '土地を開墾し、兵糧生産を向上',
-    cost: { gold: 500 },
-    requirements: { loyalty: 50 }
+    cost: { gold: 300 }
   },
   {
     id: 'develop_commerce',
     name: '商業',
     category: 'domestic',
     description: '商業を発展させ、収入を向上',
-    cost: { gold: 500 },
-    requirements: { loyalty: 50 }
+    cost: { gold: 300 }
   },
   {
     id: 'charity',

@@ -288,8 +288,7 @@ function App() {
           message: "商業が発展しました",
           effects: {
             gold: -(command.cost?.gold || 0),
-            commerce: 5,
-            loyalty: -2
+            commerce: 2 + Math.floor(general.stats.int / 20)
           }
         };
 
@@ -299,8 +298,7 @@ function App() {
           message: "土地が開発されました",
           effects: {
             gold: -(command.cost?.gold || 0),
-            agriculture: 5,
-            loyalty: -2
+            agriculture: 2 + Math.floor(general.stats.int / 20)
           }
         };
 
