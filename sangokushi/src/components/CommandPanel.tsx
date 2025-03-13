@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Command, CommandCategory, CommandResult, domesticCommands, militaryCommands, otherCommands, infoCommands } from '../types/command';
+import { Command, CommandCategory, CommandResult, domesticCommands, militaryCommands, personnelCommands, otherCommands, infoCommands } from '../types/command';
 import type { NationStatus } from '../types/nation';
 import { General } from '../types/general';
 import { GeneralSelector } from './GeneralSelector';
@@ -25,10 +25,12 @@ export function CommandPanel({ nation, generals, currentDate, onExecuteCommand }
         return domesticCommands;
       case 'military':
         return militaryCommands;
-      case 'other':
-        return otherCommands;
+      case 'personnel':
+        return personnelCommands;
       case 'info':
         return infoCommands;
+      case 'other':
+        return otherCommands;
       default:
         return [];
     }
@@ -39,7 +41,7 @@ export function CommandPanel({ nation, generals, currentDate, onExecuteCommand }
   const handleCommandClick = async (command: Command) => {
     setSelectedCommand(command);
 
-    if (command.category === 'other' || command.category === 'info') {
+    if (['other', 'info'].includes(command.category)) {
       setExecuting(true);
       try {
         await onExecuteCommand(command, generals[0]); // 武将は使用しないため、適当な武将を渡す
@@ -105,6 +107,12 @@ export function CommandPanel({ nation, generals, currentDate, onExecuteCommand }
           onClick={() => setActiveCategory('military')}
         >
           軍事
+        </button>
+        <button
+          className={`category-button ${activeCategory === 'personnel' ? 'active' : ''}`}
+          onClick={() => setActiveCategory('personnel')}
+        >
+          人事
         </button>
         <button
           className={`category-button ${activeCategory === 'info' ? 'active' : ''}`}
