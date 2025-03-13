@@ -28,6 +28,89 @@ body {
   align-items: center;
   padding: 20px;
   position: relative;
+  overflow: hidden;
+}
+
+.province-info-overlay {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 280px;
+  background-color: rgba(28, 28, 28, 0.95);
+  border-radius: 4px;
+  padding: 12px;
+  color: #fff;
+  backdrop-filter: blur(4px);
+  z-index: 10;
+  max-height: 520px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.province-info-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.province-info-header h3 {
+  margin: 0;
+  color: #4a90e2;
+}
+
+.close-button {
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  padding: 4px 8px;
+  font-size: 1.2em;
+  line-height: 1;
+}
+
+.close-button:hover {
+  color: #999;
+}
+
+.info-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+.tab-button {
+  flex: 1;
+  padding: 6px;
+  background-color: #333;
+  border: none;
+  border-radius: 3px;
+  color: #ccc;
+  cursor: pointer;
+  font-size: 0.9em;
+}
+
+.tab-button.active {
+  background-color: #4a90e2;
+  color: white;
+}
+
+.tab-content {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.lord-info {
+  background-color: rgba(42, 42, 42, 0.5);
+  padding: 8px;
+  border-radius: 3px;
+  margin-bottom: 8px;
+}
+
+.generals-info .generals-list {
+  max-height: none;
 }
 
 .status-area {

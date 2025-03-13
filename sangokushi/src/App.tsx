@@ -19,6 +19,7 @@ function App() {
   const [generals, setGenerals] = useState<General[]>(initialGenerals);
   const [isViewingNation, setIsViewingNation] = useState(false);
   const [activeCommand, setActiveCommand] = useState<Command | null>(null);
+  const [activeInfoTab, setActiveInfoTab] = useState<'info' | 'generals'>('info');
 
   useEffect(() => {
     if (playerLord) {
@@ -427,6 +428,67 @@ function App() {
           onProvinceClick={handleProvinceClick}
           currentDate={currentDate}
         />
+        {selectedProvince && selectedProvince.id !== playerProvince?.id && isViewingNation && (
+          <div className="province-info-overlay">
+            <div className="province-info-header">
+              <h3>{selectedProvince.name}</h3>
+              <button
+                className="close-button"
+                onClick={() => setIsViewingNation(false)}
+              >
+                ×
+              </button>
+            </div>
+            <div className="info-tabs">
+              <button
+                className={`tab-button ${activeInfoTab === 'info' ? 'active' : ''}`}
+                onClick={() => setActiveInfoTab('info')}
+              >
+                州の情報
+              </button>
+              <button
+                className={`tab-button ${activeInfoTab === 'generals' ? 'active' : ''}`}
+                onClick={() => setActiveInfoTab('generals')}
+              >
+                配下武将
+              </button>
+            </div>
+            <div className="tab-content">
+              {activeInfoTab === 'info' ? (
+                <>
+                  <div className="lord-info">
+                    <p>君主：{selectedProvince.lord?.name || '空白国'}</p>
+                    {selectedProvince.lord && (
+                      <p>武力：{convertLordToGeneral(selectedProvince.lord).stats.war}</p>
+                    )}
+                  </div>
+                  <NationStatus status={selectedProvince.nation} />
+                </>
+              ) : (
+                selectedProvince.lord && (
+                  <div className="generals-info">
+                    <div className="generals-list">
+                      {generals.filter(g => g.lordId === selectedProvince.lord!.id).map(general => (
+                        <div key={general.id} className="general-item">
+                          <div className="general-header">
+                            <span className="general-name">{general.name}</span>
+                            <span className="general-loyalty">忠誠: {general.loyalty}</span>
+                          </div>
+                          <div className="general-stats">
+                            <span className="stat">武力: {general.stats.war}</span>
+                            <span className="stat">知力: {general.stats.int}</span>
+                            <span className="stat">統率: {general.stats.lead}</span>
+                            <span className="stat">政治: {general.stats.pol}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )
+              )}
+            </div>
+          </div>
+        )}
       </div>
       <MessageArea
         playerName={playerLord.name}
@@ -453,19 +515,6 @@ function App() {
             </>
           )}
         </div>
-
-        {selectedProvince && selectedProvince.id !== playerProvince?.id && (
-          <>
-            <h2>選択中の州の情報</h2>
-            <div className="province-info">
-              <h3>{selectedProvince.name}</h3>
-              <div className="lord-info">
-                <p>君主：{selectedProvince.lord?.name || '空白国'}</p>
-              </div>
-              <NationStatus status={selectedProvince.nation} />
-            </div>
-          </>
-        )}
       </div>
     </div>
   )

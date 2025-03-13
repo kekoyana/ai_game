@@ -10,7 +10,6 @@ interface MapProps {
 
 export function Map({ onProvinceClick, currentDate }: MapProps) {
   const [hoveredProvince, setHoveredProvince] = useState<string | null>(null);
-  const [selectedProvince, setSelectedProvince] = useState<string | null>(null);
 
   // 君主ごとに色を割り当てる
   const getLordColor = (lord: Lord | null) => {
@@ -39,21 +38,16 @@ export function Map({ onProvinceClick, currentDate }: MapProps) {
     const province = provinces.find(p => p.id === provinceId);
     if (!province) return '#2c2c2c';
 
-    if (selectedProvince === provinceId) {
-      return '#4a90e2'; // 選択中の州
-    }
-    if (selectedProvince && provinces.find(p => p.id === selectedProvince)?.adjacentProvinces.includes(provinceId)) {
-      return '#3a5a8c'; // 選択中の州に隣接する州
-    }
     if (hoveredProvince === provinceId) {
-      return '#4a4a4a'; // ホバー中の州
+      // 薄く明るくする
+      const baseColor = getLordColor(province.lord);
+      return province.lord ? baseColor.replace(')', ', 0.7)').replace('rgb', 'rgba') : '#4a4a4a';
     }
 
     return getLordColor(province.lord);
   };
 
   const handleProvinceClick = (province: Province) => {
-    setSelectedProvince(province.id);
     onProvinceClick?.(province);
   };
 
@@ -81,7 +75,7 @@ export function Map({ onProvinceClick, currentDate }: MapProps) {
               style={{
                 cursor: 'pointer',
                 transition: 'fill 0.3s ease',
-                filter: selectedProvince === province.id ? 'drop-shadow(0 0 4px #4a90e2)' : 'none'
+                filter: 'none'
               }}
             />
             <text
