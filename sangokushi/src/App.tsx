@@ -414,11 +414,6 @@ function App() {
   const handleProvinceClick = (province: Province) => {
     if (!isViewingNation && playerProvince && province.id !== playerProvince.id) return;
     setSelectedProvince(province);
-
-    // 他国閲覧コマンド実行中でなければ、選択をクリア
-    if (!isViewingNation) {
-      setTimeout(() => setSelectedProvince(null), 0);
-    }
   };
 
   return (
@@ -434,7 +429,7 @@ function App() {
               <h3>{selectedProvince.name}</h3>
               <button
                 className="close-button"
-                onClick={() => setIsViewingNation(false)}
+                onClick={() => setSelectedProvince(null)}
               >
                 ×
               </button>
