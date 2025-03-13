@@ -96,6 +96,19 @@ export interface WarCommand extends Command {
 
 export const militaryCommands: Command[] = [
   {
+    id: 'war',
+    name: '戦争',
+    category: 'military',
+    description: '隣接する州に攻め込みます',
+    requirements: {
+      military: 1000,
+      loyalty: 50
+    },
+    cost: {
+      food: 2000
+    }
+  },
+  {
     id: 'conscript',
     name: '徴兵',
     category: 'military',
