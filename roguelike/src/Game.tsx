@@ -111,8 +111,27 @@ const Game: React.FC = () => {
     );
   };
 
+  const handleTouchMove = (direction: Direction): void => {
+    if (gameState.isGameClear || gameState.isGameOver) return;
+    setGameState((prevState: GameState) => movePlayer(prevState, direction));
+  };
+  
   return (
-    <div className="game-container">
+      <div className="game-container">
+        {/* タッチ操作用のコントロール */}
+        <div className="touch-controls">
+          <div className="direction-pad">
+            <button className="direction-button" onClick={() => handleTouchMove('upleft')}>↖</button>
+            <button className="direction-button" onClick={() => handleTouchMove('up')}>↑</button>
+            <button className="direction-button" onClick={() => handleTouchMove('upright')}>↗</button>
+            <button className="direction-button" onClick={() => handleTouchMove('left')}>←</button>
+            <button className="direction-button" style={{ visibility: 'hidden' }}>•</button>
+            <button className="direction-button" onClick={() => handleTouchMove('right')}>→</button>
+            <button className="direction-button" onClick={() => handleTouchMove('downleft')}>↙</button>
+            <button className="direction-button" onClick={() => handleTouchMove('down')}>↓</button>
+            <button className="direction-button" onClick={() => handleTouchMove('downright')}>↘</button>
+          </div>
+        </div>
       {showFloorAnnouncement && (
         <div className="floor-announcement">
           地下{gameState.currentFloor}階

@@ -7,6 +7,82 @@
   gap: 20px;
   background: linear-gradient(135deg, #1a1c1e, #2c3e50);
   color: #ecf0f1;
+  position: relative;
+}
+
+/* スマートフォン向けのスタイル */
+@media (max-width: 768px) {
+  .game-container {
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .status-container {
+    width: 100%;
+  }
+
+  .map-row {
+    height: 30px;
+  }
+
+  .map-cell {
+    width: 30px;
+    height: 30px;
+    font-size: 20px;
+  }
+
+  .battle-log {
+    font-size: 16px;
+    max-height: 100px;
+  }
+}
+
+/* タッチ操作用のコントロール */
+.touch-controls {
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.7);
+  padding: 10px;
+  border-radius: 10px;
+  z-index: 1000;
+  width: 200px;
+}
+
+.touch-controls .direction-pad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+}
+
+.direction-button {
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  border: none;
+  color: white;
+  padding: 15px;
+  border-radius: 5px;
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.direction-button:active {
+  transform: scale(0.95);
+  background: linear-gradient(135deg, #2980b9, #3498db);
+}
+
+@media (max-width: 768px) {
+  .touch-controls {
+    display: block;
+  }
+
+  .battle-log {
+    bottom: 180px;
+  }
 }
 
 /* バトルログ */
