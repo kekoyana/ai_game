@@ -1,4 +1,4 @@
-import { General } from '../types/general';
+import { General, isGeneralAvailable } from '../types/general';
 import '../styles/GeneralSelector.css';
 
 interface GeneralSelectorProps {
@@ -16,12 +16,6 @@ export function GeneralSelector({
   onSelect,
   onCancel
 }: GeneralSelectorProps) {
-  const isAvailable = (general: General) => {
-    if (!general.lastActionDate) return true;
-    return !(general.lastActionDate.year === currentYear && 
-            general.lastActionDate.month === currentMonth);
-  };
-
   return (
     <div className="general-selector-overlay">
       <div className="general-selector">
@@ -30,13 +24,13 @@ export function GeneralSelector({
           {generals.map(general => (
             <div
               key={general.id}
-              className={`general-card ${!isAvailable(general) ? 'disabled' : ''}`}
-              onClick={() => isAvailable(general) && onSelect(general)}
+              className={`general-card ${!isGeneralAvailable(general, currentYear, currentMonth) ? 'disabled' : ''}`}
+              onClick={() => isGeneralAvailable(general, currentYear, currentMonth) && onSelect(general)}
             >
               <div className="general-header">
                 <span className="general-name">{general.name}</span>
                 <span className="general-status">
-                  {isAvailable(general) ? '待機' : '行動済'}
+                  {isGeneralAvailable(general, currentYear, currentMonth) ? '待機' : '行動済'}
                 </span>
               </div>
               <div className="general-stats">
@@ -45,7 +39,7 @@ export function GeneralSelector({
                 <div className="stat">統率: {general.stats.lead}</div>
                 <div className="stat">政治: {general.stats.pol}</div>
               </div>
-              {!isAvailable(general) && (
+              {!isGeneralAvailable(general, currentYear, currentMonth) && (
                 <div className="action-date">
                   {general.lastActionDate?.year}年{general.lastActionDate?.month}月に行動済
                 </div>

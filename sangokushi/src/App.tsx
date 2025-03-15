@@ -23,9 +23,20 @@ function App() {
 
   useEffect(() => {
     if (playerLord) {
-      // 君主を武将として追加
-      const lordGeneral = convertLordToGeneral(playerLord);
-      setGenerals(prev => [...prev, lordGeneral]);
+      // 君主を武将として追加（既存の武将は維持）
+      setGenerals(prev => {
+        const lordGeneral = convertLordToGeneral(playerLord);
+        // 既に同じIDの武将がいないか確認
+        const existingLordIndex = prev.findIndex(g => g.id === lordGeneral.id);
+        if (existingLordIndex >= 0) {
+          // 既存の武将を更新
+          const updated = [...prev];
+          updated[existingLordIndex] = lordGeneral;
+          return updated;
+        }
+        // 新規追加
+        return [...prev, lordGeneral];
+      });
     }
   }, [playerLord]);
 
@@ -135,14 +146,17 @@ function App() {
         return province;
       });
 
-      // 武将の行動履歴を更新
+      // トランザクション的に状態を更新
       const updatedGeneral = updateGeneralActionDate(general, currentDate.year, currentDate.month);
       const updatedGenerals = generals.map(g => g.id === general.id ? updatedGeneral : g);
+
+      // バッチ更新のために一時的に状態をまとめる
       setGenerals(updatedGenerals);
-      
       setGameProvinces(updatedProvinces);
-      // コマンド実行結果をメッセージエリアに表示
       setResult(result);
+
+      // 強制的に再レンダリングをトリガー
+      setActiveCommand(null);
     }
 
     return result;
@@ -498,10 +512,7 @@ function App() {
               <NationStatus status={playerProvince.nation} />
               <CommandPanel
                 nation={playerProvince.nation}
-                generals={[
-                  ...getGeneralsByLordId(playerLord.id),
-                  convertLordToGeneral(playerLord)
-                ]}
+                generals={generals.filter(g => g.lordId === playerLord.id)}
                 currentDate={currentDate}
                 onExecuteCommand={handleExecuteCommand}
               />

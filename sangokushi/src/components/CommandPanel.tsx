@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Command, CommandCategory, CommandResult, domesticCommands, militaryCommands, personnelCommands, otherCommands, infoCommands } from '../types/command';
 import type { NationStatus } from '../types/nation';
-import { General } from '../types/general';
+import { General, isGeneralAvailable } from '../types/general';
 import { GeneralSelector } from './GeneralSelector';
 import { GameDate } from '../types/gameState';
 import '../styles/CommandPanel.css';
@@ -84,11 +84,9 @@ export function CommandPanel({ nation, generals, currentDate, onExecuteCommand }
     }
 
     // 実行可能な武将が1人以上いるかチェック
-    const availableGenerals = generals.filter(general => {
-      if (!general.lastActionDate) return true;
-      return !(general.lastActionDate.year === currentDate.year && 
-              general.lastActionDate.month === currentDate.month);
-    });
+    const availableGenerals = generals.filter(general =>
+      isGeneralAvailable(general, currentDate.year, currentDate.month)
+    );
     
     return availableGenerals.length > 0;
   };
