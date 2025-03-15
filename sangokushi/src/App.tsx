@@ -122,6 +122,22 @@ function App() {
       };
     }
 
+    // コストチェック
+    if (command.cost) {
+      if (command.cost.gold && playerProvince.nation.gold < command.cost.gold) {
+        return {
+          success: false,
+          message: `金${command.cost.gold}が必要です (現在: ${playerProvince.nation.gold})`
+        };
+      }
+      if (command.cost.food && playerProvince.nation.food < command.cost.food) {
+        return {
+          success: false,
+          message: `兵糧${command.cost.food}が必要です (現在: ${playerProvince.nation.food})`
+        };
+      }
+    }
+
     setActiveCommand(command);
     
     // コマンドの実行結果を処理

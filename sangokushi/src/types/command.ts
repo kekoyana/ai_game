@@ -15,6 +15,7 @@ export interface Command {
     loyalty?: number;
     military?: number;
   };
+  disabledReason?: string;  // コマンドが実行できない理由を表示
 }
 
 // 内政コマンド

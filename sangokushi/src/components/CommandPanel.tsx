@@ -64,31 +64,44 @@ export function CommandPanel({ nation, generals, currentDate, onExecuteCommand }
       setExecuting(false);
     }
   };
+const canExecuteCommand = (command: Command): boolean => {
+  // 実行条件をチェックし、適切なメッセージを設定
 
-  const canExecuteCommand = (command: Command): boolean => {
-    if (!command.requirements) return true;
-    
-    if (command.requirements.loyalty && nation.loyalty < command.requirements.loyalty) {
-      return false;
-    }
-    if (command.requirements.military && nation.military < command.requirements.military) {
-      return false;
-    }
-    if (command.cost) {
-      if (command.cost.gold && nation.gold < command.cost.gold) {
-        return false;
-      }
-      if (command.cost.food && nation.food < command.cost.food) {
-        return false;
-      }
-    }
+  // 民忠チェック
+  if (command.requirements?.loyalty && nation.loyalty < command.requirements.loyalty) {
+    command.disabledReason = `民忠が不足しています (必要: ${command.requirements.loyalty}, 現在: ${nation.loyalty})`;
+    return false;
+  }
 
-    // 実行可能な武将が1人以上いるかチェック
-    const availableGenerals = generals.filter(general =>
-      isGeneralAvailable(general, currentDate.year, currentDate.month)
-    );
-    
-    return availableGenerals.length > 0;
+  // 兵力チェック
+  if (command.requirements?.military && nation.military < command.requirements.military) {
+    command.disabledReason = `兵力が不足しています (必要: ${command.requirements.military}, 現在: ${nation.military})`;
+    return false;
+  }
+
+  // コストチェック
+  if (command.cost?.gold && nation.gold < command.cost.gold) {
+    command.disabledReason = `金が不足しています (必要: ${command.cost.gold}, 現在: ${nation.gold})`;
+    return false;
+  }
+  if (command.cost?.food && nation.food < command.cost.food) {
+    command.disabledReason = `兵糧が不足しています (必要: ${command.cost.food}, 現在: ${nation.food})`;
+    return false;
+  }
+
+  // 実行可能な武将が1人以上いるかチェック
+  const availableGenerals = generals.filter(general =>
+    isGeneralAvailable(general, currentDate.year, currentDate.month)
+  );
+  
+  if (availableGenerals.length === 0) {
+    command.disabledReason = '行動可能な武将がいません';
+    return false;
+  }
+
+  // すべての条件を満たしている場合
+  command.disabledReason = undefined;
+  return true;
   };
 
   return (
@@ -150,6 +163,11 @@ export function CommandPanel({ nation, generals, currentDate, onExecuteCommand }
                 必要条件：
                 {command.requirements.loyalty && `民忠${command.requirements.loyalty} `}
                 {command.requirements.military && `兵力${command.requirements.military}`}
+                {command.disabledReason && (
+                  <div className="command-disabled-reason">
+                    ⚠️ {command.disabledReason}
+                  </div>
+                )}
               </div>
             )}
           </div>
