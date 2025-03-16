@@ -5,11 +5,12 @@ import { clearNode, resetMap } from './store/slices/mapSlice'
 import CardComponent from './components/Card'
 import CardReward from './components/CardReward'
 import GameClear from './components/GameClear'
+import GameOver from './components/GameOver'
 import Map from './components/Map'
 import { nanoid } from 'nanoid'
 import { Card } from './data/cards'
 import './App.css'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 const CharacterStats = ({ 
   character, 
@@ -79,11 +80,27 @@ function App() {
   const dispatch = useDispatch()
   const gameState = useSelector((state: RootState) => state.game)
   const mapState = useSelector((state: RootState) => state.map)
-  const { player, enemy, energy, isInBattle, hand, turnNumber, isGameCleared } = gameState
+  const { 
+    player, 
+    enemy, 
+    energy, 
+    isInBattle, 
+    hand, 
+    turnNumber, 
+    isGameCleared,
+    isGameOver 
+  } = gameState
   const { currentMap, currentNodeId } = mapState
 
   const [showCardReward, setShowCardReward] = useState(false)
   const [showHealEffect, setShowHealEffect] = useState(false)
+
+  // プレイヤーのHPを監視
+  useEffect(() => {
+    if (player.currentHp <= 0) {
+      dispatch(endBattle())
+    }
+  }, [player.currentHp, dispatch])
 
   const currentNode = currentMap.nodes.find(node => node.id === currentNodeId)
 
@@ -279,6 +296,25 @@ function App() {
         {isGameCleared && (
           <GameClear onRestart={handleRestart} />
         )}
+
+        {/* ゲームオーバー画面 */}
+        {isGameOver && (
+          <GameOver onRestart={handleRestart} />
+        )}
+
+        {/* HPバー */}
+        <div className="fixed top-4 left-4 bg-gray-900/80 p-2 rounded-lg border border-gray-700">
+          <div className="text-sm text-gray-300 mb-1">
+            HP: {player.currentHp}/{player.maxHp}
+          </div>
+          <div className="w-32 h-4 bg-gray-700 rounded overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-red-600 to-red-400
+                       transition-all duration-300"
+              style={{ width: `${(player.currentHp / player.maxHp) * 100}%` }}
+            />
+          </div>
+        </div>
       </div>
     </div>
   )

@@ -28,6 +28,7 @@ interface GameState {
   turnNumber: number
   deck: Card[]
   isGameCleared: boolean
+  isGameOver: boolean
 }
 
 const initialState: GameState = {
@@ -49,7 +50,8 @@ const initialState: GameState = {
   isInBattle: false,
   turnNumber: 0,
   deck: [...initialDeck],
-  isGameCleared: false
+  isGameCleared: false,
+  isGameOver: false
 }
 
 export const gameSlice = createSlice({
@@ -57,6 +59,8 @@ export const gameSlice = createSlice({
   initialState,
   reducers: {
     startBattle: (state, action: PayloadAction<Character>) => {
+      if (state.isGameOver) return
+      
       state.enemy = action.payload
       state.isInBattle = true
       state.energy.current = state.energy.max
@@ -75,6 +79,8 @@ export const gameSlice = createSlice({
     },
 
     playCard: (state, action: PayloadAction<Card>) => {
+      if (state.isGameOver) return
+      
       const card = action.payload
       if (state.energy.current < card.cost) return
       
@@ -108,7 +114,7 @@ export const gameSlice = createSlice({
     },
 
     endTurn: (state) => {
-      if (!state.isInBattle) return
+      if (state.isGameOver || !state.isInBattle) return
       
       state.turnNumber += 1
       state.energy.current = state.energy.max
@@ -145,9 +151,21 @@ export const gameSlice = createSlice({
             const remainingDamage = damage - blockedDamage
             if (remainingDamage > 0) {
               state.player.currentHp = Math.max(state.player.currentHp - remainingDamage, 0)
+              
+              // プレイヤーのHPが0になった場合、ゲームオーバー
+              if (state.player.currentHp === 0) {
+                state.isGameOver = true
+                state.isInBattle = false
+              }
             }
           } else {
             state.player.currentHp = Math.max(state.player.currentHp - damage, 0)
+            
+            // プレイヤーのHPが0になった場合、ゲームオーバー
+            if (state.player.currentHp === 0) {
+              state.isGameOver = true
+              state.isInBattle = false
+            }
           }
         } else if (state.enemy.nextMove.type === 'defend') {
           state.enemy.block += state.enemy.nextMove.value
@@ -165,10 +183,12 @@ export const gameSlice = createSlice({
     },
 
     addCardToDeck: (state, action: PayloadAction<Card>) => {
+      if (state.isGameOver) return
       state.deck.push(action.payload)
     },
 
     restAtCampfire: (state) => {
+      if (state.isGameOver) return
       const healAmount = Math.floor(state.player.maxHp * 0.3)
       state.player.currentHp = Math.min(
         state.player.currentHp + healAmount,
@@ -178,6 +198,10 @@ export const gameSlice = createSlice({
 
     setGameCleared: (state, action: PayloadAction<boolean>) => {
       state.isGameCleared = action.payload
+    },
+
+    setGameOver: (state, action: PayloadAction<boolean>) => {
+      state.isGameOver = action.payload
     },
 
     resetGame: () => {
@@ -194,6 +218,7 @@ export const {
   addCardToDeck,
   restAtCampfire,
   setGameCleared,
+  setGameOver,
   resetGame
 } = gameSlice.actions
 
