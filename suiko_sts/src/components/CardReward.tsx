@@ -1,68 +1,50 @@
-import { Card as CardType } from '../data/cards'
+import { Card as CardType, rewardPool, CardRarity } from '../data/cards'
 import Card from './Card'
 import { nanoid } from 'nanoid'
 
 const REWARD_CARDS_COUNT = 3
 
+// レア度による出現確率の重み付け
+const RARITY_WEIGHTS = {
+  SSR: 5,
+  SR: 15,
+  R: 30,
+  C: 50
+}
+
+// レア度に基づいてカードを選択する関数
+const selectCardByRarity = (cards: CardType[]): CardType => {
+  const totalWeight = Object.values(RARITY_WEIGHTS).reduce((a, b) => a + b, 0)
+  let randomNum = Math.random() * totalWeight
+  
+  // レア度を決定
+  let selectedRarity: CardRarity = 'C'
+  for (const [rarity, weight] of Object.entries(RARITY_WEIGHTS)) {
+    if (randomNum < weight) {
+      selectedRarity = rarity as CardRarity
+      break
+    }
+    randomNum -= weight
+  }
+
+  // 選択したレア度のカードをフィルタリング
+  const cardsOfRarity = cards.filter(card => card.rarity === selectedRarity)
+  return cardsOfRarity[Math.floor(Math.random() * cardsOfRarity.length)]
+}
+
 // カード報酬を生成する関数
 const generateRewardCards = (): CardType[] => {
-  const rewardCards: CardType[] = [
-    {
-      id: nanoid(),
-      name: '飛龍の剣',
-      cost: 2,
-      type: 'attack',
-      description: '14ダメージを与える',
-      effects: { damage: 14 },
-      character: '青面獣 楊志',
-      flavorText: '青龍偃月刀の使い手'
-    },
-    {
-      id: nanoid(),
-      name: '義の心得',
-      cost: 1,
-      type: 'skill',
-      description: '10ブロックを得る',
-      effects: { block: 10 },
-      character: '玉麒麟 盧俊義',
-      flavorText: '忠義の化身'
-    },
-    {
-      id: nanoid(),
-      name: '智将の采配',
-      cost: 1,
-      type: 'power',
-      description: 'カードを2枚引く',
-      effects: { draw: 2 },
-      character: '智多星 呉用',
-      flavorText: '知略の首領'
-    },
-    {
-      id: nanoid(),
-      name: '鉄槍術',
-      cost: 1,
-      type: 'attack',
-      description: '6ダメージを2回与える',
-      effects: { damage: 6 },
-      character: '金槍手 徐寧',
-      flavorText: '槍の達人'
-    },
-    {
-      id: nanoid(),
-      name: '忠義の誓い',
-      cost: 0,
-      type: 'skill',
-      description: '手札のカード1枚のコストを0にする',
-      effects: {},
-      character: '赤髪鬼 劉唐',
-      flavorText: '義に篤き豪傑'
+  const rewardCards: CardType[] = []
+  
+  // ユニークなカードを選択
+  while (rewardCards.length < REWARD_CARDS_COUNT) {
+    const card = {...selectCardByRarity(rewardPool), id: nanoid()}
+    if (!rewardCards.some(c => c.name === card.name)) {
+      rewardCards.push(card)
     }
-  ]
+  }
 
-  // ランダムに3枚選ぶ
   return rewardCards
-    .sort(() => Math.random() - 0.5)
-    .slice(0, REWARD_CARDS_COUNT)
 }
 
 interface CardRewardProps {
@@ -72,6 +54,19 @@ interface CardRewardProps {
 
 const CardReward = ({ onSelectCard, onSkip }: CardRewardProps) => {
   const rewardCards = generateRewardCards()
+
+  const getRarityColor = (rarity: CardRarity) => {
+    switch (rarity) {
+      case 'SSR':
+        return 'text-rose-500'
+      case 'SR':
+        return 'text-purple-500'
+      case 'R':
+        return 'text-blue-500'
+      case 'C':
+        return 'text-gray-300'
+    }
+  }
 
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
@@ -84,10 +79,23 @@ const CardReward = ({ onSelectCard, onSkip }: CardRewardProps) => {
           {rewardCards.map(card => (
             <div
               key={card.id}
+              className="relative group"
               onClick={() => onSelectCard(card)}
-              className="transform transition-transform hover:scale-105 cursor-pointer"
             >
-              <Card {...card} />
+              <div className="absolute -inset-1 rounded-lg opacity-75 transition-all
+                            group-hover:opacity-100 group-hover:blur-md z-0
+                            bg-gradient-to-r from-yellow-600 to-red-600">
+              </div>
+              <div className="relative z-10">
+                {/* レア度表示 */}
+                <div className={`absolute -top-6 left-1/2 transform -translate-x-1/2
+                              font-bold text-lg ${getRarityColor(card.rarity)}`}>
+                  {card.rarity}
+                </div>
+                <div className="transform transition-transform hover:scale-105 cursor-pointer">
+                  <Card {...card} />
+                </div>
+              </div>
             </div>
           ))}
         </div>
