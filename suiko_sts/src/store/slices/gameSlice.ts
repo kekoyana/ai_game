@@ -1,46 +1,18 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { Card, initialDeck, shuffleDeck } from '../../data/cards'
 
-interface Character {
+export interface Character {
   id: string
   name: string
   maxHp: number
   currentHp: number
   block: number
-  description?: string // 敵の説明文
   nextMove?: {
     type: 'attack' | 'defend' | 'buff'
     value: number
     description: string
   }
 }
-
-export const enemies: Character[] = [
-  {
-    id: 'corrupt-officer',
-    name: '貪官',
-    maxHp: 45,
-    currentHp: 45,
-    block: 0,
-    description: '賄賂で蓄えた財を鎧として身につけている'
-  },
-  {
-    id: 'bandit-leader',
-    name: '山賊頭',
-    maxHp: 60,
-    currentHp: 60,
-    block: 0,
-    description: '梁山泊対抗の山賊集団のリーダー'
-  },
-  {
-    id: 'royal-guard',
-    name: '朝廷の侍衛',
-    maxHp: 50,
-    currentHp: 50,
-    block: 0,
-    description: '高度な武芸の心得がある'
-  }
-]
 
 interface GameState {
   player: Character
@@ -54,6 +26,8 @@ interface GameState {
   }
   isInBattle: boolean
   turnNumber: number
+  deck: Card[]
+  isGameCleared: boolean
 }
 
 const initialState: GameState = {
@@ -62,31 +36,38 @@ const initialState: GameState = {
     name: '宋江',
     maxHp: 80,
     currentHp: 80,
-    block: 0,
-    description: '梁山泊の総帥、天罡星の主将'
+    block: 0
   },
   enemy: null,
   hand: [],
-  drawPile: shuffleDeck([...initialDeck]),
+  drawPile: [],
   discardPile: [],
   energy: {
     current: 3,
     max: 3
   },
   isInBattle: false,
-  turnNumber: 0
+  turnNumber: 0,
+  deck: [...initialDeck],
+  isGameCleared: false
 }
 
 export const gameSlice = createSlice({
   name: 'game',
   initialState,
   reducers: {
-    drawCard: (state) => {
-      if (state.drawPile.length === 0) {
-        state.drawPile = shuffleDeck([...state.discardPile])
-        state.discardPile = []
-      }
-      if (state.drawPile.length > 0) {
+    startBattle: (state, action: PayloadAction<Character>) => {
+      state.enemy = action.payload
+      state.isInBattle = true
+      state.energy.current = state.energy.max
+      state.turnNumber = 1
+      state.drawPile = shuffleDeck([...state.deck])
+      state.hand = []
+      state.discardPile = []
+      
+      // 初期手札を引く
+      for (let i = 0; i < 5; i++) {
+        if (state.drawPile.length === 0) break
         const card = state.drawPile[0]
         state.hand.push(card)
         state.drawPile = state.drawPile.slice(1)
@@ -126,21 +107,6 @@ export const gameSlice = createSlice({
       }
     },
 
-    startBattle: (state, action: PayloadAction<Character>) => {
-      state.enemy = action.payload
-      state.isInBattle = true
-      state.energy.current = state.energy.max
-      state.turnNumber = 1
-      
-      // 初期手札を引く
-      for (let i = 0; i < 5; i++) {
-        if (state.drawPile.length === 0) break
-        const card = state.drawPile[0]
-        state.hand.push(card)
-        state.drawPile = state.drawPile.slice(1)
-      }
-    },
-
     endTurn: (state) => {
       if (!state.isInBattle) return
       
@@ -151,7 +117,6 @@ export const gameSlice = createSlice({
       state.discardPile = [...state.discardPile, ...state.hand]
       state.hand = []
       
-      // 新しい手札を引く
       for (let i = 0; i < 5; i++) {
         if (state.drawPile.length === 0) {
           state.drawPile = shuffleDeck([...state.discardPile])
@@ -164,9 +129,7 @@ export const gameSlice = createSlice({
         }
       }
 
-      // 敵の行動
       if (state.enemy) {
-        // ランダムな行動を選択
         const actions = [
           { type: 'attack' as const, value: 12, description: '強襲' },
           { type: 'defend' as const, value: 8, description: '防御態勢' },
@@ -197,18 +160,41 @@ export const gameSlice = createSlice({
       state.isInBattle = false
       state.hand = []
       state.discardPile = []
-      state.drawPile = shuffleDeck([...initialDeck])
+      state.drawPile = []
       state.turnNumber = 0
+    },
+
+    addCardToDeck: (state, action: PayloadAction<Card>) => {
+      state.deck.push(action.payload)
+    },
+
+    restAtCampfire: (state) => {
+      const healAmount = Math.floor(state.player.maxHp * 0.3)
+      state.player.currentHp = Math.min(
+        state.player.currentHp + healAmount,
+        state.player.maxHp
+      )
+    },
+
+    setGameCleared: (state, action: PayloadAction<boolean>) => {
+      state.isGameCleared = action.payload
+    },
+
+    resetGame: () => {
+      return initialState
     }
   }
 })
 
 export const {
-  drawCard,
-  playCard,
   startBattle,
+  playCard,
   endTurn,
-  endBattle
+  endBattle,
+  addCardToDeck,
+  restAtCampfire,
+  setGameCleared,
+  resetGame
 } = gameSlice.actions
 
 export default gameSlice.reducer
