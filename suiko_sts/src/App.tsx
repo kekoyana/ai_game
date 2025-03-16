@@ -6,6 +6,7 @@ import CardComponent from './components/Card'
 import CardReward from './components/CardReward'
 import GameClear from './components/GameClear'
 import GameOver from './components/GameOver'
+import GoldDisplay from './components/GoldDisplay'
 import Map from './components/Map'
 import CharacterStats from './components/CharacterStats'
 import EnergyDisplay from './components/EnergyDisplay'
@@ -26,12 +27,15 @@ function App() {
     hand, 
     turnNumber, 
     isGameCleared,
-    isGameOver 
+    isGameOver,
+    gold 
   } = gameState
   const { currentMap, currentNodeId } = mapState
 
   const [showCardReward, setShowCardReward] = useState(false)
   const [showHealEffect, setShowHealEffect] = useState(false)
+  const [showGoldReward, setShowGoldReward] = useState(false)
+  const [rewardAmount, setRewardAmount] = useState(0)
 
   // 現在のノードが使用済みかどうかチェック
   const isCurrentNodeConsumed = useSelector((state: RootState) => 
@@ -55,7 +59,6 @@ function App() {
         maxHp: currentNode.type === 'boss' ? 100 : currentNode.type === 'elite' ? 70 : 50,
         currentHp: currentNode.type === 'boss' ? 100 : currentNode.type === 'elite' ? 70 : 50,
         block: 0,
-        // ボス、エリート、通常敵で基本攻撃力に差をつける
         strength: currentNode.type === 'boss' ? 5 : 
                  currentNode.type === 'elite' ? 3 : 
                  2
@@ -75,6 +78,10 @@ function App() {
   }
 
   const handleVictory = () => {
+    // 報酬金額を保存
+    const goldReward = enemy?.goldReward || 0
+    setRewardAmount(goldReward)
+
     dispatch(endBattle())
     dispatch(clearNode(currentNodeId))
 
@@ -82,7 +89,12 @@ function App() {
     if (currentNode?.type === 'boss') {
       dispatch(setGameCleared(true))
     } else {
-      setShowCardReward(true)
+      // 報酬表示
+      setShowGoldReward(true)
+      setTimeout(() => {
+        setShowGoldReward(false)
+        setShowCardReward(true)
+      }, 1500)
     }
   }
 
@@ -123,6 +135,9 @@ function App() {
     <div className="min-h-screen w-full bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 
                     bg-fixed p-4 relative overflow-hidden">
       <div className="max-w-5xl mx-auto relative">
+        {/* ゴールド表示 */}
+        <GoldDisplay amount={gold} />
+
         {!isInBattle ? (
           // マップ画面
           <div className="space-y-8">
@@ -247,6 +262,16 @@ function App() {
           <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
             <div className="text-6xl animate-bounce text-green-500">
               ❤️
+            </div>
+          </div>
+        )}
+
+        {/* ゴールド報酬表示 */}
+        {showGoldReward && (
+          <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
+            <div className="text-4xl font-bold text-yellow-400 animate-bounce flex items-center gap-2">
+              <span>💰</span>
+              <span>+{rewardAmount} Gold</span>
             </div>
           </div>
         )}
