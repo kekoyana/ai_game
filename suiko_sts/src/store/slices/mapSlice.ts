@@ -1,12 +1,14 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { MapLevel, initialMap } from '../../data/mapNodes'
+import type { RootState } from '../index'
 
 interface MapState {
   currentMap: MapLevel
   currentNodeId: string
-  visitedNodes: string[] // 配列として保存
-  clearedNodes: string[] // 配列として保存
-  availableNodes: string[] // 配列として保存
+  visitedNodes: string[] // 訪問済みノード
+  clearedNodes: string[] // クリア済みノード
+  availableNodes: string[] // 現在移動可能なノード
+  consumedNodes: string[] // 効果を使用済みのノード（休憩所やアイテムなど）
 }
 
 const initialState: MapState = {
@@ -14,7 +16,8 @@ const initialState: MapState = {
   currentNodeId: initialMap.startNodeId,
   visitedNodes: [initialMap.startNodeId],
   clearedNodes: [initialMap.startNodeId],
-  availableNodes: initialMap.nodes.find(n => n.id === initialMap.startNodeId)?.connections || []
+  availableNodes: initialMap.nodes.find(n => n.id === initialMap.startNodeId)?.connections || [],
+  consumedNodes: []
 }
 
 export const mapSlice = createSlice({
@@ -61,19 +64,26 @@ export const mapSlice = createSlice({
         state.clearedNodes.push(nodeId)
       }
 
+      // 効果を使用済みのノードとして記録（休憩所やアイテムの場合）
+      if (node.type === 'rest' || node.type === 'item') {
+        if (!state.consumedNodes.includes(nodeId)) {
+          state.consumedNodes.push(nodeId)
+        }
+      }
+
       // クリア後の移動可能なノードを設定
       state.availableNodes = node.connections
     },
 
     resetMap: (state) => {
-      state.currentNodeId = state.currentMap.startNodeId
-      state.visitedNodes = [state.currentMap.startNodeId]
-      state.clearedNodes = [state.currentMap.startNodeId]
-      state.availableNodes = 
-        state.currentMap.nodes.find(n => n.id === state.currentMap.startNodeId)?.connections || []
+      Object.assign(state, initialState)
     }
   }
 })
+
+// セレクター
+export const selectIsNodeConsumed = (state: RootState, nodeId: string) => 
+  state.map.consumedNodes.includes(nodeId)
 
 export const { moveToNode, clearNode, resetMap } = mapSlice.actions
 

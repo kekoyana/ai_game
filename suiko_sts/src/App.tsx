@@ -1,80 +1,18 @@
 import { useSelector, useDispatch } from 'react-redux'
 import { RootState } from './store'
 import { startBattle, endTurn, playCard, endBattle, addCardToDeck, restAtCampfire, setGameCleared, resetGame } from './store/slices/gameSlice'
-import { clearNode, resetMap } from './store/slices/mapSlice'
+import { clearNode, resetMap, selectIsNodeConsumed } from './store/slices/mapSlice'
 import CardComponent from './components/Card'
 import CardReward from './components/CardReward'
 import GameClear from './components/GameClear'
 import GameOver from './components/GameOver'
 import Map from './components/Map'
+import CharacterStats from './components/CharacterStats'
+import EnergyDisplay from './components/EnergyDisplay'
 import { nanoid } from 'nanoid'
 import { Card } from './data/cards'
 import './App.css'
 import { useState, useEffect } from 'react'
-
-const CharacterStats = ({ 
-  character, 
-  isEnemy = false,
-  nextMove
-}: { 
-  character: { 
-    name: string; 
-    currentHp: number; 
-    maxHp: number; 
-    block: number;
-    description?: string;
-  } | null, 
-  isEnemy?: boolean,
-  nextMove?: {
-    type: 'attack' | 'defend' | 'buff'
-    value: number
-    description: string
-  }
-}) => {
-  if (!character) return null;
-  
-  return (
-    <div className={`character-stats ${isEnemy ? 'flex-row-reverse' : ''} 
-                    bg-gray-900/50 p-4 rounded-xl border border-yellow-900/30
-                    backdrop-blur-sm`}>
-      <div className="space-y-2">
-        <div className="text-2xl font-bold text-yellow-100">{character.name}</div>
-        <div className="flex items-center gap-3">
-          <span className="text-red-400">
-            ❤️ {character.currentHp}/{character.maxHp}
-          </span>
-          {character.block > 0 && (
-            <span className="text-blue-400">
-              🛡️ {character.block}
-            </span>
-          )}
-        </div>
-        {character.description && (
-          <div className="text-sm text-gray-400 italic">
-            {character.description}
-          </div>
-        )}
-        {nextMove && (
-          <div className="text-sm mt-2">
-            <span className="text-yellow-500">次の行動: </span>
-            <span className="text-white">{nextMove.description}</span>
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
-
-const EnergyDisplay = ({ current, max }: { current: number; max: number }) => (
-  <div className="energy-crystal relative group">
-    <div className="absolute -inset-1 bg-blue-500 rounded-full blur-sm opacity-75"></div>
-    <div className="relative bg-gradient-to-br from-blue-400 to-blue-600 
-                    rounded-full w-full h-full flex items-center justify-center 
-                    text-white font-bold text-xl border border-blue-300">
-      {current}/{max}
-    </div>
-  </div>
-)
 
 function App() {
   const dispatch = useDispatch()
@@ -95,6 +33,11 @@ function App() {
   const [showCardReward, setShowCardReward] = useState(false)
   const [showHealEffect, setShowHealEffect] = useState(false)
 
+  // 現在のノードが使用済みかどうかチェック
+  const isCurrentNodeConsumed = useSelector((state: RootState) => 
+    selectIsNodeConsumed(state, currentNodeId)
+  )
+
   // プレイヤーのHPを監視
   useEffect(() => {
     if (player.currentHp <= 0) {
@@ -111,7 +54,11 @@ function App() {
         name: currentNode.enemyType || '敵',
         maxHp: currentNode.type === 'boss' ? 100 : currentNode.type === 'elite' ? 70 : 50,
         currentHp: currentNode.type === 'boss' ? 100 : currentNode.type === 'elite' ? 70 : 50,
-        block: 0
+        block: 0,
+        // ボス、エリート、通常敵で基本攻撃力に差をつける
+        strength: currentNode.type === 'boss' ? 5 : 
+                 currentNode.type === 'elite' ? 3 : 
+                 2
       }
       dispatch(startBattle(enemy))
     }
@@ -142,19 +89,23 @@ function App() {
   const handleSelectCard = (card: Card) => {
     dispatch(addCardToDeck(card))
     setShowCardReward(false)
+    dispatch(clearNode(currentNodeId))
   }
 
   const handleSkipCardReward = () => {
     setShowCardReward(false)
+    dispatch(clearNode(currentNodeId))
   }
 
   const handleRest = () => {
-    dispatch(restAtCampfire())
-    setShowHealEffect(true)
-    setTimeout(() => {
-      setShowHealEffect(false)
-      dispatch(clearNode(currentNodeId))
-    }, 1500)
+    if (!isCurrentNodeConsumed) {
+      dispatch(restAtCampfire())
+      setShowHealEffect(true)
+      setTimeout(() => {
+        setShowHealEffect(false)
+        dispatch(clearNode(currentNodeId))
+      }, 1500)
+    }
   }
 
   const handleRestart = () => {
@@ -184,14 +135,18 @@ function App() {
                       {currentNode.itemType}
                     </h3>
                     <p className="text-gray-300 mb-4">
-                      新しいカードを獲得できます
+                      {isCurrentNodeConsumed ? 
+                        "このアイテムは既に使用済みです" :
+                        "新しいカードを獲得できます"}
                     </p>
-                    <button
-                      onClick={() => setShowCardReward(true)}
-                      className="battle-button px-6 py-3 text-lg"
-                    >
-                      カードを見る
-                    </button>
+                    {!isCurrentNodeConsumed && (
+                      <button
+                        onClick={() => setShowCardReward(true)}
+                        className="battle-button px-6 py-3 text-lg"
+                      >
+                        カードを見る
+                      </button>
+                    )}
                   </div>
                 ) : currentNode.type === 'rest' ? (
                   <div className="p-4 bg-gray-800/50 rounded-lg border border-yellow-900/30 max-w-md mx-auto">
@@ -199,14 +154,18 @@ function App() {
                       休憩所
                     </h3>
                     <p className="text-gray-300 mb-4">
-                      体力を30%回復できます
+                      {isCurrentNodeConsumed ? 
+                        "この休憩所は既に使用済みです" :
+                        "体力を30%回復できます"}
                     </p>
-                    <button
-                      onClick={handleRest}
-                      className="battle-button px-6 py-3 text-lg"
-                    >
-                      休憩する
-                    </button>
+                    {!isCurrentNodeConsumed && (
+                      <button
+                        onClick={handleRest}
+                        className="battle-button px-6 py-3 text-lg"
+                      >
+                        休憩する
+                      </button>
+                    )}
                   </div>
                 ) : (currentNode.type === 'enemy' || currentNode.type === 'elite' || currentNode.type === 'boss') && (
                   <button

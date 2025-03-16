@@ -7,6 +7,7 @@ export interface Character {
   maxHp: number
   currentHp: number
   block: number
+  strength?: number // 攻撃力
   nextMove?: {
     type: 'attack' | 'defend' | 'buff'
     value: number
@@ -54,6 +55,28 @@ const initialState: GameState = {
   isGameOver: false
 }
 
+// 敵の行動パターンを生成する関数
+const generateEnemyMove = (enemy: Character) => {
+  const actions = [
+    { 
+      type: 'attack' as const, 
+      value: 12 + (enemy.strength || 0), 
+      description: `強襲 (${12 + (enemy.strength || 0)}ダメージ)`
+    },
+    { 
+      type: 'defend' as const, 
+      value: 8, 
+      description: '防御態勢 (8ブロック)'
+    },
+    { 
+      type: 'attack' as const, 
+      value: 8 + (enemy.strength || 0), 
+      description: `攻撃 (${8 + (enemy.strength || 0)}ダメージ)`
+    }
+  ]
+  return actions[Math.floor(Math.random() * actions.length)]
+}
+
 export const gameSlice = createSlice({
   name: 'game',
   initialState,
@@ -62,6 +85,10 @@ export const gameSlice = createSlice({
       if (state.isGameOver) return
       
       state.enemy = action.payload
+      if (state.enemy) {
+        // バトル開始時に最初の行動をセット
+        state.enemy.nextMove = generateEnemyMove(state.enemy)
+      }
       state.isInBattle = true
       state.energy.current = state.energy.max
       state.turnNumber = 1
@@ -135,16 +162,12 @@ export const gameSlice = createSlice({
         }
       }
 
-      if (state.enemy) {
-        const actions = [
-          { type: 'attack' as const, value: 12, description: '強襲' },
-          { type: 'defend' as const, value: 8, description: '防御態勢' },
-          { type: 'attack' as const, value: 8, description: '通常攻撃' }
-        ]
-        state.enemy.nextMove = actions[Math.floor(Math.random() * actions.length)]
+      // 敵の行動を実行
+      if (state.enemy && state.enemy.nextMove) {
+        const currentMove = state.enemy.nextMove
 
-        if (state.enemy.nextMove.type === 'attack') {
-          const damage = state.enemy.nextMove.value
+        if (currentMove.type === 'attack') {
+          const damage = currentMove.value
           if (state.player.block > 0) {
             const blockedDamage = Math.min(state.player.block, damage)
             state.player.block -= blockedDamage
@@ -152,7 +175,6 @@ export const gameSlice = createSlice({
             if (remainingDamage > 0) {
               state.player.currentHp = Math.max(state.player.currentHp - remainingDamage, 0)
               
-              // プレイヤーのHPが0になった場合、ゲームオーバー
               if (state.player.currentHp === 0) {
                 state.isGameOver = true
                 state.isInBattle = false
@@ -161,15 +183,17 @@ export const gameSlice = createSlice({
           } else {
             state.player.currentHp = Math.max(state.player.currentHp - damage, 0)
             
-            // プレイヤーのHPが0になった場合、ゲームオーバー
             if (state.player.currentHp === 0) {
               state.isGameOver = true
               state.isInBattle = false
             }
           }
-        } else if (state.enemy.nextMove.type === 'defend') {
-          state.enemy.block += state.enemy.nextMove.value
+        } else if (currentMove.type === 'defend') {
+          state.enemy.block += currentMove.value
         }
+
+        // 次のターンの行動を決定
+        state.enemy.nextMove = generateEnemyMove(state.enemy)
       }
     },
 
