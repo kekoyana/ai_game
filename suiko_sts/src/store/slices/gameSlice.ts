@@ -8,7 +8,7 @@ export interface Character {
   currentHp: number
   block: number
   strength?: number
-  goldReward?: number // 倒した時の獲得金額
+  goldReward?: number
   nextMove?: {
     type: 'attack' | 'defend' | 'buff'
     value: number
@@ -26,13 +26,13 @@ interface GameState {
     current: number
     max: number
   }
-  gold: number // プレイヤーの所持金
+  gold: number
   isInBattle: boolean
   turnNumber: number
   deck: Card[]
   isGameCleared: boolean
   isGameOver: boolean
-  canSpendGold: boolean // お金を使用できるかどうかのフラグ
+  canSpendGold: boolean
 }
 
 const initialState: GameState = {
@@ -60,7 +60,6 @@ const initialState: GameState = {
   canSpendGold: false
 }
 
-// 敵の行動パターンを生成する関数
 const generateEnemyMove = (enemy: Character) => {
   const actions = [
     { 
@@ -90,7 +89,6 @@ export const gameSlice = createSlice({
       if (state.isGameOver) return
       
       const enemy = action.payload
-      // 敵タイプに応じた報酬金額を設定
       enemy.goldReward = enemy.strength === 5 ? 100 : // ボス
                         enemy.strength === 3 ? 50 :  // エリート
                         25  // 通常敵
@@ -106,7 +104,6 @@ export const gameSlice = createSlice({
       state.hand = []
       state.discardPile = []
       
-      // 初期手札を引く
       for (let i = 0; i < 5; i++) {
         if (state.drawPile.length === 0) break
         const card = state.drawPile[0]
@@ -126,17 +123,16 @@ export const gameSlice = createSlice({
       state.energy.current -= card.cost
       
       if (card.effects.damage && state.enemy) {
-        const damage = card.effects.damage
+        const incomingDamage = card.effects.damage
         if (state.enemy.block > 0) {
-          if (damage > state.enemy.block) {
-            const remainingDamage = damage - state.enemy.block
-            state.enemy.block = 0
-            state.enemy.currentHp = Math.max(state.enemy.currentHp - remainingDamage, 0)
-          } else {
-            state.enemy.block -= damage
+          const blockedDamage = Math.min(state.enemy.block, incomingDamage)
+          state.enemy.block = Math.max(0, state.enemy.block - incomingDamage)
+          const remainingDamage = incomingDamage - blockedDamage
+          if (remainingDamage > 0) {
+            state.enemy.currentHp = Math.max(0, state.enemy.currentHp - remainingDamage)
           }
         } else {
-          state.enemy.currentHp = Math.max(state.enemy.currentHp - damage, 0)
+          state.enemy.currentHp = Math.max(0, state.enemy.currentHp - incomingDamage)
         }
       }
       
@@ -164,7 +160,6 @@ export const gameSlice = createSlice({
       
       state.turnNumber += 1
       state.energy.current = state.energy.max
-      state.player.block = 0
       
       state.discardPile = [...state.discardPile, ...state.hand]
       state.hand = []
@@ -181,20 +176,29 @@ export const gameSlice = createSlice({
         }
       }
 
+      // 敵の行動を実行
       if (state.enemy && state.enemy.nextMove) {
         const currentMove = state.enemy.nextMove
+
         if (currentMove.type === 'attack') {
-          const damage = currentMove.value
+          const incomingDamage = currentMove.value
+
+          // プレイヤーの防御値を考慮したダメージ計算
           if (state.player.block > 0) {
-            if (damage > state.player.block) {
-              const remainingDamage = damage - state.player.block
-              state.player.block = 0
-              state.player.currentHp = Math.max(state.player.currentHp - remainingDamage, 0)
-            } else {
-              state.player.block -= damage
+            // ブロックでダメージを軽減
+            const blockedDamage = Math.min(state.player.block, incomingDamage)
+            const remainingDamage = incomingDamage - blockedDamage
+
+            // ブロック値を減少
+            state.player.block = Math.max(0, state.player.block - blockedDamage)
+
+            // 残りのダメージをHPに適用
+            if (remainingDamage > 0) {
+              state.player.currentHp = Math.max(0, state.player.currentHp - remainingDamage)
             }
           } else {
-            state.player.currentHp = Math.max(state.player.currentHp - damage, 0)
+            // ブロックがない場合は直接ダメージ
+            state.player.currentHp = Math.max(0, state.player.currentHp - incomingDamage)
           }
 
           if (state.player.currentHp === 0) {
@@ -205,12 +209,15 @@ export const gameSlice = createSlice({
           state.enemy.block += currentMove.value
         }
 
+        // 次のターンの行動を決定
         state.enemy.nextMove = generateEnemyMove(state.enemy)
       }
+
+      // ターン終了時にブロックをリセット
+      state.player.block = 0
     },
 
     endBattle: (state) => {
-      // 敵を倒した時の報酬を獲得
       if (state.enemy && state.enemy.goldReward) {
         state.gold += state.enemy.goldReward
       }
@@ -244,7 +251,6 @@ export const gameSlice = createSlice({
       state.isGameOver = action.payload
     },
 
-    // お金関連のアクション
     checkCanSpendGold: (state, action: PayloadAction<number>) => {
       state.canSpendGold = state.gold >= action.payload
     },
