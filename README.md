@@ -7,6 +7,7 @@ AIで作ったゲームをあげていく
 - `/roguelike` - ローグライクゲーム（ https://kekoyana.github.io/ai_game/roguelike/ ）
 - `/gakuensai` - 学園祭シミュレーションゲーム（ https://kekoyana.github.io/ai_game/gakuensai/ ）
 - `/shiritori` - しりとりゲーム（ https://kekoyana.github.io/ai_game/shiritori/ ）
+- `/suiko_sts` - 水滸伝風カードゲーム（ https://kekoyana.github.io/ai_game/suiko_sts/ ）
 
 ## デプロイ方法
 
@@ -29,6 +30,7 @@ AIで作ったゲームをあげていく
   - Roguelike: https://kekoyana.github.io/ai_game/roguelike/
   - 学園祭: https://kekoyana.github.io/ai_game/gakuensai/
   - しりとり: https://kekoyana.github.io/ai_game/shiritori/
+  - 水滸伝のカードゲーム: https://kekoyana.github.io/ai_game/suiko_sts/
 
 ## 新しいゲームの追加方法
 
