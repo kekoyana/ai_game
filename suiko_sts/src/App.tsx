@@ -8,8 +8,7 @@ import GameClear from './components/GameClear'
 import GameOver from './components/GameOver'
 import GoldDisplay from './components/GoldDisplay'
 import Map from './components/Map'
-import CharacterStats from './components/CharacterStats'
-import EnergyDisplay from './components/EnergyDisplay'
+import Battle from './components/Battle'
 import { nanoid } from 'nanoid'
 import { Card } from './data/cards'
 import './App.css'
@@ -195,58 +194,10 @@ function App() {
           </div>
         ) : (
           // バトル画面
-          <div className="space-y-8">
-            {/* ターン数表示 */}
-            <div className="text-center">
-              <span className="inline-block bg-yellow-900/50 px-4 py-2 rounded-full
-                           text-yellow-100 font-bold border border-yellow-700/30">
-                ターン {turnNumber}
-              </span>
-            </div>
-
-            {/* 敵ステータス */}
-            <div className="flex justify-end">
-              <CharacterStats 
-                character={enemy} 
-                isEnemy 
-                nextMove={enemy?.nextMove}
-              />
-            </div>
-
-            {/* メインバトルエリア */}
-            <div className="min-h-[400px] relative flex items-center justify-center">
-              {/* エネルギー表示 */}
-              <div className="absolute left-4 top-4 w-16 h-16">
-                <EnergyDisplay current={energy.current} max={energy.max} />
-              </div>
-
-              <button
-                onClick={handleEndTurn}
-                className="battle-button px-8 py-4 text-xl bg-gradient-to-r 
-                         from-yellow-700 to-yellow-900 hover:from-yellow-600 hover:to-yellow-800
-                         transform transition-all duration-200 hover:scale-105
-                         shadow-lg shadow-yellow-900/50"
-              >
-                ターン終了
-              </button>
-            </div>
-
-            {/* プレイヤーステータス */}
-            <div>
-              <CharacterStats character={player} />
-            </div>
-
-            {/* 手札エリア */}
-            <div className="flex gap-4 justify-center flex-wrap py-4 min-h-[300px]">
-              {hand.map((card) => (
-                <CardComponent
-                  key={card.id}
-                  {...card}
-                  onClick={() => handlePlayCard(card)}
-                />
-              ))}
-            </div>
-          </div>
+          <Battle
+            onEndTurn={handleEndTurn}
+            onPlayCard={handlePlayCard}
+          />
         )}
 
         {/* カード報酬選択画面 */}
