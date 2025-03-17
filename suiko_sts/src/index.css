@@ -1,0 +1,78 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply antialiased;
+  }
+  
+  body {
+    @apply bg-gray-900 text-white min-h-screen;
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+}
+
+@layer components {
+  .game-card {
+    @apply bg-gradient-to-b from-gray-800 to-gray-900 
+           rounded-xl p-4 shadow-xl border-2 border-yellow-900/30
+           hover:border-yellow-600/50 transition-all duration-200 
+           hover:shadow-yellow-900/20 hover:-translate-y-1 cursor-pointer
+           relative overflow-hidden;
+  }
+  
+  .character-stats {
+    @apply flex items-center gap-2 text-lg font-bold
+           backdrop-blur-md bg-gray-900/50 rounded-xl
+           border border-yellow-900/30 p-4 shadow-lg;
+  }
+
+  .energy-crystal {
+    @apply w-16 h-16 rounded-full bg-gradient-to-br from-blue-400 to-blue-600
+           flex items-center justify-center text-white font-bold text-xl
+           shadow-lg shadow-blue-900/50 border-2 border-blue-300/50
+           relative z-10;
+  }
+
+  .battle-button {
+    @apply px-6 py-3 rounded-lg text-white font-bold
+           transition-all duration-200 transform
+           shadow-lg hover:shadow-xl active:scale-95
+           bg-gradient-to-r from-red-700 to-red-900
+           hover:from-red-600 hover:to-red-800
+           border-2 border-red-700/50 hover:border-red-500/50;
+  }
+
+  .card-cost {
+    @apply absolute -top-3 -left-3 w-10 h-10 rounded-full
+           bg-gradient-to-br from-yellow-400 to-yellow-600
+           flex items-center justify-center text-white font-bold text-xl
+           border-2 border-yellow-700 shadow-lg z-20;
+  }
+
+  .card-type-icon {
+    @apply absolute top-1 right-1 text-2xl z-10;
+  }
+
+  .card-name {
+    @apply mt-6 text-center font-bold text-lg text-yellow-100 px-2
+           relative z-10;
+  }
+
+  .card-character {
+    @apply mt-2 text-center text-sm text-yellow-200/90 italic
+           relative z-10;
+  }
+
+  .card-description {
+    @apply mt-4 text-center text-sm text-white px-3 font-medium
+           relative z-10;
+  }
+
+  .card-flavor {
+    @apply absolute bottom-3 left-3 right-3 text-center text-xs
+           text-yellow-200/70 italic border-t border-yellow-700/30 pt-2
+           relative z-10;
+  }
+}

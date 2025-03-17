@@ -157,8 +157,40 @@ jobs:
           path: './shiritori/dist'
           retention-days: 1
 
+  build-suiko-sts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: './suiko_sts/package-lock.json'
+      
+      - name: Update dependencies
+        working-directory: ./suiko_sts
+        run: npm install
+      
+      - name: Install dependencies
+        working-directory: ./suiko_sts
+        run: npm ci
+      
+      - name: Build
+        working-directory: ./suiko_sts
+        run: npm run build
+
+      - name: Upload suiko-sts artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: suiko-sts-build
+          path: './suiko_sts/dist'
+          retention-days: 1
+
   deploy:
-    needs: [build-evolife, build-roguelike, build-gakuensai, build-menu, build-shiritori]
+    needs: [build-evolife, build-roguelike, build-gakuensai, build-menu, build-shiritori, build-suiko-sts]
     environment:
       name: github-pages
       url: ${{ github.io_url }}
@@ -187,6 +219,12 @@ jobs:
         with:
           name: shiritori-build
           path: './dist/shiritori'
+
+      - name: Download suiko-sts build
+        uses: actions/download-artifact@v4
+        with:
+          name: suiko-sts-build
+          path: './dist/suiko_sts'
 
       - name: Download menu build
         uses: actions/download-artifact@v4
