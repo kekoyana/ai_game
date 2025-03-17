@@ -36,8 +36,8 @@ const CharacterStats = ({ character, isEnemy = false, nextMove }: CharacterStats
               🛡️ {character.block}
             </span>
           )}
-          {isEnemy && character.strength !== undefined && character.strength > 0 && (
-            <span className="text-orange-400" title="攻撃力">
+          {character.strength !== undefined && character.strength > 0 && (
+            <span className="text-orange-400" title="筋力">
               ⚔️ {character.strength}
             </span>
           )}

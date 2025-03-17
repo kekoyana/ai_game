@@ -41,7 +41,8 @@ const initialState: GameState = {
     name: '宋江',
     maxHp: 80,
     currentHp: 80,
-    block: 0
+    block: 0,
+    strength: 0
   },
   enemy: null,
   hand: [],
@@ -122,18 +123,35 @@ export const gameSlice = createSlice({
       state.discardPile.push(card)
       state.energy.current -= card.cost
       
+      // ダメージ処理
       if (card.effects.damage && state.enemy) {
-        const incomingDamage = card.effects.damage
-        if (state.enemy.block > 0) {
-          const blockedDamage = Math.min(state.enemy.block, incomingDamage)
-          state.enemy.block = Math.max(0, state.enemy.block - incomingDamage)
-          const remainingDamage = incomingDamage - blockedDamage
-          if (remainingDamage > 0) {
-            state.enemy.currentHp = Math.max(0, state.enemy.currentHp - remainingDamage)
-          }
-        } else {
-          state.enemy.currentHp = Math.max(0, state.enemy.currentHp - incomingDamage)
+        // 基本ダメージ
+        let totalDamage = card.effects.damage
+
+        // Strengthの適用
+        if (state.player.strength) {
+          totalDamage += state.player.strength
         }
+
+        // Multiplyの適用（複数回攻撃）
+        const hitCount = card.effects.multiply || 1
+        for (let i = 0; i < hitCount; i++) {
+          if (state.enemy.block > 0) {
+            const blockedDamage = Math.min(state.enemy.block, totalDamage)
+            state.enemy.block = Math.max(0, state.enemy.block - totalDamage)
+            const remainingDamage = totalDamage - blockedDamage
+            if (remainingDamage > 0) {
+              state.enemy.currentHp = Math.max(0, state.enemy.currentHp - remainingDamage)
+            }
+          } else {
+            state.enemy.currentHp = Math.max(0, state.enemy.currentHp - totalDamage)
+          }
+        }
+      }
+
+      // Strength効果の適用
+      if (card.effects.strength) {
+        state.player.strength = (state.player.strength || 0) + card.effects.strength
       }
       
       if (card.effects.block) {
@@ -160,6 +178,14 @@ export const gameSlice = createSlice({
       
       state.turnNumber += 1
       state.energy.current = state.energy.max
+
+      // パワーカードの効果を適用
+      const hasPowerCard = state.deck.some(card =>
+        card.type === 'power' && card.name === '覇王の威厳'
+      )
+      if (hasPowerCard) {
+        state.player.strength = (state.player.strength || 0) + 1
+      }
       
       state.discardPile = [...state.discardPile, ...state.hand]
       state.hand = []
