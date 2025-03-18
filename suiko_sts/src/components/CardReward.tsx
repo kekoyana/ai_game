@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Card } from '../data/cards'
+import { generateRewardCards } from '../utils/cardUtils'
 import CardComponent from './Card'
 import './CardReward.css'
 
@@ -13,41 +14,8 @@ const CardReward = ({ onSelectCard, onSkip }: CardRewardProps) => {
 
   // カードの生成と抽選
   useEffect(() => {
-    // ここで実際のカード生成ロジックを呼び出す
-    // 現在はダミーデータを使用
-    const dummyCards: Card[] = [
-      {
-        id: '1',
-        name: '突撃',
-        type: 'attack',
-        cost: 1,
-        description: '8ダメージを与える',
-        character: '林沖',
-        rarity: 'C',
-        effects: { damage: 8 }
-      },
-      {
-        id: '2',
-        name: '防御態勢',
-        type: 'skill',
-        cost: 1,
-        description: '8ブロックを得る',
-        character: '魯智深',
-        rarity: 'C',
-        effects: { block: 8 }
-      },
-      {
-        id: '3',
-        name: '気合い',
-        type: 'power',
-        cost: 1,
-        description: 'カードを1枚引く',
-        character: '武松',
-        rarity: 'C',
-        effects: { draw: 1 }
-      }
-    ]
-    setCards(dummyCards)
+    const rewardCards = generateRewardCards(3)
+    setCards(rewardCards)
   }, [])
 
   return (
