@@ -28,6 +28,17 @@ const getTypeBgClass = (type: CardProps['type']) => {
   }
 }
 
+const getTypeNameClass = (type: CardProps['type']) => {
+  switch (type) {
+    case 'attack':
+      return 'card-name-attack'
+    case 'skill':
+      return 'card-name-skill'
+    case 'power':
+      return 'card-name-power'
+  }
+}
+
 const getRarityClass = (rarity: CardProps['rarity']) => {
   switch (rarity) {
     case 'SSR':
@@ -38,6 +49,19 @@ const getRarityClass = (rarity: CardProps['rarity']) => {
       return 'card-r'
     case 'C':
       return 'card-c'
+  }
+}
+
+const getRarityBadgeClass = (rarity: CardProps['rarity']) => {
+  switch (rarity) {
+    case 'SSR':
+      return 'card-rarity-ssr'
+    case 'SR':
+      return 'card-rarity-sr'
+    case 'R':
+      return 'card-rarity-r'
+    case 'C':
+      return 'card-rarity-c'
   }
 }
 
@@ -60,12 +84,15 @@ const Card = ({
       onClick={onClick}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      style={{ 
-        transform: isHovered ? 'translateY(-8px) scale(1.1)' : 'none',
-        zIndex: isHovered ? 10 : 1,
-        transition: 'all 0.3s ease'
-      }}
     >
+      {/* カードフレーム */}
+      <div className="card-frame" />
+
+      {/* レアリティ表示 */}
+      <div className={`card-rarity ${getRarityBadgeClass(rarity)}`}>
+        {rarity}
+      </div>
+
       {/* コスト */}
       <div className="card-cost">
         {cost}
@@ -77,7 +104,7 @@ const Card = ({
       </div>
 
       {/* カード名 */}
-      <div className="card-name">
+      <div className={`card-name ${getTypeNameClass(type)}`}>
         {name}
       </div>
 

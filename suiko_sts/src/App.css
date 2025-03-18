@@ -73,8 +73,8 @@
 /* カードエリア */
 .hand-container {
   @apply flex justify-center relative;
-  height: 360px; /* カードのホバー時の拡大に対応 */
-  perspective: 1000px; /* 3D効果用 */
+  height: 360px;
+  perspective: 1000px;
 }
 
 .hand-cards {
@@ -97,6 +97,28 @@
 /* オーバーレイ要素 */
 .overlay {
   @apply fixed inset-0 flex items-center justify-center z-50 pointer-events-none;
+}
+
+/* 勝利メッセージ */
+.victory-message {
+  @apply text-4xl font-bold text-yellow-300 flex items-center gap-4;
+  animation: victoryPop 1.5s ease-out;
+  text-shadow: 0 0 10px rgba(234, 179, 8, 0.5);
+}
+
+@keyframes victoryPop {
+  0% {
+    opacity: 0;
+    transform: scale(0.8) translateY(20px);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1) translateY(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 .heal-effect {
@@ -148,5 +170,9 @@
 
   .battle-button {
     @apply px-6 py-3 text-lg;
+  }
+
+  .victory-message {
+    @apply text-2xl px-4 text-center;
   }
 }

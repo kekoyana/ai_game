@@ -2,88 +2,16 @@ import { useSelector, useDispatch } from 'react-redux'
 import { RootState } from './store'
 import { Character, startBattle, endTurn, playCard, endBattle, addCardToDeck, restAtCampfire, setGameCleared, resetGame } from './store/slices/gameSlice'
 import { clearNode, resetMap, selectIsNodeConsumed } from './store/slices/mapSlice'
-import CardComponent from './components/Card'
+import BattleScreen from './components/BattleScreen'
 import CardReward from './components/CardReward'
 import GameClear from './components/GameClear'
 import GameOver from './components/GameOver'
 import GoldDisplay from './components/GoldDisplay'
 import Map from './components/Map'
-import CharacterStats from './components/CharacterStats'
-import EnergyDisplay from './components/EnergyDisplay'
 import { nanoid } from 'nanoid'
 import { Card } from './data/cards'
 import './App.css'
 import { useState, useEffect } from 'react'
-
-// バトル画面のレイアウトを調整
-const BattleScreen = ({
-  enemy,
-  player,
-  energy,
-  hand,
-  turnNumber,
-  onEndTurn,
-  onPlayCard
-}: {
-  enemy: Character | null
-  player: Character
-  energy: { current: number; max: number }
-  hand: Card[]
-  turnNumber: number
-  onEndTurn: () => void
-  onPlayCard: (card: Card) => void
-}) => (
-  <div className="battle-container">
-    {/* ターン数表示 */}
-    <div className="turn-display">
-      <span className="turn-counter">
-        ターン {turnNumber}
-      </span>
-    </div>
-
-    {/* 敵エリア */}
-    <div className="character-area">
-      <CharacterStats 
-        character={enemy} 
-        isEnemy 
-        nextMove={enemy?.nextMove}
-      />
-    </div>
-
-    {/* メインバトルエリア */}
-    <div className="battle-area">
-      <div className="energy-display">
-        <EnergyDisplay current={energy.current} max={energy.max} />
-      </div>
-
-      <button
-        onClick={onEndTurn}
-        className="battle-button"
-      >
-        ターン終了
-      </button>
-    </div>
-
-    {/* プレイヤーエリア */}
-    <div className="character-area">
-      <CharacterStats character={player} />
-    </div>
-
-    {/* 手札エリア */}
-    <div className="hand-container">
-      <div className="hand-cards">
-        {hand.map((card) => (
-          <div key={card.id} className="card-wrapper">
-            <CardComponent
-              {...card}
-              onClick={() => onPlayCard(card)}
-            />
-          </div>
-        ))}
-      </div>
-    </div>
-  </div>
-)
 
 function App() {
   const dispatch = useDispatch()
@@ -105,12 +33,48 @@ function App() {
   const [showCardReward, setShowCardReward] = useState(false)
   const [showHealEffect, setShowHealEffect] = useState(false)
   const [showGoldReward, setShowGoldReward] = useState(false)
+  const [showVictoryMessage, setShowVictoryMessage] = useState(false)
+  const [isShowingVictorySequence, setIsShowingVictorySequence] = useState(false)
   const [rewardAmount, setRewardAmount] = useState(0)
+  const [defeatedEnemy, setDefeatedEnemy] = useState<string>('')
 
   // 現在のノードが使用済みかどうかチェック
   const isCurrentNodeConsumed = useSelector((state: RootState) => 
     selectIsNodeConsumed(state, currentNodeId)
   )
+
+  const currentNode = currentMap.nodes.find(node => node.id === currentNodeId)
+
+  // 勝利演出のシーケンス制御
+  useEffect(() => {
+    if (isShowingVictorySequence) {
+      const victorySequence = async () => {
+        // 勝利メッセージ表示
+        setShowVictoryMessage(true)
+        await new Promise(resolve => setTimeout(resolve, 1500))
+        setShowVictoryMessage(false)
+
+        // ゴールド獲得表示
+        setShowGoldReward(true)
+        await new Promise(resolve => setTimeout(resolve, 1500))
+        setShowGoldReward(false)
+
+        // ボス以外の場合はカード報酬を表示
+        if (currentNode?.type !== 'boss') {
+          setShowCardReward(true)
+        } else {
+          dispatch(setGameCleared(true))
+        }
+
+        // 戦闘終了とノードクリア
+        dispatch(endBattle())
+        dispatch(clearNode(currentNodeId))
+        setIsShowingVictorySequence(false)
+      }
+
+      victorySequence()
+    }
+  }, [isShowingVictorySequence, currentNode, dispatch, currentNodeId])
 
   // プレイヤーのHPを監視
   useEffect(() => {
@@ -119,7 +83,15 @@ function App() {
     }
   }, [player.currentHp, dispatch])
 
-  const currentNode = currentMap.nodes.find(node => node.id === currentNodeId)
+  // 敵が倒れたかチェック
+  useEffect(() => {
+    if (enemy && enemy.currentHp <= 0 && !isShowingVictorySequence) {
+      const goldReward = enemy.goldReward || 0
+      setRewardAmount(goldReward)
+      setDefeatedEnemy(enemy.name || '敵')
+      setIsShowingVictorySequence(true)
+    }
+  }, [enemy, isShowingVictorySequence])
 
   const handleStartBattle = () => {
     if (currentNode?.type === 'enemy' || currentNode?.type === 'elite' || currentNode?.type === 'boss') {
@@ -147,33 +119,13 @@ function App() {
     }
   }
 
-  const handleVictory = () => {
-    const goldReward = enemy?.goldReward || 0
-    setRewardAmount(goldReward)
-    
-    dispatch(endBattle())
-    dispatch(clearNode(currentNodeId))
-
-    if (currentNode?.type === 'boss') {
-      dispatch(setGameCleared(true))
-    } else {
-      setShowGoldReward(true)
-      setTimeout(() => {
-        setShowGoldReward(false)
-        setShowCardReward(true)
-      }, 1500)
-    }
-  }
-
   const handleSelectCard = (card: Card) => {
     dispatch(addCardToDeck(card))
     setShowCardReward(false)
-    dispatch(clearNode(currentNodeId))
   }
 
   const handleSkipCardReward = () => {
     setShowCardReward(false)
-    dispatch(clearNode(currentNodeId))
   }
 
   const handleRest = () => {
@@ -193,19 +145,13 @@ function App() {
     dispatch(setGameCleared(false))
   }
 
-  // 敵が倒れたかチェック
-  if (enemy && enemy.currentHp <= 0) {
-    handleVictory()
-  }
-
   return (
     <div className="app-container">
       <div className="app-content">
-        {!isInBattle ? (
-          // マップ画面
+        {!isInBattle || isShowingVictorySequence ? (
           <div className="map-container">
             <Map />
-            {currentNode && (
+            {currentNode && !isShowingVictorySequence && (
               <div className="text-center">
                 {currentNode.type === 'item' ? (
                   <div className="event-node">
@@ -257,7 +203,6 @@ function App() {
             )}
           </div>
         ) : (
-          // バトル画面
           <BattleScreen
             enemy={enemy}
             player={player}
@@ -270,6 +215,15 @@ function App() {
         )}
 
         {/* オーバーレイ要素 */}
+        {showVictoryMessage && (
+          <div className="overlay">
+            <div className="victory-message">
+              <span>⚔️</span>
+              <span>{defeatedEnemy}を倒した！</span>
+            </div>
+          </div>
+        )}
+
         {showCardReward && (
           <CardReward
             onSelectCard={handleSelectCard}
