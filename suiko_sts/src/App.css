@@ -1,4 +1,152 @@
-#root {
-  min-height: 100vh;
-  width: 100%;
+/* ベースレイアウト */
+.app-container {
+  @apply min-h-screen w-full bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 
+         bg-fixed p-4 relative overflow-hidden;
+}
+
+.app-content {
+  @apply max-w-4xl mx-auto flex flex-col gap-4;
+}
+
+/* マップ画面 */
+.map-container {
+  @apply space-y-8;
+}
+
+/* イベントノード */
+.event-node {
+  @apply p-4 bg-gray-800/50 rounded-lg border border-yellow-900/30 max-w-md mx-auto;
+}
+
+.event-title {
+  @apply text-xl font-bold text-yellow-100 mb-2;
+}
+
+.event-description {
+  @apply text-gray-300 mb-4;
+}
+
+/* バトル画面 */
+.battle-container {
+  @apply max-w-4xl mx-auto flex flex-col gap-4;
+}
+
+.turn-display {
+  @apply flex items-center justify-center py-2;
+}
+
+.turn-counter {
+  @apply inline-block bg-yellow-900/50 px-4 py-2 rounded-full 
+         text-yellow-100 font-bold border border-yellow-700/30;
+}
+
+/* キャラクターエリア */
+.character-area {
+  @apply flex items-center px-4 min-h-[100px];
+}
+
+.character-area:first-of-type {
+  @apply justify-end;
+}
+
+/* メインバトル画面 */
+.battle-area {
+  @apply h-32 relative flex items-center justify-center bg-gray-900/30 rounded-lg my-2;
+}
+
+/* ボタン */
+.battle-button {
+  @apply px-8 py-4 text-xl bg-gradient-to-r 
+         from-yellow-700 to-yellow-900 hover:from-yellow-600 hover:to-yellow-800
+         transform transition-all duration-200 hover:scale-105
+         shadow-lg shadow-yellow-900/50;
+}
+
+.action-button {
+  @apply px-6 py-3 text-lg;
+}
+
+.action-button-large {
+  @apply px-8 py-4 text-2xl;
+}
+
+/* カードエリア */
+.hand-container {
+  @apply flex justify-center relative;
+  height: 360px; /* カードのホバー時の拡大に対応 */
+  perspective: 1000px; /* 3D効果用 */
+}
+
+.hand-cards {
+  @apply flex gap-4 px-4;
+  position: absolute;
+  bottom: 0;
+  z-index: 0;
+}
+
+.card-wrapper {
+  @apply transform transition-all duration-200;
+  z-index: 1;
+}
+
+.card-wrapper:hover {
+  @apply -translate-y-8 scale-110;
+  z-index: 10;
+}
+
+/* オーバーレイ要素 */
+.overlay {
+  @apply fixed inset-0 flex items-center justify-center z-50 pointer-events-none;
+}
+
+.heal-effect {
+  @apply text-6xl animate-bounce text-green-500;
+}
+
+.gold-effect {
+  @apply text-4xl font-bold text-yellow-400 animate-bounce flex items-center gap-2;
+}
+
+/* ステータスバー */
+.status-bar {
+  @apply fixed top-4 left-4 flex gap-4;
+}
+
+.hp-bar {
+  @apply bg-gray-900/80 p-2 rounded-lg border border-gray-700;
+}
+
+.hp-text {
+  @apply text-sm text-gray-300 mb-1;
+}
+
+.hp-gauge {
+  @apply w-32 h-4 bg-gray-700 rounded overflow-hidden;
+}
+
+.hp-fill {
+  @apply h-full bg-gradient-to-r from-red-600 to-red-400 transition-all duration-300;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 640px) {
+  .app-content {
+    @apply max-w-full;
+  }
+
+  .hand-container {
+    height: 280px;
+  }
+
+  .hand-cards {
+    @apply gap-2;
+  }
+
+  .character-area {
+    @apply min-h-[80px];
+  }
+
+  .battle-button {
+    @apply px-6 py-3 text-lg;
+  }
 }

@@ -1,114 +1,80 @@
-import { Card as CardType, rewardPool, CardRarity } from '../data/cards'
-import Card from './Card'
-import { nanoid } from 'nanoid'
-
-const REWARD_CARDS_COUNT = 3
-
-// レア度による出現確率の重み付け
-const RARITY_WEIGHTS = {
-  SSR: 5,
-  SR: 15,
-  R: 30,
-  C: 50
-}
-
-// レア度に基づいてカードを選択する関数
-const selectCardByRarity = (cards: CardType[]): CardType => {
-  const totalWeight = Object.values(RARITY_WEIGHTS).reduce((a, b) => a + b, 0)
-  let randomNum = Math.random() * totalWeight
-  
-  // レア度を決定
-  let selectedRarity: CardRarity = 'C'
-  for (const [rarity, weight] of Object.entries(RARITY_WEIGHTS)) {
-    if (randomNum < weight) {
-      selectedRarity = rarity as CardRarity
-      break
-    }
-    randomNum -= weight
-  }
-
-  // 選択したレア度のカードをフィルタリング
-  const cardsOfRarity = cards.filter(card => card.rarity === selectedRarity)
-  return cardsOfRarity[Math.floor(Math.random() * cardsOfRarity.length)]
-}
-
-// カード報酬を生成する関数
-const generateRewardCards = (): CardType[] => {
-  const rewardCards: CardType[] = []
-  
-  // ユニークなカードを選択
-  while (rewardCards.length < REWARD_CARDS_COUNT) {
-    const card = {...selectCardByRarity(rewardPool), id: nanoid()}
-    if (!rewardCards.some(c => c.name === card.name)) {
-      rewardCards.push(card)
-    }
-  }
-
-  return rewardCards
-}
+import { useState, useEffect } from 'react'
+import { Card } from '../data/cards'
+import CardComponent from './Card'
+import './CardReward.css'
 
 interface CardRewardProps {
-  onSelectCard: (card: CardType) => void
+  onSelectCard: (card: Card) => void
   onSkip: () => void
 }
 
 const CardReward = ({ onSelectCard, onSkip }: CardRewardProps) => {
-  const rewardCards = generateRewardCards()
+  const [cards, setCards] = useState<Card[]>([])
 
-  const getRarityColor = (rarity: CardRarity) => {
-    switch (rarity) {
-      case 'SSR':
-        return 'text-rose-500'
-      case 'SR':
-        return 'text-purple-500'
-      case 'R':
-        return 'text-blue-500'
-      case 'C':
-        return 'text-gray-300'
-    }
-  }
+  // カードの生成と抽選
+  useEffect(() => {
+    // ここで実際のカード生成ロジックを呼び出す
+    // 現在はダミーデータを使用
+    const dummyCards: Card[] = [
+      {
+        id: '1',
+        name: '突撃',
+        type: 'attack',
+        cost: 1,
+        description: '8ダメージを与える',
+        character: '林沖',
+        rarity: 'C',
+        effects: { damage: 8 }
+      },
+      {
+        id: '2',
+        name: '防御態勢',
+        type: 'skill',
+        cost: 1,
+        description: '8ブロックを得る',
+        character: '魯智深',
+        rarity: 'C',
+        effects: { block: 8 }
+      },
+      {
+        id: '3',
+        name: '気合い',
+        type: 'power',
+        cost: 1,
+        description: 'カードを1枚引く',
+        character: '武松',
+        rarity: 'C',
+        effects: { draw: 1 }
+      }
+    ]
+    setCards(dummyCards)
+  }, [])
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-      <div className="bg-gray-900 p-8 rounded-xl border border-yellow-900/30 max-w-4xl w-full">
-        <h2 className="text-2xl font-bold text-yellow-100 text-center mb-6">
-          カードを1枚選択
+    <div className="reward-overlay">
+      <div className="reward-container">
+        <h2 className="reward-header">
+          報酬カードを1枚選択してください
         </h2>
-        
-        <div className="flex justify-center gap-6 mb-8">
-          {rewardCards.map(card => (
-            <div
+
+        <div className="reward-cards">
+          {cards.map((card, index) => (
+            <div 
               key={card.id}
-              className="relative group"
+              className={`reward-card-wrapper card-appear card-appear-${index + 1}`}
               onClick={() => onSelectCard(card)}
             >
-              <div className="absolute -inset-1 rounded-lg opacity-75 transition-all
-                            group-hover:opacity-100 group-hover:blur-md z-0
-                            bg-gradient-to-r from-yellow-600 to-red-600">
-              </div>
-              <div className="relative z-10">
-                {/* レア度表示 */}
-                <div className={`absolute -top-6 left-1/2 transform -translate-x-1/2
-                              font-bold text-lg ${getRarityColor(card.rarity)}`}>
-                  {card.rarity}
-                </div>
-                <div className="transform transition-transform hover:scale-105 cursor-pointer">
-                  <Card {...card} />
-                </div>
-              </div>
+              <CardComponent {...card} />
             </div>
           ))}
         </div>
-        
-        <div className="text-center">
-          <button
-            onClick={onSkip}
-            className="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg text-gray-300
-                     transition-colors"
-          >
-            スキップ
-          </button>
-        </div>
+
+        <button
+          onClick={onSkip}
+          className="skip-button"
+        >
+          スキップ
+        </button>
       </div>
     </div>
   )

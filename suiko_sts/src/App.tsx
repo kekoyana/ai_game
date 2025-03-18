@@ -1,6 +1,6 @@
 import { useSelector, useDispatch } from 'react-redux'
 import { RootState } from './store'
-import { startBattle, endTurn, playCard, endBattle, addCardToDeck, restAtCampfire, setGameCleared, resetGame } from './store/slices/gameSlice'
+import { Character, startBattle, endTurn, playCard, endBattle, addCardToDeck, restAtCampfire, setGameCleared, resetGame } from './store/slices/gameSlice'
 import { clearNode, resetMap, selectIsNodeConsumed } from './store/slices/mapSlice'
 import CardComponent from './components/Card'
 import CardReward from './components/CardReward'
@@ -8,11 +8,82 @@ import GameClear from './components/GameClear'
 import GameOver from './components/GameOver'
 import GoldDisplay from './components/GoldDisplay'
 import Map from './components/Map'
-import Battle from './components/Battle'
+import CharacterStats from './components/CharacterStats'
+import EnergyDisplay from './components/EnergyDisplay'
 import { nanoid } from 'nanoid'
 import { Card } from './data/cards'
 import './App.css'
 import { useState, useEffect } from 'react'
+
+// バトル画面のレイアウトを調整
+const BattleScreen = ({
+  enemy,
+  player,
+  energy,
+  hand,
+  turnNumber,
+  onEndTurn,
+  onPlayCard
+}: {
+  enemy: Character | null
+  player: Character
+  energy: { current: number; max: number }
+  hand: Card[]
+  turnNumber: number
+  onEndTurn: () => void
+  onPlayCard: (card: Card) => void
+}) => (
+  <div className="battle-container">
+    {/* ターン数表示 */}
+    <div className="turn-display">
+      <span className="turn-counter">
+        ターン {turnNumber}
+      </span>
+    </div>
+
+    {/* 敵エリア */}
+    <div className="character-area">
+      <CharacterStats 
+        character={enemy} 
+        isEnemy 
+        nextMove={enemy?.nextMove}
+      />
+    </div>
+
+    {/* メインバトルエリア */}
+    <div className="battle-area">
+      <div className="energy-display">
+        <EnergyDisplay current={energy.current} max={energy.max} />
+      </div>
+
+      <button
+        onClick={onEndTurn}
+        className="battle-button"
+      >
+        ターン終了
+      </button>
+    </div>
+
+    {/* プレイヤーエリア */}
+    <div className="character-area">
+      <CharacterStats character={player} />
+    </div>
+
+    {/* 手札エリア */}
+    <div className="hand-container">
+      <div className="hand-cards">
+        {hand.map((card) => (
+          <div key={card.id} className="card-wrapper">
+            <CardComponent
+              {...card}
+              onClick={() => onPlayCard(card)}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+)
 
 function App() {
   const dispatch = useDispatch()
@@ -27,7 +98,7 @@ function App() {
     turnNumber, 
     isGameCleared,
     isGameOver,
-    gold 
+    gold
   } = gameState
   const { currentMap, currentNodeId } = mapState
 
@@ -77,18 +148,15 @@ function App() {
   }
 
   const handleVictory = () => {
-    // 報酬金額を保存
     const goldReward = enemy?.goldReward || 0
     setRewardAmount(goldReward)
-
+    
     dispatch(endBattle())
     dispatch(clearNode(currentNodeId))
 
-    // ボス撃破時のクリア判定
     if (currentNode?.type === 'boss') {
       dispatch(setGameCleared(true))
     } else {
-      // 報酬表示
       setShowGoldReward(true)
       setTimeout(() => {
         setShowGoldReward(false)
@@ -131,24 +199,20 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 
-                    bg-fixed p-4 relative overflow-hidden">
-      <div className="max-w-5xl mx-auto relative">
-        {/* ゴールド表示 */}
-        <GoldDisplay amount={gold} />
-
+    <div className="app-container">
+      <div className="app-content">
         {!isInBattle ? (
           // マップ画面
-          <div className="space-y-8">
+          <div className="map-container">
             <Map />
             {currentNode && (
               <div className="text-center">
                 {currentNode.type === 'item' ? (
-                  <div className="p-4 bg-gray-800/50 rounded-lg border border-yellow-900/30 max-w-md mx-auto">
-                    <h3 className="text-xl font-bold text-yellow-100 mb-2">
+                  <div className="event-node">
+                    <h3 className="event-title">
                       {currentNode.itemType}
                     </h3>
-                    <p className="text-gray-300 mb-4">
+                    <p className="event-description">
                       {isCurrentNodeConsumed ? 
                         "このアイテムは既に使用済みです" :
                         "新しいカードを獲得できます"}
@@ -156,18 +220,18 @@ function App() {
                     {!isCurrentNodeConsumed && (
                       <button
                         onClick={() => setShowCardReward(true)}
-                        className="battle-button px-6 py-3 text-lg"
+                        className="battle-button action-button"
                       >
                         カードを見る
                       </button>
                     )}
                   </div>
                 ) : currentNode.type === 'rest' ? (
-                  <div className="p-4 bg-gray-800/50 rounded-lg border border-yellow-900/30 max-w-md mx-auto">
-                    <h3 className="text-xl font-bold text-yellow-100 mb-2">
+                  <div className="event-node">
+                    <h3 className="event-title">
                       休憩所
                     </h3>
-                    <p className="text-gray-300 mb-4">
+                    <p className="event-description">
                       {isCurrentNodeConsumed ? 
                         "この休憩所は既に使用済みです" :
                         "体力を30%回復できます"}
@@ -175,7 +239,7 @@ function App() {
                     {!isCurrentNodeConsumed && (
                       <button
                         onClick={handleRest}
-                        className="battle-button px-6 py-3 text-lg"
+                        className="battle-button action-button"
                       >
                         休憩する
                       </button>
@@ -184,7 +248,7 @@ function App() {
                 ) : (currentNode.type === 'enemy' || currentNode.type === 'elite' || currentNode.type === 'boss') && (
                   <button
                     onClick={handleStartBattle}
-                    className="battle-button px-8 py-4 text-2xl"
+                    className="battle-button action-button-large"
                   >
                     戦闘開始
                   </button>
@@ -194,13 +258,18 @@ function App() {
           </div>
         ) : (
           // バトル画面
-          <Battle
+          <BattleScreen
+            enemy={enemy}
+            player={player}
+            energy={energy}
+            hand={hand}
+            turnNumber={turnNumber}
             onEndTurn={handleEndTurn}
             onPlayCard={handlePlayCard}
           />
         )}
 
-        {/* カード報酬選択画面 */}
+        {/* オーバーレイ要素 */}
         {showCardReward && (
           <CardReward
             onSelectCard={handleSelectCard}
@@ -208,47 +277,46 @@ function App() {
           />
         )}
 
-        {/* 回復エフェクト */}
         {showHealEffect && (
-          <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
-            <div className="text-6xl animate-bounce text-green-500">
+          <div className="overlay">
+            <div className="heal-effect">
               ❤️
             </div>
           </div>
         )}
 
-        {/* ゴールド報酬表示 */}
         {showGoldReward && (
-          <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
-            <div className="text-4xl font-bold text-yellow-400 animate-bounce flex items-center gap-2">
+          <div className="overlay">
+            <div className="gold-effect">
               <span>💰</span>
               <span>+{rewardAmount} Gold</span>
             </div>
           </div>
         )}
 
-        {/* クリア画面 */}
         {isGameCleared && (
           <GameClear onRestart={handleRestart} />
         )}
 
-        {/* ゲームオーバー画面 */}
         {isGameOver && (
           <GameOver onRestart={handleRestart} />
         )}
 
-        {/* HPバー */}
-        <div className="fixed top-4 left-4 bg-gray-900/80 p-2 rounded-lg border border-gray-700">
-          <div className="text-sm text-gray-300 mb-1">
-            HP: {player.currentHp}/{player.maxHp}
+        {/* ステータスバー */}
+        <div className="status-bar">
+          <div className="hp-bar">
+            <div className="hp-text">
+              HP: {player.currentHp}/{player.maxHp}
+            </div>
+            <div className="hp-gauge">
+              <div
+                className="hp-fill"
+                style={{ width: `${(player.currentHp / player.maxHp) * 100}%` }}
+              />
+            </div>
           </div>
-          <div className="w-32 h-4 bg-gray-700 rounded overflow-hidden">
-            <div
-              className="h-full bg-gradient-to-r from-red-600 to-red-400
-                       transition-all duration-300"
-              style={{ width: `${(player.currentHp / player.maxHp) * 100}%` }}
-            />
-          </div>
+
+          <GoldDisplay amount={gold} />
         </div>
       </div>
     </div>

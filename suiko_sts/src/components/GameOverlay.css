@@ -1,0 +1,103 @@
+/* オーバーレイ共通スタイル */
+.game-overlay {
+  @apply fixed inset-0 bg-black/80 flex items-center justify-center z-50;
+}
+
+.overlay-content {
+  @apply bg-gray-900 p-8 rounded-xl max-w-2xl w-full text-center space-y-6;
+  animation: appear 0.3s ease-out;
+}
+
+/* ゲームオーバー用スタイル */
+.game-over-content {
+  @apply border border-red-900/30;
+}
+
+.game-over-title {
+  @apply text-4xl font-bold text-red-500 mb-4;
+}
+
+.game-over-message {
+  @apply text-xl text-gray-300;
+}
+
+.game-over-emoji {
+  @apply text-5xl my-8;
+  animation: bounce 1s infinite;
+}
+
+/* ゲームクリア用スタイル */
+.game-clear-content {
+  @apply border border-yellow-900/30;
+}
+
+.game-clear-title {
+  @apply text-4xl font-bold text-yellow-500 mb-4;
+}
+
+.game-clear-message {
+  @apply text-xl text-gray-300;
+}
+
+.game-clear-emoji {
+  @apply text-5xl my-8;
+  animation: bounce 1s infinite;
+}
+
+/* リスタートボタン */
+.restart-button {
+  @apply px-8 py-4 bg-gradient-to-r font-bold text-xl
+         transform transition-all duration-200 hover:scale-105 rounded-lg;
+}
+
+.restart-button-gameover {
+  @apply from-red-600 to-red-800 hover:from-red-500 hover:to-red-700
+         text-white shadow-lg shadow-red-900/50;
+}
+
+.restart-button-clear {
+  @apply from-yellow-600 to-yellow-800 hover:from-yellow-500 hover:to-yellow-700
+         text-white shadow-lg shadow-yellow-900/50;
+}
+
+/* アニメーション */
+@keyframes appear {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 640px) {
+  .overlay-content {
+    @apply p-4;
+  }
+
+  .game-over-title,
+  .game-clear-title {
+    @apply text-3xl;
+  }
+
+  .game-over-message,
+  .game-clear-message {
+    @apply text-lg;
+  }
+
+  .restart-button {
+    @apply px-6 py-3 text-lg;
+  }
+}

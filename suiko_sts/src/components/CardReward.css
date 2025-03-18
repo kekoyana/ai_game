@@ -1,0 +1,87 @@
+/* カード報酬画面のオーバーレイ */
+.reward-overlay {
+  @apply fixed inset-0 bg-black/80 flex items-center justify-center z-50;
+}
+
+.reward-container {
+  @apply bg-gray-900 p-8 rounded-xl border border-yellow-900/30 
+         max-w-4xl w-full text-center space-y-6;
+  animation: appear 0.3s ease-out;
+}
+
+/* ヘッダー部分 */
+.reward-header {
+  @apply text-2xl font-bold text-yellow-100 mb-4;
+}
+
+/* カード選択エリア */
+.reward-cards {
+  @apply flex flex-wrap justify-center gap-6 my-8;
+}
+
+.reward-card-wrapper {
+  @apply transform transition-all duration-200 hover:scale-105 hover:-translate-y-2
+         cursor-pointer;
+}
+
+/* スキップボタン */
+.skip-button {
+  @apply px-6 py-3 bg-gray-700 hover:bg-gray-600 
+         rounded-lg text-gray-300 font-bold text-lg
+         transition-colors transform hover:scale-105;
+}
+
+/* アニメーション */
+@keyframes appear {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes cardAppear {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card-appear {
+  opacity: 0;
+  animation: cardAppear 0.5s ease-out forwards;
+}
+
+.card-appear-1 {
+  animation-delay: 0.1s;
+}
+
+.card-appear-2 {
+  animation-delay: 0.2s;
+}
+
+.card-appear-3 {
+  animation-delay: 0.3s;
+}
+
+/* レスポンシブ対応 */
+@media (max-width: 640px) {
+  .reward-container {
+    @apply p-4;
+  }
+
+  .reward-cards {
+    @apply gap-3;
+  }
+
+  .reward-header {
+    @apply text-xl;
+  }
+}
