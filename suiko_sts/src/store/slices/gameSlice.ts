@@ -295,6 +295,15 @@ export const gameSlice = createSlice({
 
     resetGame: () => {
       return initialState
+    },
+
+    upgradeCard: (state, action: PayloadAction<Card>) => {
+      if (state.isGameOver) return
+      const upgradedCard = action.payload
+      const index = state.deck.findIndex(card => card.id === upgradedCard.id)
+      if (index !== -1) {
+        state.deck[index] = upgradedCard
+      }
     }
   }
 })
@@ -311,7 +320,8 @@ export const {
   checkCanSpendGold,
   spendGold,
   gainGold,
-  resetGame
+  resetGame,
+  upgradeCard
 } = gameSlice.actions
 
 export default gameSlice.reducer

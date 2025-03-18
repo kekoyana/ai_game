@@ -1,9 +1,10 @@
 import { useSelector, useDispatch } from 'react-redux'
 import { RootState } from './store'
-import { Character, startBattle, endTurn, playCard, endBattle, addCardToDeck, restAtCampfire, setGameCleared, resetGame } from './store/slices/gameSlice'
+import { Character, startBattle, endTurn, playCard, endBattle, addCardToDeck, restAtCampfire, setGameCleared, resetGame, upgradeCard } from './store/slices/gameSlice'
 import { clearNode, resetMap, selectIsNodeConsumed } from './store/slices/mapSlice'
 import BattleScreen from './components/BattleScreen'
 import CardReward from './components/CardReward'
+import CardUpgrade from './components/CardUpgrade'
 import GameClear from './components/GameClear'
 import GameOver from './components/GameOver'
 import GoldDisplay from './components/GoldDisplay'
@@ -35,6 +36,7 @@ function App() {
   const [showGoldReward, setShowGoldReward] = useState(false)
   const [showVictoryMessage, setShowVictoryMessage] = useState(false)
   const [isShowingVictorySequence, setIsShowingVictorySequence] = useState(false)
+  const [showCardUpgrade, setShowCardUpgrade] = useState(false)
   const [rewardAmount, setRewardAmount] = useState(0)
   const [defeatedEnemy, setDefeatedEnemy] = useState<string>('')
 
@@ -139,6 +141,17 @@ function App() {
     }
   }
 
+  const handleUpgradeCard = (card: Card) => {
+    dispatch(upgradeCard(card))
+    setShowCardUpgrade(false)
+    dispatch(clearNode(currentNodeId))
+  }
+
+  const handleSkipUpgrade = () => {
+    setShowCardUpgrade(false)
+    dispatch(clearNode(currentNodeId))
+  }
+
   const handleRestart = () => {
     dispatch(resetGame())
     dispatch(resetMap())
@@ -178,17 +191,27 @@ function App() {
                       休憩所
                     </h3>
                     <p className="event-description">
-                      {isCurrentNodeConsumed ? 
+                      {isCurrentNodeConsumed ?
                         "この休憩所は既に使用済みです" :
-                        "体力を30%回復できます"}
+                        "休憩して回復するか、カードを強化できます"}
                     </p>
                     {!isCurrentNodeConsumed && (
-                      <button
-                        onClick={handleRest}
-                        className="battle-button action-button"
-                      >
-                        休憩する
-                      </button>
+                      <div className="flex gap-4 justify-center mt-4">
+                        <button
+                          onClick={handleRest}
+                          className="battle-button action-button"
+                        >
+                          回復する
+                          <span className="block text-sm text-yellow-300">HP +30%</span>
+                        </button>
+                        <button
+                          onClick={() => setShowCardUpgrade(true)}
+                          className="battle-button action-button"
+                        >
+                          カードを強化
+                          <span className="block text-sm text-yellow-300">1枚選んで強化</span>
+                        </button>
+                      </div>
                     )}
                   </div>
                 ) : (currentNode.type === 'enemy' || currentNode.type === 'elite' || currentNode.type === 'boss') && (
@@ -228,6 +251,14 @@ function App() {
           <CardReward
             onSelectCard={handleSelectCard}
             onSkip={handleSkipCardReward}
+          />
+        )}
+
+        {showCardUpgrade && (
+          <CardUpgrade
+            deck={gameState.deck}
+            onUpgradeCard={handleUpgradeCard}
+            onSkip={handleSkipUpgrade}
           />
         )}
 

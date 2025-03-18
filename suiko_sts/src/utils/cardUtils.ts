@@ -52,3 +52,44 @@ export const generateRewardCards = (count: number = 3): Card[] => {
 
   return result
 }
+
+// カードをアップグレードする関数
+export const upgradeCard = (card: Card): Card => {
+  const upgradedCard = { ...card }
+
+  // 効果のアップグレード
+  const effects = { ...card.effects }
+  if (effects.damage) effects.damage = Math.floor(effects.damage * 1.5)
+  if (effects.block) effects.block = Math.floor(effects.block * 1.5)
+  if (effects.strength) effects.strength += 1
+  if (effects.draw) effects.draw += 1
+
+  // カード名と説明の更新
+  upgradedCard.name = `${card.name}+`
+  upgradedCard.effects = effects
+
+  // 説明文の更新
+  upgradedCard.description = card.description.replace(/\d+/g, (match) => {
+    const num = parseInt(match)
+    if (effects.damage && match === String(card.effects.damage)) {
+      return String(effects.damage)
+    }
+    if (effects.block && match === String(card.effects.block)) {
+      return String(effects.block)
+    }
+    if (effects.strength && match === String(card.effects.strength)) {
+      return String(effects.strength)
+    }
+    if (effects.draw && match === String(card.effects.draw)) {
+      return String(effects.draw)
+    }
+    return match
+  })
+
+  return upgradedCard
+}
+
+// デッキからアップグレード可能なカードをフィルタリング
+export const getUpgradeableCards = (deck: Card[]): Card[] => {
+  return deck.filter(card => !card.name.endsWith('+'))
+}
