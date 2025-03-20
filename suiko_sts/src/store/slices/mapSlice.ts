@@ -64,8 +64,15 @@ export const mapSlice = createSlice({
         state.clearedNodes.push(nodeId)
       }
 
-      // 効果を使用済みのノードとして記録（休憩所やアイテムの場合）
+      // 効果を使用済みのノードとして記録
       if (node.type === 'rest' || node.type === 'item' || node.type === 'shop') {
+        if (!state.consumedNodes.includes(nodeId)) {
+          state.consumedNodes.push(nodeId)
+        }
+      }
+
+      // 戦闘ノードも消費済みにする
+      if (node.type === 'enemy' || node.type === 'elite' || node.type === 'boss') {
         if (!state.consumedNodes.includes(nodeId)) {
           state.consumedNodes.push(nodeId)
         }

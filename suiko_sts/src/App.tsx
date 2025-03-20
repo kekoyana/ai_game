@@ -65,6 +65,15 @@ function App() {
         await new Promise(resolve => setTimeout(resolve, 1500))
         setShowGoldReward(false)
 
+        // 戦闘終了とノードクリア
+        dispatch(endBattle())
+        dispatch(clearNode(currentNodeId))
+        
+        // 戦闘ノードを消費済みにする
+        if (currentNode && (currentNode.type === 'enemy' || currentNode.type === 'elite' || currentNode.type === 'boss')) {
+          dispatch(clearNode(currentNodeId))
+        }
+
         // ボス以外の場合はカード報酬を表示
         if (currentNode?.type !== 'boss') {
           setShowCardReward(true)
@@ -72,9 +81,6 @@ function App() {
           dispatch(setGameCleared(true))
         }
 
-        // 戦闘終了とノードクリア
-        dispatch(endBattle())
-        dispatch(clearNode(currentNodeId))
         setIsShowingVictorySequence(false)
       }
 
@@ -240,7 +246,7 @@ function App() {
                         </div>
                       </div>
                     </div>
-                  ) : (currentNode.type === 'enemy' || currentNode.type === 'elite' || currentNode.type === 'boss') && (
+                  ) : (currentNode.type === 'enemy' || currentNode.type === 'elite' || currentNode.type === 'boss') && !isCurrentNodeConsumed && (
                     <div className="game-overlay">
                       <button
                         onClick={handleStartBattle}
