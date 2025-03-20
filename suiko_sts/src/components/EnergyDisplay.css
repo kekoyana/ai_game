@@ -1,0 +1,48 @@
+/* エネルギークリスタルのコンテナ */
+.energy-crystal {
+  @apply relative;
+}
+
+/* クリスタルの輝き効果 */
+.energy-glow {
+  @apply absolute -inset-1 bg-blue-500 rounded-full blur-sm opacity-75;
+}
+
+/* クリスタルの本体 */
+.energy-body {
+  @apply relative bg-gradient-to-br from-blue-400 to-blue-600 
+         rounded-full w-full h-full flex items-center justify-center 
+         text-white font-bold text-xl border border-blue-300;
+}
+
+/* エネルギー変動時のアニメーション */
+.energy-change {
+  @apply transition-all duration-300;
+}
+
+.energy-decrease {
+  @apply animate-pulse text-red-300;
+}
+
+.energy-increase {
+  @apply animate-bounce text-green-300;
+}
+
+/* ツールチップ */
+.energy-tooltip {
+  @apply absolute opacity-0 transition-opacity
+         bottom-full left-1/2 -translate-x-1/2 mb-2
+         bg-black/80 text-white text-xs px-2 py-1 rounded
+         whitespace-nowrap;
+}
+
+.group:hover .energy-tooltip {
+  @apply opacity-100;
+}
+
+/* モバイル対応 */
+@media (max-width: 640px) {
+  .energy-body {
+    @apply text-base;
+  }
+}

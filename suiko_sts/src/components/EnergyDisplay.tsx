@@ -1,17 +1,47 @@
+import { useEffect, useState } from 'react'
+import './EnergyDisplay.css'
+
 interface EnergyDisplayProps {
   current: number
   max: number
 }
 
-const EnergyDisplay = ({ current, max }: EnergyDisplayProps) => (
-  <div className="energy-crystal relative group">
-    <div className="absolute -inset-1 bg-blue-500 rounded-full blur-sm opacity-75"></div>
-    <div className="relative bg-gradient-to-br from-blue-400 to-blue-600 
-                    rounded-full w-full h-full flex items-center justify-center 
-                    text-white font-bold text-xl border border-blue-300">
-      {current}/{max}
+const EnergyDisplay = ({ current, max }: EnergyDisplayProps) => {
+  const [prevEnergy, setPrevEnergy] = useState(current)
+  const [showChange, setShowChange] = useState(false)
+  const [isIncrease, setIsIncrease] = useState(false)
+
+  useEffect(() => {
+    if (current !== prevEnergy) {
+      setIsIncrease(current > prevEnergy)
+      setShowChange(true)
+      setPrevEnergy(current)
+
+      const timer = setTimeout(() => {
+        setShowChange(false)
+      }, 1000)
+
+      return () => clearTimeout(timer)
+    }
+  }, [current, prevEnergy])
+
+  return (
+    <div className="energy-crystal group">
+      {/* 輝き効果 */}
+      <div className="energy-glow" />
+
+      {/* クリスタル本体 */}
+      <div className={`energy-body ${showChange ? 
+        isIncrease ? 'energy-increase' : 'energy-decrease' : ''}`}>
+        {current}/{max}
+      </div>
+
+      {/* ツールチップ */}
+      <div className="energy-tooltip">
+        エネルギー: {current}/{max}
+      </div>
     </div>
-  </div>
-)
+  )
+}
 
 export default EnergyDisplay

@@ -42,7 +42,7 @@ export const initialDeck: Card[] = [
     cost: 2,
     type: 'attack',
     rarity: 'SSR',
-    description: '4ダメージを4回与える',
+    description: '4ダメージを4回与える（筋力が各ヒットに適用）',
     effects: { damage: 4, multiply: 4 },
     character: '浪子 燕青',
     flavorText: '連射する矢が敵を貫く'
@@ -174,10 +174,21 @@ export const rewardPool: Card[] = [
     cost: 3,
     type: 'attack',
     rarity: 'SSR',
-    description: '8ダメージを3回与え、手札を全て捨てる',
+    description: '8ダメージを3回与え、手札を全て捨てる（筋力が各ヒットに適用）',
     effects: { damage: 8, multiply: 3 },
     character: '神機軍師 朱武',
     flavorText: '百発百中の神業'
+  },
+  {
+    id: nanoid(),
+    name: '覇王の威厳',
+    cost: 3,
+    type: 'power',
+    rarity: 'SSR',
+    description: '筋力を3得る。さらに毎ターン終了時に筋力を1得る',
+    effects: { strength: 3 },
+    character: '天魔王 晁蓋',
+    flavorText: '真の覇者となる道'
   },
 
   // SRカード
@@ -207,14 +218,14 @@ export const rewardPool: Card[] = [
   // Rカード
   {
     id: nanoid(),
-    name: '双刀術',
-    cost: 1,
-    type: 'attack',
+    name: '武神の覚醒',
+    cost: 2,
+    type: 'power',
     rarity: 'R',
-    description: '4ダメージを2回与える',
-    effects: { damage: 4, multiply: 2 },
+    description: '筋力を2得る（攻撃力が永続的に2上昇）',
+    effects: { strength: 2 },
     character: '双刀 関勝',
-    flavorText: '二刀流の達人'
+    flavorText: '戦いの中で力を増していく'
   },
   {
     id: nanoid(),

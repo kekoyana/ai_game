@@ -1,0 +1,97 @@
+/* キャラクターステータス全体のコンテナ */
+.stats-container {
+  @apply bg-gray-900/50 p-4 rounded-xl border border-yellow-900/30 backdrop-blur-sm
+         max-w-sm w-full;
+}
+
+/* 敵の場合は反転 */
+.stats-container-enemy {
+  @apply flex-row-reverse;
+}
+
+/* 名前表示 */
+.stats-name {
+  @apply text-2xl font-bold text-yellow-100 mb-2;
+}
+
+/* ステータス値表示エリア */
+.stats-values {
+  @apply flex items-center gap-3 mb-2;
+}
+
+/* HP表示 */
+.stats-hp {
+  @apply text-red-400;
+}
+
+/* ブロック表示 */
+.stats-block {
+  @apply text-blue-400;
+}
+
+/* 攻撃力表示 */
+.stats-strength {
+  @apply text-orange-400;
+}
+
+/* 説明文エリア */
+.stats-description {
+  @apply text-sm text-gray-400 italic mb-2;
+}
+
+/* 次の行動表示 */
+.next-move {
+  @apply mt-2 p-2 rounded bg-gray-800/50 border border-gray-700/50;
+}
+
+.next-move-label {
+  @apply text-sm text-yellow-500 mr-1;
+}
+
+.next-move-description {
+  @apply text-sm text-white;
+}
+
+/* ステータスアイコン */
+.status-icon {
+  @apply inline-block mr-1;
+}
+
+/* ステータス変化のアニメーション */
+.stats-value-change {
+  @apply text-lg font-bold absolute -top-4 
+         transition-all duration-300 animate-bounce;
+}
+
+.stats-value-increase {
+  @apply text-green-400;
+}
+
+.stats-value-decrease {
+  @apply text-red-400;
+}
+
+/* モバイル対応 */
+@media (max-width: 640px) {
+  .stats-container {
+    @apply p-3;
+  }
+
+  .stats-name {
+    @apply text-xl mb-1;
+  }
+
+  .stats-values {
+    @apply text-sm gap-2;
+  }
+
+  .next-move {
+    @apply p-1;
+  }
+
+  .next-move-label,
+  .next-move-description,
+  .stats-description {
+    @apply text-xs;
+  }
+}

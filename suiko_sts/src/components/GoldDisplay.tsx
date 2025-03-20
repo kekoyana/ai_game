@@ -1,5 +1,5 @@
-import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useEffect } from 'react'
+import './GoldDisplay.css'
 
 interface GoldDisplayProps {
   amount: number
@@ -26,34 +26,31 @@ const GoldDisplay = ({ amount }: GoldDisplayProps) => {
     }
   }, [amount, prevAmount])
 
+  const formatGold = (value: number) => {
+    return new Intl.NumberFormat().format(value)
+  }
+
   return (
-    <div className="fixed top-4 right-4 bg-gray-900/80 p-2 rounded-lg border border-yellow-700 
-                    flex items-center gap-2">
-      {/* 所持金表示 */}
-      <div className="flex items-center">
-        <span className="text-yellow-500 text-2xl mr-1">💰</span>
-        <span className="text-yellow-100 font-bold">{amount}</span>
+    <div className="gold-container group">
+      {/* メインの表示 */}
+      <div className="gold-display">
+        <span className="gold-icon">💰</span>
+        <span className="gold-amount">{formatGold(amount)}</span>
       </div>
 
-      {/* 増減表示のアニメーション */}
-      <AnimatePresence>
-        {showChange && (
-          <motion.div
-            initial={{ opacity: 0, y: 0 }}
-            animate={{ opacity: 1, y: -20 }}
-            exit={{ opacity: 0 }}
-            className={`absolute -top-2 right-0 font-bold text-lg
-                      ${changeAmount > 0 ? 'text-green-400' : 'text-red-400'}`}
-          >
-            {changeAmount > 0 ? `+${changeAmount}` : changeAmount}
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* 金額変動表示 */}
+      {showChange && (
+        <div
+          className={`gold-change animate-float-up
+                    ${changeAmount > 0 ? 'gold-increase' : 'gold-decrease'}`}
+        >
+          {changeAmount > 0 ? `+${formatGold(changeAmount)}` : formatGold(changeAmount)}
+        </div>
+      )}
 
       {/* ツールチップ */}
-      <div className="absolute bottom-full right-0 mb-2 opacity-0 group-hover:opacity-100 
-                    transition-opacity bg-black/80 text-white text-sm px-2 py-1 rounded">
-        所持金
+      <div className="gold-tooltip">
+        所持金: {formatGold(amount)} G
       </div>
     </div>
   )

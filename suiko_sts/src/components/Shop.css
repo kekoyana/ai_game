@@ -1,0 +1,139 @@
+.shop {
+  @apply bg-gray-900 p-8 rounded-xl w-full max-w-4xl;
+  animation: appear 0.3s ease-out;
+}
+
+.shop-header {
+  @apply flex justify-between items-center mb-8;
+}
+
+.shop-header h2 {
+  @apply text-2xl font-bold text-yellow-500;
+}
+
+.shop-gold {
+  @apply text-xl font-bold text-yellow-400;
+}
+
+.shop-section {
+  @apply mb-8;
+}
+
+.shop-section-title {
+  @apply text-xl font-bold text-yellow-400 mb-4;
+}
+
+.shop-items {
+  @apply grid gap-6;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+/* カード用のスタイル */
+.shop-card-container {
+  @apply relative transition-transform duration-300;
+}
+
+.shop-card-container:hover {
+  transform: translateY(-5px);
+}
+
+.shop-card-clickable {
+  @apply cursor-pointer;
+}
+
+.shop-card-clickable.disabled {
+  @apply cursor-not-allowed opacity-60;
+}
+
+.shop-item-overlay {
+  @apply absolute inset-0 flex flex-col justify-between p-4 pointer-events-none;
+  background: rgba(0, 0, 0, 0);
+  transition: background 0.3s ease;
+}
+
+.shop-item-overlay.sold {
+  @apply bg-black/70 pointer-events-auto;
+}
+
+.shop-item-price {
+  @apply text-xl font-bold text-yellow-400;
+  text-shadow: 0 0 3px black;
+}
+
+.sold-text {
+  @apply text-2xl font-bold text-red-500 text-center;
+  text-shadow: 0 0 3px black;
+}
+
+/* レリック用のスタイル */
+.shop-item {
+  @apply bg-gray-800/50 rounded-lg p-4 border border-gray-700 transition-all duration-300;
+}
+
+.shop-item:hover:not(.sold) {
+  @apply transform -translate-y-1 shadow-lg shadow-black/50;
+}
+
+.shop-item.sold {
+  @apply opacity-60;
+}
+
+.item-header {
+  @apply flex items-center gap-4 mb-4;
+}
+
+.relic-icon {
+  @apply text-3xl;
+}
+
+.item-cost {
+  @apply ml-auto text-xl font-bold text-yellow-400;
+}
+
+.item-description {
+  @apply text-gray-300 mb-4;
+}
+
+.purchase-button {
+  @apply w-full py-2 px-4 rounded bg-blue-600 text-white font-bold
+         transition-colors duration-200 hover:bg-blue-500 disabled:bg-gray-600 disabled:cursor-not-allowed;
+}
+
+/* フッターとスキップボタン */
+.shop-footer {
+  @apply mt-8 flex justify-center;
+}
+
+.skip-button {
+  @apply py-3 px-6 rounded bg-gray-700 text-gray-300 font-bold text-lg
+         transition-colors duration-200 hover:bg-gray-600 hover:text-white;
+}
+
+/* レアリティに応じた色分け */
+.shop-item.rarity-rare {
+  @apply border-yellow-600;
+}
+
+.shop-item.rarity-uncommon {
+  @apply border-gray-400;
+}
+
+.shop-item.rarity-common {
+  @apply border-yellow-900;
+}
+
+.shop-item.rarity-boss {
+  @apply border-red-600;
+}
+
+/* アニメーション */
+@keyframes appear {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

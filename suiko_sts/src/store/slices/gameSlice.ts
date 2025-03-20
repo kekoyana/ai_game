@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { Card, initialDeck, shuffleDeck } from '../../data/cards'
+import { Relic } from '../../data/relics'
 
 export interface Character {
   id: string
@@ -33,6 +34,9 @@ interface GameState {
   isGameCleared: boolean
   isGameOver: boolean
   canSpendGold: boolean
+  relics: Relic[] // お宝の配列を追加
+  goldMultiplier: number // ゴールド獲得量の倍率
+  healingMultiplier: number // 回復量の倍率
 }
 
 const initialState: GameState = {
@@ -41,7 +45,8 @@ const initialState: GameState = {
     name: '宋江',
     maxHp: 80,
     currentHp: 80,
-    block: 0
+    block: 0,
+    strength: 0
   },
   enemy: null,
   hand: [],
@@ -51,13 +56,16 @@ const initialState: GameState = {
     current: 3,
     max: 3
   },
-  gold: 0,
+  gold: 200,
   isInBattle: false,
   turnNumber: 0,
   deck: [...initialDeck],
   isGameCleared: false,
   isGameOver: false,
-  canSpendGold: false
+  canSpendGold: false,
+  relics: [], // 初期状態では空の配列
+  goldMultiplier: 1, // 初期状態では等倍
+  healingMultiplier: 1 // 初期状態では等倍
 }
 
 const generateEnemyMove = (enemy: Character) => {
@@ -103,8 +111,20 @@ export const gameSlice = createSlice({
       state.drawPile = shuffleDeck([...state.deck])
       state.hand = []
       state.discardPile = []
+
+      // レリックの戦闘開始効果を適用
+      state.relics.forEach(relic => {
+        if (relic.effect.type === 'strength') {
+          state.player.strength = (state.player.strength || 0) + relic.effect.value
+        }
+      })
+
+      // 初期ドロー（レリックの効果を考慮）
+      const initialDraw = 5 + state.relics.reduce((bonus, relic) =>
+        relic.effect.type === 'draw' ? bonus + relic.effect.value : bonus, 0
+      )
       
-      for (let i = 0; i < 5; i++) {
+      for (let i = 0; i < initialDraw; i++) {
         if (state.drawPile.length === 0) break
         const card = state.drawPile[0]
         state.hand.push(card)
@@ -122,18 +142,35 @@ export const gameSlice = createSlice({
       state.discardPile.push(card)
       state.energy.current -= card.cost
       
+      // ダメージ処理
       if (card.effects.damage && state.enemy) {
-        const incomingDamage = card.effects.damage
-        if (state.enemy.block > 0) {
-          const blockedDamage = Math.min(state.enemy.block, incomingDamage)
-          state.enemy.block = Math.max(0, state.enemy.block - incomingDamage)
-          const remainingDamage = incomingDamage - blockedDamage
-          if (remainingDamage > 0) {
-            state.enemy.currentHp = Math.max(0, state.enemy.currentHp - remainingDamage)
-          }
-        } else {
-          state.enemy.currentHp = Math.max(0, state.enemy.currentHp - incomingDamage)
+        // 基本ダメージ
+        let totalDamage = card.effects.damage
+
+        // Strengthの適用
+        if (state.player.strength) {
+          totalDamage += state.player.strength
         }
+
+        // Multiplyの適用（複数回攻撃）
+        const hitCount = card.effects.multiply || 1
+        for (let i = 0; i < hitCount; i++) {
+          if (state.enemy.block > 0) {
+            const blockedDamage = Math.min(state.enemy.block, totalDamage)
+            state.enemy.block = Math.max(0, state.enemy.block - totalDamage)
+            const remainingDamage = totalDamage - blockedDamage
+            if (remainingDamage > 0) {
+              state.enemy.currentHp = Math.max(0, state.enemy.currentHp - remainingDamage)
+            }
+          } else {
+            state.enemy.currentHp = Math.max(0, state.enemy.currentHp - totalDamage)
+          }
+        }
+      }
+
+      // Strength効果の適用
+      if (card.effects.strength) {
+        state.player.strength = (state.player.strength || 0) + card.effects.strength
       }
       
       if (card.effects.block) {
@@ -160,6 +197,14 @@ export const gameSlice = createSlice({
       
       state.turnNumber += 1
       state.energy.current = state.energy.max
+
+      // パワーカードの効果を適用
+      const hasPowerCard = state.deck.some(card =>
+        card.type === 'power' && card.name === '覇王の威厳'
+      )
+      if (hasPowerCard) {
+        state.player.strength = (state.player.strength || 0) + 1
+      }
       
       state.discardPile = [...state.discardPile, ...state.hand]
       state.hand = []
@@ -236,7 +281,8 @@ export const gameSlice = createSlice({
 
     restAtCampfire: (state) => {
       if (state.isGameOver) return
-      const healAmount = Math.floor(state.player.maxHp * 0.3)
+      // 基本回復量に回復倍率を適用
+      const healAmount = Math.floor(state.player.maxHp * 0.3 * state.healingMultiplier)
       state.player.currentHp = Math.min(
         state.player.currentHp + healAmount,
         state.player.maxHp
@@ -264,11 +310,46 @@ export const gameSlice = createSlice({
     },
 
     gainGold: (state, action: PayloadAction<number>) => {
-      state.gold += action.payload
+      // ゴールド倍率を適用
+      const amount = Math.floor(action.payload * state.goldMultiplier)
+      state.gold += amount
     },
 
     resetGame: () => {
       return initialState
+    },
+
+    upgradeCard: (state, action: PayloadAction<Card>) => {
+      if (state.isGameOver) return
+      const upgradedCard = action.payload
+      const index = state.deck.findIndex(card => card.id === upgradedCard.id)
+      if (index !== -1) {
+        state.deck[index] = upgradedCard
+      }
+    },
+
+    addRelic: (state, action: PayloadAction<Relic>) => {
+      if (state.isGameOver) return
+      const relic = action.payload
+
+      state.relics.push(relic)
+
+      // レリックの効果を適用
+      switch (relic.effect.type) {
+        case 'maxHp':
+          state.player.maxHp += relic.effect.value
+          state.player.currentHp += relic.effect.value
+          break
+        case 'energy':
+          state.energy.max += relic.effect.value
+          break
+        case 'gold':
+          state.goldMultiplier += relic.effect.value
+          break
+        case 'healing':
+          state.healingMultiplier += relic.effect.value
+          break
+      }
     }
   }
 })
@@ -285,7 +366,9 @@ export const {
   checkCanSpendGold,
   spendGold,
   gainGold,
-  resetGame
+  resetGame,
+  upgradeCard,
+  addRelic
 } = gameSlice.actions
 
 export default gameSlice.reducer
