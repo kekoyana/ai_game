@@ -134,10 +134,12 @@ function App() {
   const handleSelectCard = (card: Card) => {
     dispatch(addCardToDeck(card))
     setShowCardReward(false)
+    dispatch(clearNode(currentNodeId))
   }
 
   const handleSkipCardReward = () => {
     setShowCardReward(false)
+    dispatch(clearNode(currentNodeId))
   }
 
   const handleSelectRelic = (relic: Relic) => {
