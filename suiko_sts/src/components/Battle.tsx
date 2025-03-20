@@ -1,7 +1,6 @@
 import { useSelector } from 'react-redux'
 import { RootState } from '../store'
 import CharacterStats from './CharacterStats'
-import EnergyDisplay from './EnergyDisplay'
 import BattleArea from './BattleArea'
 import BattleHand from './BattleHand'
 import { Card } from '../data/cards'

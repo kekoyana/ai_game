@@ -70,7 +70,6 @@ export const upgradeCard = (card: Card): Card => {
 
   // 説明文の更新
   upgradedCard.description = card.description.replace(/\d+/g, (match) => {
-    const num = parseInt(match)
     if (effects.damage && match === String(card.effects.damage)) {
       return String(effects.damage)
     }
