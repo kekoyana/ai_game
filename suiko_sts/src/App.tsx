@@ -1,9 +1,10 @@
 import { useSelector, useDispatch } from 'react-redux'
 import { RootState } from './store'
-import { Character, startBattle, endTurn, playCard, endBattle, addCardToDeck, restAtCampfire, setGameCleared, resetGame, upgradeCard } from './store/slices/gameSlice'
+import { Character, startBattle, endTurn, playCard, endBattle, addCardToDeck, restAtCampfire, setGameCleared, resetGame, upgradeCard, addRelic } from './store/slices/gameSlice'
 import { clearNode, resetMap, selectIsNodeConsumed } from './store/slices/mapSlice'
 import BattleScreen from './components/BattleScreen'
 import CardReward from './components/CardReward'
+import RelicReward from './components/RelicReward'
 import CardUpgrade from './components/CardUpgrade'
 import GameClear from './components/GameClear'
 import GameOver from './components/GameOver'
@@ -11,6 +12,7 @@ import GoldDisplay from './components/GoldDisplay'
 import Map from './components/Map'
 import { nanoid } from 'nanoid'
 import { Card } from './data/cards'
+import { Relic } from './data/relics'
 import './App.css'
 import { useState, useEffect } from 'react'
 
@@ -32,6 +34,7 @@ function App() {
   const { currentMap, currentNodeId } = mapState
 
   const [showCardReward, setShowCardReward] = useState(false)
+  const [showRelicReward, setShowRelicReward] = useState(false)
   const [showHealEffect, setShowHealEffect] = useState(false)
   const [showGoldReward, setShowGoldReward] = useState(false)
   const [showVictoryMessage, setShowVictoryMessage] = useState(false)
@@ -125,10 +128,21 @@ function App() {
     dispatch(addCardToDeck(card))
     setShowCardReward(false)
   }
+const handleSkipCardReward = () => {
+  setShowCardReward(false)
+}
 
-  const handleSkipCardReward = () => {
-    setShowCardReward(false)
-  }
+const handleSelectRelic = (relic: Relic) => {
+  dispatch(addRelic(relic))
+  setShowRelicReward(false)
+  dispatch(clearNode(currentNodeId))
+}
+
+const handleSkipRelic = () => {
+  setShowRelicReward(false)
+  dispatch(clearNode(currentNodeId))
+}
+
 
   const handleRest = () => {
     if (!isCurrentNodeConsumed) {
@@ -169,20 +183,30 @@ function App() {
                 {currentNode.type === 'item' ? (
                   <div className="event-node">
                     <h3 className="event-title">
-                      {currentNode.itemType}
+                      神秘の宝箱
                     </h3>
                     <p className="event-description">
-                      {isCurrentNodeConsumed ? 
-                        "このアイテムは既に使用済みです" :
-                        "新しいカードを獲得できます"}
+                      {isCurrentNodeConsumed ?
+                        "この宝箱は既に開けました" :
+                        "カードかお宝を獲得できます"}
                     </p>
                     {!isCurrentNodeConsumed && (
-                      <button
-                        onClick={() => setShowCardReward(true)}
-                        className="battle-button action-button"
-                      >
-                        カードを見る
-                      </button>
+                      <div className="flex gap-4 justify-center mt-4">
+                        <button
+                          onClick={() => setShowCardReward(true)}
+                          className="battle-button action-button"
+                        >
+                          カードを見る
+                          <span className="block text-sm text-yellow-300">新しいカードを獲得</span>
+                        </button>
+                        <button
+                          onClick={() => setShowRelicReward(true)}
+                          className="battle-button action-button"
+                        >
+                          お宝を見る
+                          <span className="block text-sm text-yellow-300">パワーアップアイテム</span>
+                        </button>
+                      </div>
                     )}
                   </div>
                 ) : currentNode.type === 'rest' ? (
@@ -251,6 +275,13 @@ function App() {
           <CardReward
             onSelectCard={handleSelectCard}
             onSkip={handleSkipCardReward}
+          />
+        )}
+
+        {showRelicReward && (
+          <RelicReward
+            onSelectRelic={handleSelectRelic}
+            onSkip={handleSkipRelic}
           />
         )}
 
