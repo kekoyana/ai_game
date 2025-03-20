@@ -65,7 +65,7 @@ export const mapSlice = createSlice({
       }
 
       // 効果を使用済みのノードとして記録（休憩所やアイテムの場合）
-      if (node.type === 'rest' || node.type === 'item') {
+      if (node.type === 'rest' || node.type === 'item' || node.type === 'shop') {
         if (!state.consumedNodes.includes(nodeId)) {
           state.consumedNodes.push(nodeId)
         }

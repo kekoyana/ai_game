@@ -15,7 +15,7 @@
 
 /* イベントノード */
 .event-node {
-  @apply p-4 bg-gray-800/50 rounded-lg border border-yellow-900/30 max-w-md mx-auto;
+  @apply p-4 bg-gray-800/50 rounded-lg border border-yellow-900/30 mx-auto;
 }
 
 .event-title {

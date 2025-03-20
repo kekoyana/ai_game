@@ -1,4 +1,4 @@
-export type NodeType = 'empty' | 'enemy' | 'elite' | 'boss' | 'item' | 'rest'
+export type NodeType = 'empty' | 'enemy' | 'elite' | 'boss' | 'item' | 'rest' | 'shop'
 
 export interface MapNode {
   id: string
@@ -66,28 +66,32 @@ const MAP_CONFIG = {
   },
   PROBABILITIES: {
     early: {
-      enemy: 0.5,
-      item: 0.3,
-      rest: 0.2,
+      enemy: 0.4,
+      item: 0.2,
+      rest: 0.15,
+      shop: 0.25,
       elite: 0
     },
     mid: {
-      enemy: 0.5,
+      enemy: 0.35,
       item: 0.2,
-      rest: 0.2,
+      rest: 0.15,
+      shop: 0.2,
       elite: 0.1
     },
     late: {
-      enemy: 0.4,
-      item: 0.2,
-      rest: 0.2,
+      enemy: 0.3,
+      item: 0.15,
+      rest: 0.15,
+      shop: 0.2,
       elite: 0.2
     },
     final: {
-      enemy: 0.3,
-      item: 0.2,
-      rest: 0.2,
-      elite: 0.3
+      enemy: 0.25,
+      item: 0.15,
+      rest: 0.15,
+      shop: 0.2,
+      elite: 0.25
     }
   }
 }
@@ -107,10 +111,26 @@ const selectNodeType = (level: number): NodeType => {
   else if (level <= 9) probs = MAP_CONFIG.PROBABILITIES.late
   else probs = MAP_CONFIG.PROBABILITIES.final
 
-  if (rand < probs.enemy) return 'enemy'
-  else if (rand < probs.enemy + probs.item) return 'item'
-  else if (rand < probs.enemy + probs.item + probs.rest) return 'rest'
-  else return 'elite'
+  let threshold = 0
+
+  // 戦闘
+  threshold += probs.enemy
+  if (rand < threshold) return 'enemy'
+
+  // アイテム
+  threshold += probs.item
+  if (rand < threshold) return 'item'
+
+  // 休憩所
+  threshold += probs.rest
+  if (rand < threshold) return 'rest'
+
+  // ショップ
+  threshold += probs.shop
+  if (rand < threshold) return 'shop'
+
+  // エリート（残りの確率）
+  return 'elite'
 }
 
 // 敵の種類を選択

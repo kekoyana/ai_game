@@ -12,6 +12,8 @@ export const getNodeIcon = (type: NodeType, level?: number) => {
       return '🎁'
     case 'rest':
       return '🏠'
+    case 'shop':
+      return '🛒'
     case 'empty':
       return '⭐'
   }

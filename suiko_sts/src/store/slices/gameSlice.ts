@@ -56,7 +56,7 @@ const initialState: GameState = {
     current: 3,
     max: 3
   },
-  gold: 0,
+  gold: 200,
   isInBattle: false,
   turnNumber: 0,
   deck: [...initialDeck],
