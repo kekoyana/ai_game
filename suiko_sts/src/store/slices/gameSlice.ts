@@ -1,4 +1,4 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createSlice, PayloadAction, Slice } from '@reduxjs/toolkit'
 import { Card, initialDeck, shuffleDeck } from '../../data/cards'
 import { Relic } from '../../data/relics'
 
@@ -34,9 +34,9 @@ interface GameState {
   isGameCleared: boolean
   isGameOver: boolean
   canSpendGold: boolean
-  relics: Relic[] // お宝の配列を追加
-  goldMultiplier: number // ゴールド獲得量の倍率
-  healingMultiplier: number // 回復量の倍率
+  relics: Relic[]
+  goldMultiplier: number
+  healingMultiplier: number
 }
 
 const initialState: GameState = {
@@ -63,9 +63,9 @@ const initialState: GameState = {
   isGameCleared: false,
   isGameOver: false,
   canSpendGold: false,
-  relics: [], // 初期状態では空の配列
-  goldMultiplier: 1, // 初期状態では等倍
-  healingMultiplier: 1 // 初期状態では等倍
+  relics: [],
+  goldMultiplier: 1,
+  healingMultiplier: 1
 }
 
 const generateEnemyMove = (enemy: Character) => {
@@ -89,7 +89,7 @@ const generateEnemyMove = (enemy: Character) => {
   return actions[Math.floor(Math.random() * actions.length)]
 }
 
-export const gameSlice = createSlice({
+export const gameSlice: Slice = createSlice({
   name: 'game',
   initialState,
   reducers: {
@@ -97,14 +97,21 @@ export const gameSlice = createSlice({
       if (state.isGameOver) return
       
       const enemy = action.payload
-      enemy.goldReward = enemy.strength === 5 ? 100 : // ボス
-                        enemy.strength === 3 ? 50 :  // エリート
-                        25  // 通常敵
-      
+      enemy.goldReward = enemy.strength === 5 ? 100 : 
+                        enemy.strength === 3 ? 50 : 
+                        25
+
       state.enemy = enemy
       if (state.enemy) {
-        state.enemy.nextMove = generateEnemyMove(state.enemy)
+        const firstMove = generateEnemyMove(state.enemy)
+        state.enemy.nextMove = firstMove
+        
+        // 最初の行動が防御なら即座に適用
+        if (firstMove.type === 'defend') {
+          state.enemy.block = firstMove.value
+        }
       }
+
       state.isInBattle = true
       state.energy.current = state.energy.max
       state.turnNumber = 1
@@ -112,15 +119,13 @@ export const gameSlice = createSlice({
       state.hand = []
       state.discardPile = []
 
-      // レリックの戦闘開始効果を適用
-      state.relics.forEach(relic => {
+      state.relics.forEach((relic: Relic) => {
         if (relic.effect.type === 'strength') {
           state.player.strength = (state.player.strength || 0) + relic.effect.value
         }
       })
 
-      // 初期ドロー（レリックの効果を考慮）
-      const initialDraw = 5 + state.relics.reduce((bonus, relic) =>
+      const initialDraw = 5 + state.relics.reduce((bonus: number, relic: Relic) =>
         relic.effect.type === 'draw' ? bonus + relic.effect.value : bonus, 0
       )
       
@@ -132,27 +137,79 @@ export const gameSlice = createSlice({
       }
     },
 
+    endTurn: (state) => {
+      if (state.isGameOver || !state.isInBattle) return
+
+      // 敵の行動を実行
+      if (state.enemy && state.enemy.nextMove) {
+        const currentMove = state.enemy.nextMove
+
+        if (currentMove.type === 'attack') {
+          // 攻撃の場合は直接ダメージを与える
+          state.player.currentHp = Math.max(0, state.player.currentHp - currentMove.value)
+          
+          if (state.player.currentHp === 0) {
+            state.isGameOver = true
+            state.isInBattle = false
+          }
+        } else if (currentMove.type === 'defend') {
+          // 防御の場合は新しいブロック値を設定
+          state.enemy.block = currentMove.value
+        }
+
+        // 次のターンの準備
+        state.enemy.nextMove = generateEnemyMove(state.enemy)
+      }
+
+      // 現在のターン終了時にブロック値をリセット
+      state.player.block = 0
+      if (state.enemy) {
+        state.enemy.block = 0
+      }
+
+      // その他のターン終了時の処理
+      state.turnNumber += 1
+      state.energy.current = state.energy.max
+
+      const hasPowerCard = state.deck.some((card: Card) =>
+        card.type === 'power' && card.name === '覇王の威厳'
+      )
+      if (hasPowerCard) {
+        state.player.strength = (state.player.strength || 0) + 1
+      }
+      
+      state.discardPile = [...state.discardPile, ...state.hand]
+      state.hand = []
+      
+      for (let i = 0; i < 5; i++) {
+        if (state.drawPile.length === 0) {
+          state.drawPile = shuffleDeck([...state.discardPile])
+          state.discardPile = []
+        }
+        if (state.drawPile.length > 0) {
+          const card = state.drawPile[0]
+          state.hand.push(card)
+          state.drawPile = state.drawPile.slice(1)
+        }
+      }
+    },
+
     playCard: (state, action: PayloadAction<Card>) => {
       if (state.isGameOver) return
       
       const card = action.payload
       if (state.energy.current < card.cost) return
       
-      state.hand = state.hand.filter(c => c.id !== card.id)
+      state.hand = state.hand.filter((c: Card) => c.id !== card.id)
       state.discardPile.push(card)
       state.energy.current -= card.cost
       
-      // ダメージ処理
       if (card.effects.damage && state.enemy) {
-        // 基本ダメージ
         let totalDamage = card.effects.damage
-
-        // Strengthの適用
         if (state.player.strength) {
           totalDamage += state.player.strength
         }
 
-        // Multiplyの適用（複数回攻撃）
         const hitCount = card.effects.multiply || 1
         for (let i = 0; i < hitCount; i++) {
           if (state.enemy.block > 0) {
@@ -168,7 +225,6 @@ export const gameSlice = createSlice({
         }
       }
 
-      // Strength効果の適用
       if (card.effects.strength) {
         state.player.strength = (state.player.strength || 0) + card.effects.strength
       }
@@ -192,76 +248,6 @@ export const gameSlice = createSlice({
       }
     },
 
-    endTurn: (state) => {
-      if (state.isGameOver || !state.isInBattle) return
-      
-      state.turnNumber += 1
-      state.energy.current = state.energy.max
-
-      // パワーカードの効果を適用
-      const hasPowerCard = state.deck.some(card =>
-        card.type === 'power' && card.name === '覇王の威厳'
-      )
-      if (hasPowerCard) {
-        state.player.strength = (state.player.strength || 0) + 1
-      }
-      
-      state.discardPile = [...state.discardPile, ...state.hand]
-      state.hand = []
-      
-      for (let i = 0; i < 5; i++) {
-        if (state.drawPile.length === 0) {
-          state.drawPile = shuffleDeck([...state.discardPile])
-          state.discardPile = []
-        }
-        if (state.drawPile.length > 0) {
-          const card = state.drawPile[0]
-          state.hand.push(card)
-          state.drawPile = state.drawPile.slice(1)
-        }
-      }
-
-      // 敵の行動を実行
-      if (state.enemy && state.enemy.nextMove) {
-        const currentMove = state.enemy.nextMove
-
-        if (currentMove.type === 'attack') {
-          const incomingDamage = currentMove.value
-
-          // プレイヤーの防御値を考慮したダメージ計算
-          if (state.player.block > 0) {
-            // ブロックでダメージを軽減
-            const blockedDamage = Math.min(state.player.block, incomingDamage)
-            const remainingDamage = incomingDamage - blockedDamage
-
-            // ブロック値を減少
-            state.player.block = Math.max(0, state.player.block - blockedDamage)
-
-            // 残りのダメージをHPに適用
-            if (remainingDamage > 0) {
-              state.player.currentHp = Math.max(0, state.player.currentHp - remainingDamage)
-            }
-          } else {
-            // ブロックがない場合は直接ダメージ
-            state.player.currentHp = Math.max(0, state.player.currentHp - incomingDamage)
-          }
-
-          if (state.player.currentHp === 0) {
-            state.isGameOver = true
-            state.isInBattle = false
-          }
-        } else if (currentMove.type === 'defend') {
-          state.enemy.block += currentMove.value
-        }
-
-        // 次のターンの行動を決定
-        state.enemy.nextMove = generateEnemyMove(state.enemy)
-      }
-
-      // ターン終了時にブロックをリセット
-      state.player.block = 0
-    },
-
     endBattle: (state) => {
       if (state.enemy && state.enemy.goldReward) {
         state.gold += state.enemy.goldReward
@@ -281,7 +267,6 @@ export const gameSlice = createSlice({
 
     restAtCampfire: (state) => {
       if (state.isGameOver) return
-      // 基本回復量に回復倍率を適用
       const healAmount = Math.floor(state.player.maxHp * 0.3 * state.healingMultiplier)
       state.player.currentHp = Math.min(
         state.player.currentHp + healAmount,
@@ -310,19 +295,16 @@ export const gameSlice = createSlice({
     },
 
     gainGold: (state, action: PayloadAction<number>) => {
-      // ゴールド倍率を適用
       const amount = Math.floor(action.payload * state.goldMultiplier)
       state.gold += amount
     },
 
-    resetGame: () => {
-      return initialState
-    },
+    resetGame: () => initialState,
 
     upgradeCard: (state, action: PayloadAction<Card>) => {
       if (state.isGameOver) return
       const upgradedCard = action.payload
-      const index = state.deck.findIndex(card => card.id === upgradedCard.id)
+      const index = state.deck.findIndex((card: Card) => card.id === upgradedCard.id)
       if (index !== -1) {
         state.deck[index] = upgradedCard
       }
@@ -334,7 +316,6 @@ export const gameSlice = createSlice({
 
       state.relics.push(relic)
 
-      // レリックの効果を適用
       switch (relic.effect.type) {
         case 'maxHp':
           state.player.maxHp += relic.effect.value

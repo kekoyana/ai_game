@@ -57,11 +57,11 @@ const CharacterStats = ({ character, isEnemy = false, nextMove }: CharacterStats
           </div>
         )}
 
-        {/* 敵の次の行動 */}
+        {/* 敵の行動 */}
         {isEnemy && nextMove && (
           <div className="next-move">
             <div className="text-sm">
-              <span className="next-move-label">次の行動: </span>
+              <span className="next-move-label">敵の行動: </span>
               <span className="next-move-description">{nextMove.description}</span>
             </div>
           </div>
