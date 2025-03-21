@@ -33,8 +33,8 @@ describe('Enemy Defense Behavior', () => {
 
     const stateAfterStart = store.getState().game
     expect(stateAfterStart.enemy?.block).toBe(8)
-    expect(stateAfterStart.enemy?.nextMove?.type).toBe('defend')
-    expect(stateAfterStart.enemy?.nextMove?.value).toBe(8)
+    expect(stateAfterStart.enemy?.enemyAction?.type).toBe('defend')
+    expect(stateAfterStart.enemy?.enemyAction?.value).toBe(8)
 
     mockRandom.mockRestore()
   })
@@ -58,12 +58,12 @@ describe('Enemy Defense Behavior', () => {
     expect(stateAfterStart.enemy?.block).toBe(8)
 
     // ターン終了と次のターン開始
-    store.dispatch(endTurn())
+    store.dispatch(endTurn({}))
     
     // ターン開始時にブロックがリセットされているか確認
     const stateAfterTurn = store.getState().game
     expect(stateAfterTurn.enemy?.block).toBe(0)
-    expect(stateAfterTurn.enemy?.nextMove?.type).toBe('attack')
+    expect(stateAfterTurn.enemy?.enemyAction?.type).toBe('attack')
 
     mockRandom.mockRestore()
   })

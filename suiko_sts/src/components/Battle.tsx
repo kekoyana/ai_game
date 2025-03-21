@@ -27,7 +27,7 @@ const Battle = ({ onEndTurn, onPlayCard }: BattleProps) => {
         <CharacterStats 
           character={enemy} 
           isEnemy 
-          nextMove={enemy?.nextMove}
+          enemyAction={enemy?.enemyAction}
         />
       </div>
 

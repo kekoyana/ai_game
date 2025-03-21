@@ -36,7 +36,7 @@ const BattleScreen = ({
       <CharacterStats 
         character={enemy} 
         isEnemy 
-        nextMove={enemy?.nextMove}
+        enemyAction={enemy?.enemyAction}
       />
     </div>
 

@@ -10,7 +10,7 @@ export interface Character {
   block: number
   strength?: number
   goldReward?: number
-  nextMove?: {
+  enemyAction?: {
     type: 'attack' | 'defend' | 'buff'
     value: number
     description: string
@@ -103,12 +103,12 @@ export const gameSlice: Slice = createSlice({
 
       state.enemy = enemy
       if (state.enemy) {
-        const firstMove = generateEnemyMove(state.enemy)
-        state.enemy.nextMove = firstMove
+        const action = generateEnemyMove(state.enemy)
+        state.enemy.enemyAction = action
         
         // 最初の行動が防御なら即座に適用
-        if (firstMove.type === 'defend') {
-          state.enemy.block = firstMove.value
+        if (action.type === 'defend') {
+          state.enemy.block = action.value
         }
       }
 
@@ -140,31 +140,40 @@ export const gameSlice: Slice = createSlice({
     endTurn: (state) => {
       if (state.isGameOver || !state.isInBattle) return
 
-      // 敵の行動を実行
-      if (state.enemy && state.enemy.nextMove) {
-        const currentMove = state.enemy.nextMove
-
-        if (currentMove.type === 'attack') {
-          // 攻撃の場合は直接ダメージを与える
-          state.player.currentHp = Math.max(0, state.player.currentHp - currentMove.value)
+      if (state.enemy && state.enemy.enemyAction) {
+        // 現在の行動を実行（攻撃のみ。防御は次のターンの行動として設定される）
+        const currentAction = state.enemy.enemyAction
+        if (currentAction.type === 'attack') {
+          const incomingDamage = currentAction.value
+          
+          if (state.player.block > 0) {
+            const blockedDamage = Math.min(state.player.block, incomingDamage)
+            const remainingDamage = incomingDamage - blockedDamage
+            if (remainingDamage > 0) {
+              state.player.currentHp = Math.max(0, state.player.currentHp - remainingDamage)
+            }
+          } else {
+            state.player.currentHp = Math.max(0, state.player.currentHp - incomingDamage)
+          }
           
           if (state.player.currentHp === 0) {
             state.isGameOver = true
             state.isInBattle = false
           }
-        } else if (currentMove.type === 'defend') {
-          // 防御の場合は新しいブロック値を設定
-          state.enemy.block = currentMove.value
         }
 
-        // 次のターンの準備
-        state.enemy.nextMove = generateEnemyMove(state.enemy)
-      }
-
-      // 現在のターン終了時にブロック値をリセット
-      state.player.block = 0
-      if (state.enemy) {
+        // 既存のブロック値をリセット
+        state.player.block = 0
         state.enemy.block = 0
+
+        // 次のターンの行動を決定
+        const nextAction = generateEnemyMove(state.enemy)
+        state.enemy.enemyAction = nextAction
+
+        // 次の行動が防御なら即座に適用
+        if (nextAction.type === 'defend') {
+          state.enemy.block = nextAction.value
+        }
       }
 
       // その他のターン終了時の処理

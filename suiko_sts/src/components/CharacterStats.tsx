@@ -10,14 +10,14 @@ interface CharacterStatsProps {
     description?: string
   } | null
   isEnemy?: boolean
-  nextMove?: {
+  enemyAction?: {
     type: 'attack' | 'defend' | 'buff'
     value: number
     description: string
   }
 }
 
-const CharacterStats = ({ character, isEnemy = false, nextMove }: CharacterStatsProps) => {
+const CharacterStats = ({ character, isEnemy = false, enemyAction }: CharacterStatsProps) => {
   if (!character) return null
   
   return (
@@ -58,11 +58,11 @@ const CharacterStats = ({ character, isEnemy = false, nextMove }: CharacterStats
         )}
 
         {/* 敵の行動 */}
-        {isEnemy && nextMove && (
-          <div className="next-move">
+        {isEnemy && enemyAction && (
+          <div className="enemy-action">
             <div className="text-sm">
-              <span className="next-move-label">敵の行動: </span>
-              <span className="next-move-description">{nextMove.description}</span>
+              <span className="enemy-action-label">敵の行動: </span>
+              <span className="enemy-action-description">{enemyAction.description}</span>
             </div>
           </div>
         )}
