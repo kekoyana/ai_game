@@ -11,6 +11,7 @@ import GameClear from './components/GameClear'
 import GameOver from './components/GameOver'
 import GoldDisplay from './components/GoldDisplay'
 import Map from './components/Map'
+import RelicDisplay from './components/RelicDisplay'
 import { nanoid } from 'nanoid'
 import { Card } from './data/cards'
 import { Relic } from './data/relics'
@@ -66,7 +67,7 @@ function App() {
         setShowGoldReward(false)
 
         // 戦闘終了とノードクリア
-        dispatch(endBattle())
+        dispatch(endBattle({}))
         dispatch(clearNode(currentNodeId))
         
         // 戦闘ノードを消費済みにする
@@ -91,7 +92,7 @@ function App() {
   // プレイヤーのHPを監視
   useEffect(() => {
     if (player.currentHp <= 0) {
-      dispatch(endBattle())
+      dispatch(endBattle({}))
     }
   }, [player.currentHp, dispatch])
 
@@ -122,7 +123,7 @@ function App() {
   }
 
   const handleEndTurn = () => {
-    dispatch(endTurn())
+    dispatch(endTurn({}))
   }
 
   const handlePlayCard = (card: Card) => {
@@ -155,7 +156,7 @@ function App() {
 
   const handleRest = () => {
     if (!isCurrentNodeConsumed) {
-      dispatch(restAtCampfire())
+      dispatch(restAtCampfire({}))
       setShowHealEffect(true)
       setTimeout(() => {
         setShowHealEffect(false)
@@ -176,7 +177,7 @@ function App() {
   }
 
   const handleRestart = () => {
-    dispatch(resetGame())
+    dispatch(resetGame({}))
     dispatch(resetMap())
     dispatch(setGameCleared(false))
   }
@@ -345,7 +346,10 @@ function App() {
             </div>
           </div>
 
-          <GoldDisplay amount={gold} />
+          <div className="flex gap-4 items-center">
+            <GoldDisplay amount={gold} />
+            <RelicDisplay relics={gameState.relics} />
+          </div>
         </div>
       </div>
     </div>
