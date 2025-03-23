@@ -9,6 +9,7 @@ export interface Character {
   currentHp: number
   block: number
   strength?: number
+  weaken?: number
   goldReward?: number
   enemyAction?: {
     type: 'attack' | 'defend' | 'buff'
@@ -145,11 +146,11 @@ export const gameSlice: Slice = createSlice({
       if (state.isGameOver || !state.isInBattle) return
 
       if (state.enemy && state.enemy.enemyAction) {
-        // 現在の行動を実行（攻撃のみ。防御は次のターンの行動として設定される）
+        // 現在の行動を実行
         const currentAction = state.enemy.enemyAction
         if (currentAction.type === 'attack') {
           const incomingDamage = currentAction.value
-          
+            
           if (state.player.block > 0) {
             const blockedDamage = Math.min(state.player.block, incomingDamage)
             const remainingDamage = incomingDamage - blockedDamage
@@ -166,6 +167,11 @@ export const gameSlice: Slice = createSlice({
           }
         }
 
+        // 弱体化カウンターを減少（ターン終了時）
+        if (state.enemy.weaken && state.enemy.weaken > 0) {
+          state.enemy.weaken -= 1
+        }
+
         // 既存のブロック値をリセット
         state.player.block = 0
         state.enemy.block = 0
@@ -174,9 +180,14 @@ export const gameSlice: Slice = createSlice({
         const nextAction = generateEnemyMove(state.enemy)
         state.enemy.enemyAction = nextAction
 
-        // 次の行動が防御なら即座に適用
+        // 次の行動が防御なら即座に適用（弱体化を考慮）
         if (nextAction.type === 'defend') {
-          state.enemy.block = nextAction.value
+          let blockValue = nextAction.value
+          if (state.enemy.weaken && state.enemy.weaken > 0) {
+            const reduction = Math.floor(blockValue * 0.25)
+            blockValue -= reduction
+          }
+          state.enemy.block = blockValue
         }
       }
 
@@ -229,37 +240,47 @@ export const gameSlice: Slice = createSlice({
       } else {
         // 通常のカードは捨て札に追加
         state.discardPile.push(card)
+
+        // 即時効果の適用
+        if (card.effects.strength) {
+          state.player.strength = (state.player.strength || 0) + card.effects.strength
+        }
+        
+        if (card.effects.block) {
+          state.player.block += card.effects.block
+        }
       }
       
-      if (card.effects.damage && state.enemy) {
-        let totalDamage = card.effects.damage
-        if (state.player.strength) {
-          totalDamage += state.player.strength
-        }
+      // 敵への効果を適用
+      if (state.enemy) {
+        if (card.effects.damage) {
+          let totalDamage = card.effects.damage
+          if (state.player.strength) {
+            totalDamage += state.player.strength
+          }
 
-        const hitCount = card.effects.multiply || 1
-        for (let i = 0; i < hitCount; i++) {
-          if (state.enemy.block > 0) {
-            const blockedDamage = Math.min(state.enemy.block, totalDamage)
-            state.enemy.block = Math.max(0, state.enemy.block - totalDamage)
-            const remainingDamage = totalDamage - blockedDamage
-            if (remainingDamage > 0) {
-              state.enemy.currentHp = Math.max(0, state.enemy.currentHp - remainingDamage)
+          const hitCount = card.effects.multiply || 1
+          for (let i = 0; i < hitCount; i++) {
+            if (state.enemy.block > 0) {
+              const blockedDamage = Math.min(state.enemy.block, totalDamage)
+              state.enemy.block = Math.max(0, state.enemy.block - totalDamage)
+              const remainingDamage = totalDamage - blockedDamage
+              if (remainingDamage > 0) {
+                state.enemy.currentHp = Math.max(0, state.enemy.currentHp - remainingDamage)
+              }
+            } else {
+              state.enemy.currentHp = Math.max(0, state.enemy.currentHp - totalDamage)
             }
-          } else {
-            state.enemy.currentHp = Math.max(0, state.enemy.currentHp - totalDamage)
           }
         }
-      }
 
-      if (card.effects.strength) {
-        state.player.strength = (state.player.strength || 0) + card.effects.strength
+        // 弱体化効果の適用
+        if (card.effects.weaken) {
+          state.enemy.weaken = (state.enemy.weaken || 0) + card.effects.weaken
+        }
       }
       
-      if (card.effects.block) {
-        state.player.block += card.effects.block
-      }
-      
+      // カードドロー効果の適用
       if (card.effects.draw) {
         for (let i = 0; i < card.effects.draw; i++) {
           if (state.drawPile.length === 0) {

@@ -17,6 +17,7 @@ export interface Card {
     multiply?: number
     strength?: number
     dexterity?: number
+    weaken?: number
   }
   character: string
   flavorText?: string
@@ -88,10 +89,10 @@ export const allCards: Card[] = [
     cost: 2,
     type: 'attack',
     rarity: 'C',
-    description: '8ダメージを与える',
-    effects: { damage: 8 },
+    description: '8ダメージを与え、弱体化2を与える',
+    effects: { damage: 8, weaken: 2 },
     character: '錦毛虎 燕順',
-    flavorText: '大地を切り裂く一撃'
+    flavorText: '大地を切り裂き、敵の力を奪う一撃'
   },
 
   // コスト1スキルカード（防御5）

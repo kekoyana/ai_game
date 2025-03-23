@@ -63,6 +63,7 @@ export const upgradeCard = (card: Card): Card => {
   if (effects.block) effects.block = Math.floor(effects.block * 1.5)
   if (effects.strength) effects.strength += 1
   if (effects.draw) effects.draw += 1
+  if (effects.weaken) effects.weaken += 1
 
   // カード名と説明の更新
   upgradedCard.name = `${card.name}+`
@@ -81,6 +82,9 @@ export const upgradeCard = (card: Card): Card => {
     }
     if (effects.draw && match === String(card.effects.draw)) {
       return String(effects.draw)
+    }
+    if (effects.weaken && match === String(card.effects.weaken)) {
+      return String(effects.weaken)
     }
     return match
   })

@@ -34,6 +34,11 @@
   @apply text-orange-400;
 }
 
+/* 弱体化表示 */
+.stats-weaken {
+  @apply text-purple-400;
+}
+
 /* 説明文エリア */
 .stats-description {
   @apply text-sm text-gray-400 italic mb-2;
