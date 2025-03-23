@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '../store'
 import { generateShopItems, ShopItem } from '../data/shop'
-import { rewardPool } from '../data/cards'
+import { getRewardPool } from '../data/cards'
 import { relicPool, Relic } from '../data/relics'
 import { addCardToDeck, addRelic, spendGold } from '../store/slices/gameSlice'
 import { clearNode } from '../store/slices/mapSlice'
@@ -22,7 +22,7 @@ export const Shop = () => {
   const [soldItems, setSoldItems] = useState<Set<string>>(new Set())
 
   useEffect(() => {
-    const items = generateShopItems(rewardPool, relicPool, currentNode?.level || 1)
+    const items = generateShopItems(getRewardPool(), relicPool, currentNode?.level || 1)
     setShopItems(items)
   }, [currentNode])
 

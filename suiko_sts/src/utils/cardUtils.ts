@@ -1,4 +1,4 @@
-import { Card, CardRarity, rewardPool } from '../data/cards'
+import { Card, CardRarity, getRewardPool } from '../data/cards'
 
 // レアリティごとの出現確率
 const RARITY_WEIGHTS = {
@@ -33,7 +33,7 @@ const selectRandomCardByRarity = (cards: Card[]): Card | null => {
 // 報酬カードをランダムに生成
 export const generateRewardCards = (count: number = 3): Card[] => {
   const result: Card[] = []
-  const availableCards = [...rewardPool]
+  const availableCards = [...getRewardPool()]
 
   for (let i = 0; i < count; i++) {
     const selectedCard = selectRandomCardByRarity(availableCards)

@@ -22,10 +22,11 @@ export interface Card {
   flavorText?: string
 }
 
-export const initialDeck: Card[] = [
+// すべてのカードの定義
+export const allCards: Card[] = [
   // コスト1アタックカード（ダメージ6）
   {
-    id: nanoid(),
+    id: 'attack_bokutou_ryoudan',
     name: '朴刀両断',
     cost: 1,
     type: 'attack',
@@ -36,7 +37,7 @@ export const initialDeck: Card[] = [
     flavorText: '朴刀で繰り出す一撃'
   },
   {
-    id: nanoid(),
+    id: 'attack_kachiwari',
     name: 'かち割り',
     cost: 1,
     type: 'attack',
@@ -47,7 +48,7 @@ export const initialDeck: Card[] = [
     flavorText: '巨漢の力で振るう一撃'
   },
   {
-    id: nanoid(),
+    id: 'attack_furiotosu',
     name: '振り下ろす',
     cost: 1,
     type: 'attack',
@@ -58,7 +59,7 @@ export const initialDeck: Card[] = [
     flavorText: '長身から繰り出す一撃'
   },
   {
-    id: nanoid(),
+    id: 'attack_tenjou_tsuki',
     name: '天上突き',
     cost: 1,
     type: 'attack',
@@ -69,7 +70,7 @@ export const initialDeck: Card[] = [
     flavorText: '天をも貫く一撃'
   },
   {
-    id: nanoid(),
+    id: 'attack_chika_tsuki',
     name: '地下突き',
     cost: 1,
     type: 'attack',
@@ -79,10 +80,10 @@ export const initialDeck: Card[] = [
     character: '独火星 孔亮',
     flavorText: '地をも貫く一撃'
   },
-
+  
   // コスト2アタックカード（ダメージ8）
   {
-    id: nanoid(),
+    id: 'attack_daichi_giri',
     name: '大地斬',
     cost: 2,
     type: 'attack',
@@ -95,7 +96,7 @@ export const initialDeck: Card[] = [
 
   // コスト1スキルカード（防御5）
   {
-    id: nanoid(),
+    id: 'skill_enkai_shiki',
     name: '宴会の指揮',
     cost: 1,
     type: 'skill',
@@ -106,7 +107,7 @@ export const initialDeck: Card[] = [
     flavorText: '宴会で士気を高める'
   },
   {
-    id: nanoid(),
+    id: 'skill_gin_saiku',
     name: '銀細工',
     cost: 1,
     type: 'skill',
@@ -117,7 +118,7 @@ export const initialDeck: Card[] = [
     flavorText: '銀の細工で編み出す防御'
   },
   {
-    id: nanoid(),
+    id: 'skill_izakaya_mamori',
     name: '居酒屋の守り',
     cost: 1,
     type: 'skill',
@@ -128,7 +129,7 @@ export const initialDeck: Card[] = [
     flavorText: '梁山泊の南の居酒屋守護'
   },
   {
-    id: nanoid(),
+    id: 'skill_sekiheki',
     name: '石壁',
     cost: 1,
     type: 'skill',
@@ -137,14 +138,11 @@ export const initialDeck: Card[] = [
     effects: { block: 5 },
     character: '石将軍 石勇',
     flavorText: '岩のように揺るがぬ防御'
-  }
-]
+  },
 
-// カード報酬プール
-export const rewardPool: Card[] = [
   // SSRカード
   {
-    id: nanoid(),
+    id: 'power_tekkou_genpeijin',
     name: '鉄甲玄兵陣',
     cost: 3,
     type: 'power',
@@ -155,7 +153,7 @@ export const rewardPool: Card[] = [
     flavorText: '百戦錬磨の将が編み出した最強の陣'
   },
   {
-    id: nanoid(),
+    id: 'attack_shinki_ya',
     name: '神機箭',
     cost: 3,
     type: 'attack',
@@ -166,7 +164,7 @@ export const rewardPool: Card[] = [
     flavorText: '天才軍師の放つ三連矢は必ず命中する'
   },
   {
-    id: nanoid(),
+    id: 'power_haou_igen',
     name: '覇王の威厳',
     cost: 3,
     type: 'power',
@@ -179,7 +177,7 @@ export const rewardPool: Card[] = [
 
   // SRカード
   {
-    id: nanoid(),
+    id: 'attack_hatenkou',
     name: '破天荒',
     cost: 2,
     type: 'attack',
@@ -190,7 +188,7 @@ export const rewardPool: Card[] = [
     flavorText: '稲妻の如き一撃は敵の防御さえ砕く'
   },
   {
-    id: nanoid(),
+    id: 'power_suiko_ishi',
     name: '水滸の意志',
     cost: 2,
     type: 'power',
@@ -203,7 +201,7 @@ export const rewardPool: Card[] = [
 
   // Rカード
   {
-    id: nanoid(),
+    id: 'power_bushin_kakusei',
     name: '武神の覚醒',
     cost: 2,
     type: 'power',
@@ -214,7 +212,7 @@ export const rewardPool: Card[] = [
     flavorText: '二刀流の達人、その刃は戦いの中で更に鋭さを増す'
   },
   {
-    id: nanoid(),
+    id: 'skill_teppeki_kamae',
     name: '鉄壁の構え',
     cost: 2,
     type: 'skill',
@@ -227,7 +225,7 @@ export const rewardPool: Card[] = [
 
   // Cカード
   {
-    id: nanoid(),
+    id: 'attack_hishou_ya',
     name: '飛翔箭',
     cost: 1,
     type: 'attack',
@@ -238,7 +236,7 @@ export const rewardPool: Card[] = [
     flavorText: '羽のように軽やかに放たれる矢は、必ず標的を射抜く'
   },
   {
-    id: nanoid(),
+    id: 'skill_daichuu_kamae',
     name: '大蟲の構え',
     cost: 1,
     type: 'skill',
@@ -250,12 +248,49 @@ export const rewardPool: Card[] = [
   }
 ]
 
+// 初期デッキのカードID
+export const initialDeckCardIds = [
+  'attack_bokutou_ryoudan',
+  'attack_kachiwari',
+  'attack_furiotosu',
+  'attack_tenjou_tsuki',
+  'attack_chika_tsuki',
+  'attack_daichi_giri',
+  'skill_enkai_shiki',
+  'skill_gin_saiku',
+  'skill_izakaya_mamori',
+  'skill_sekiheki'
+]
+
+// カードIDからカードを取得
+export const getCardById = (id: string): Card | undefined => {
+  return allCards.find(card => card.id === id)
+}
+
+// 初期デッキを生成
+export const createInitialDeck = (): Card[] => {
+  return initialDeckCardIds.map(id => {
+    const card = getCardById(id)
+    if (!card) throw new Error(`Card not found: ${id}`)
+    return { ...card, id: nanoid() } // 新しいIDを生成
+  })
+}
+
+// 報酬プールからカードを取得（レアリティでフィルタリング可能）
+export const getRewardPool = (rarity?: CardRarity): Card[] => {
+  const pool = allCards.filter(card => !initialDeckCardIds.includes(card.id))
+  if (rarity) {
+    return pool.filter(card => card.rarity === rarity)
+  }
+  return pool
+}
+
 // デッキをシャッフルする関数
 export const shuffleDeck = (deck: Card[]): Card[] => {
   const newDeck = [...deck]
   for (let i = newDeck.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [newDeck[i], newDeck[j]] = [newDeck[j], newDeck[i]]
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[newDeck[i], newDeck[j]] = [newDeck[j], newDeck[i]]
   }
   return newDeck
 }

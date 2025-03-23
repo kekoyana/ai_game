@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction, Slice } from '@reduxjs/toolkit'
-import { Card, initialDeck, shuffleDeck } from '../../data/cards'
+import { Card, createInitialDeck, shuffleDeck } from '../../data/cards'
 import { Relic } from '../../data/relics'
 
 export interface Character {
@@ -60,7 +60,7 @@ const initialState: GameState = {
   gold: 200,
   isInBattle: false,
   turnNumber: 0,
-  deck: [...initialDeck],
+  deck: createInitialDeck(),
   isGameCleared: false,
   isGameOver: false,
   canSpendGold: false,
