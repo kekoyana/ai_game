@@ -14,14 +14,6 @@
 }
 
 @layer components {
-  .game-card {
-    @apply bg-gradient-to-b from-gray-800 to-gray-900 
-           rounded-xl p-4 shadow-xl border-2 border-yellow-900/30
-           hover:border-yellow-600/50 transition-all duration-200 
-           hover:shadow-yellow-900/20 hover:-translate-y-1 cursor-pointer
-           relative overflow-hidden;
-  }
-  
   .character-stats {
     @apply flex items-center gap-2 text-lg font-bold
            backdrop-blur-md bg-gray-900/50 rounded-xl
