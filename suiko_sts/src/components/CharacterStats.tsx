@@ -42,7 +42,7 @@ const CharacterStats = ({ character, isEnemy = false, enemyAction }: CharacterSt
             </span>
           )}
 
-          {isEnemy && character.strength !== undefined && character.strength > 0 && (
+          {character.strength !== undefined && character.strength > 0 && (
             <span className="stats-strength" title="攻撃力">
               <span className="status-icon">⚔️</span>
               {character.strength}

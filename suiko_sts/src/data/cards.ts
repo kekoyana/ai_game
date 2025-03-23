@@ -160,7 +160,7 @@ export const rewardPool: Card[] = [
     cost: 3,
     type: 'attack',
     rarity: 'SSR',
-    description: '8ダメージを3回与え、手札を全て捨てる（筋力が各ヒットに適用）',
+    description: '8ダメージを3回与え、手札を全て捨てる（腕力が各ヒットに適用）',
     effects: { damage: 8, multiply: 3 },
     character: '神機軍師 朱武',
     flavorText: '天才軍師の放つ三連矢は必ず命中する'
@@ -171,7 +171,7 @@ export const rewardPool: Card[] = [
     cost: 3,
     type: 'power',
     rarity: 'SSR',
-    description: '筋力を3得る。さらに毎ターン終了時に筋力を1得る',
+    description: '腕力を3得る。さらに毎ターン終了時に腕力を1得る',
     effects: { strength: 3 },
     character: '天魔王 晁蓋',
     flavorText: '梁山泊の初代首領、その威厳は敵をも味方にする'
@@ -208,7 +208,7 @@ export const rewardPool: Card[] = [
     cost: 2,
     type: 'power',
     rarity: 'R',
-    description: '筋力を2得る（攻撃力が永続的に2上昇）',
+    description: '腕力を2得る（攻撃力が永続的に2上昇）',
     effects: { strength: 2 },
     character: '双刀 関勝',
     flavorText: '二刀流の達人、その刃は戦いの中で更に鋭さを増す'

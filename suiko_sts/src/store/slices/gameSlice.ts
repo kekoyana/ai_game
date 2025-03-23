@@ -101,6 +101,7 @@ export const gameSlice: Slice = createSlice({
                         enemy.strength === 3 ? 50 : 
                         25
 
+      state.player.strength = 0
       state.enemy = enemy
       if (state.enemy) {
         const action = generateEnemyMove(state.enemy)
@@ -118,6 +119,18 @@ export const gameSlice: Slice = createSlice({
       state.drawPile = shuffleDeck([...state.deck])
       state.hand = []
       state.discardPile = []
+
+      // パワーカードの効果を適用
+      state.deck.forEach((card: Card) => {
+        if (card.type === 'power' && card.effects) {
+          if (card.effects.strength) {
+            state.player.strength = (state.player.strength || 0) + card.effects.strength
+          }
+          if (card.effects.block) {
+            state.player.block = (state.player.block || 0) + card.effects.block
+          }
+        }
+      })
 
       state.relics.forEach((relic: Relic) => {
         if (relic.effect.type === 'strength') {
@@ -180,12 +193,19 @@ export const gameSlice: Slice = createSlice({
       state.turnNumber += 1
       state.energy.current = state.energy.max
 
-      const hasPowerCard = state.deck.some((card: Card) =>
-        card.type === 'power' && card.name === '覇王の威厳'
-      )
-      if (hasPowerCard) {
-        state.player.strength = (state.player.strength || 0) + 1
-      }
+      // パワーカードのターン終了時効果を適用
+      state.deck.forEach((card: Card) => {
+        if (card.type === 'power' && card.effects) {
+          // 覇王の威厳タイプ（毎ターン腕力+1）のカード
+          if (card.effects.strength && card.cost === 3) {
+            state.player.strength = (state.player.strength || 0) + 1
+          }
+          // ブロック付与系のパワーカード
+          if (card.effects.block) {
+            state.player.block = (state.player.block || 0) + card.effects.block
+          }
+        }
+      })
       
       state.discardPile = [...state.discardPile, ...state.hand]
       state.hand = []
@@ -267,6 +287,7 @@ export const gameSlice: Slice = createSlice({
       state.discardPile = []
       state.drawPile = []
       state.turnNumber = 0
+      state.player.strength = 0
     },
 
     addCardToDeck: (state, action: PayloadAction<Card>) => {
