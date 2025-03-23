@@ -37,6 +37,7 @@ interface GameState {
   relics: Relic[]
   goldMultiplier: number
   healingMultiplier: number
+  activePowers: Card[] // 発動中のパワーカード
 }
 
 const initialState: GameState = {
@@ -65,7 +66,8 @@ const initialState: GameState = {
   canSpendGold: false,
   relics: [],
   goldMultiplier: 1,
-  healingMultiplier: 1
+  healingMultiplier: 1,
+  activePowers: []
 }
 
 const generateEnemyMove = (enemy: Character) => {
@@ -119,18 +121,7 @@ export const gameSlice: Slice = createSlice({
       state.drawPile = shuffleDeck([...state.deck])
       state.hand = []
       state.discardPile = []
-
-      // パワーカードの効果を適用
-      state.deck.forEach((card: Card) => {
-        if (card.type === 'power' && card.effects) {
-          if (card.effects.strength) {
-            state.player.strength = (state.player.strength || 0) + card.effects.strength
-          }
-          if (card.effects.block) {
-            state.player.block = (state.player.block || 0) + card.effects.block
-          }
-        }
-      })
+      state.activePowers = []
 
       state.relics.forEach((relic: Relic) => {
         if (relic.effect.type === 'strength') {
@@ -193,9 +184,9 @@ export const gameSlice: Slice = createSlice({
       state.turnNumber += 1
       state.energy.current = state.energy.max
 
-      // パワーカードのターン終了時効果を適用
-      state.deck.forEach((card: Card) => {
-        if (card.type === 'power' && card.effects) {
+      // アクティブなパワーカードの効果を適用
+      state.activePowers.forEach((card: Card) => {
+        if (card.effects) {
           // 覇王の威厳タイプ（毎ターン腕力+1）のカード
           if (card.effects.strength && card.cost === 3) {
             state.player.strength = (state.player.strength || 0) + 1
@@ -230,8 +221,15 @@ export const gameSlice: Slice = createSlice({
       if (state.energy.current < card.cost) return
       
       state.hand = state.hand.filter((c: Card) => c.id !== card.id)
-      state.discardPile.push(card)
       state.energy.current -= card.cost
+
+      // パワーカードの場合は特別な処理
+      if (card.type === 'power') {
+        state.activePowers.push(card)
+      } else {
+        // 通常のカードは捨て札に追加
+        state.discardPile.push(card)
+      }
       
       if (card.effects.damage && state.enemy) {
         let totalDamage = card.effects.damage
@@ -288,6 +286,7 @@ export const gameSlice: Slice = createSlice({
       state.drawPile = []
       state.turnNumber = 0
       state.player.strength = 0
+      state.activePowers = []
     },
 
     addCardToDeck: (state, action: PayloadAction<Card>) => {
