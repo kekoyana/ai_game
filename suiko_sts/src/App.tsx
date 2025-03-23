@@ -7,6 +7,7 @@ import { Shop } from './components/Shop'
 import CardReward from './components/CardReward'
 import RelicReward from './components/RelicReward'
 import CardUpgrade from './components/CardUpgrade'
+import DeckView from './components/DeckView'
 import GameClear from './components/GameClear'
 import GameOver from './components/GameOver'
 import GoldDisplay from './components/GoldDisplay'
@@ -42,6 +43,7 @@ function App() {
   const [showVictoryMessage, setShowVictoryMessage] = useState(false)
   const [isShowingVictorySequence, setIsShowingVictorySequence] = useState(false)
   const [showCardUpgrade, setShowCardUpgrade] = useState(false)
+  const [showDeckView, setShowDeckView] = useState(false)
   const [rewardAmount, setRewardAmount] = useState(0)
   const [defeatedEnemy, setDefeatedEnemy] = useState<string>('')
 
@@ -347,9 +349,22 @@ function App() {
           </div>
 
           <div className="flex gap-4 items-center">
+            <button
+              onClick={() => setShowDeckView(true)}
+              className="deck-view-button"
+            >
+              デッキ一覧
+            </button>
             <GoldDisplay amount={gold} />
             <RelicDisplay relics={gameState.relics} />
           </div>
+
+          {/* デッキ一覧オーバーレイ */}
+          {showDeckView && (
+            <div className="game-overlay" onClick={() => setShowDeckView(false)}>
+              <DeckView />
+            </div>
+          )}
         </div>
       </div>
     </div>

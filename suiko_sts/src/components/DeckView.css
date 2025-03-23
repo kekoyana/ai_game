@@ -1,0 +1,41 @@
+.deck-view {
+  @apply p-6 bg-gray-900/80 min-h-screen;
+}
+
+.deck-header {
+  @apply flex justify-between items-center mb-6;
+}
+
+.deck-header h2 {
+  @apply text-2xl font-bold text-yellow-100;
+}
+
+.sort-controls {
+  @apply flex gap-2;
+}
+
+.sort-button {
+  @apply px-4 py-2 rounded bg-gray-800 text-gray-300 hover:bg-gray-700;
+}
+
+.sort-button.active {
+  @apply bg-yellow-700 text-yellow-100;
+}
+
+.deck-stats {
+  @apply mb-6 p-4 bg-gray-800/50 rounded text-gray-300 space-y-2;
+}
+
+.deck-grid {
+  @apply grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4;
+}
+
+.deck-card {
+  @apply flex justify-center;
+  perspective: 1000px;
+}
+
+.deck-card:hover {
+  transform: scale(1.05);
+  transition: transform 0.2s ease-in-out;
+}

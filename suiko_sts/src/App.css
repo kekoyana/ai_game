@@ -89,6 +89,20 @@
   z-index: 1;
 }
 
+.deck-view-button {
+  @apply px-4 py-2 rounded bg-gray-800 text-gray-300 hover:bg-gray-700;
+  @apply border border-yellow-900/30;
+  @apply flex items-center gap-2;
+}
+
+.deck-view-button:hover {
+  @apply bg-yellow-900/50 text-yellow-100;
+}
+
+.deck-view-button::before {
+  content: "🎴";
+}
+
 .card-wrapper:hover {
   @apply -translate-y-8 scale-110;
   z-index: 10;
