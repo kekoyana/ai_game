@@ -375,6 +375,14 @@ export const gameSlice: Slice = createSlice({
       }
     },
 
+    removeCardFromDeck: (state, action: PayloadAction<Card>) => {
+      if (state.isGameOver) return
+      const index = state.deck.findIndex(card => card.id === action.payload.id)
+      if (index !== -1) {
+        state.deck.splice(index, 1)
+      }
+    },
+
     addRelic: (state, action: PayloadAction<Relic>) => {
       if (state.isGameOver) return
       const relic = action.payload
@@ -414,7 +422,8 @@ export const {
   gainGold,
   resetGame,
   upgradeCard,
-  addRelic
+  addRelic,
+  removeCardFromDeck
 } = gameSlice.actions
 
 export default gameSlice.reducer

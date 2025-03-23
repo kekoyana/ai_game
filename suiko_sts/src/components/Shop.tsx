@@ -2,13 +2,14 @@ import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '../store'
 import { generateShopItems, ShopItem } from '../data/shop'
-import { getRewardPool } from '../data/cards'
+import { getRewardPool, Card as CardType } from '../data/cards'
 import { relicPool, Relic } from '../data/relics'
-import { addCardToDeck, addRelic, spendGold } from '../store/slices/gameSlice'
+import { addCardToDeck, addRelic, spendGold, removeCardFromDeck } from '../store/slices/gameSlice'
 import { clearNode } from '../store/slices/mapSlice'
 import { MapNode } from '../data/mapNodes'
-import Card from './Card'
+import CardComponent from './Card'
 import './Shop.css'
+
 
 export const Shop = () => {
   const dispatch = useDispatch()
@@ -18,8 +19,12 @@ export const Shop = () => {
     return state.map.currentMap.nodes.find((node: MapNode) => node.id === currentNodeId)
   })
   
+  const deck = useSelector((state: RootState) => state.game.deck)
   const [shopItems, setShopItems] = useState<ShopItem[]>([])
   const [soldItems, setSoldItems] = useState<Set<string>>(new Set())
+  const [showRemoveDialog, setShowRemoveDialog] = useState(false)
+  const [selectedCard, setSelectedCard] = useState<CardType | null>(null)
+  const [hasUsedRemoveService, setHasUsedRemoveService] = useState(false)
 
   useEffect(() => {
     const items = generateShopItems(getRewardPool(), relicPool, currentNode?.level || 1)
@@ -75,7 +80,7 @@ export const Shop = () => {
                   className={`shop-card-clickable ${soldItems.has(item.id) ? 'disabled' : ''}`}
                   onClick={() => !soldItems.has(item.id) && handlePurchase(item)}
                 >
-                  <Card {...item.item} />
+                  <CardComponent {...item.item} />
                 </div>
                 <div className={`shop-item-overlay ${soldItems.has(item.id) ? 'sold' : ''}`}>
                   <div className="shop-item-price">{item.cost} G</div>
@@ -115,6 +120,68 @@ export const Shop = () => {
           })}
         </div>
       </div>
+
+      {/* カード破棄セクション */}
+      <div className="shop-section">
+        <h3 className="shop-section-title">カード破棄サービス</h3>
+        <div className="shop-service">
+          <p className="service-description">デッキからカードを1枚除去できます（50G）</p>
+          <button
+            className="service-button"
+            onClick={() => setShowRemoveDialog(true)}
+            disabled={gold < 50 || hasUsedRemoveService}
+          >
+            {hasUsedRemoveService ? 'すでに使用済み' : 'カードを破棄する'}
+          </button>
+        </div>
+      </div>
+
+      {showRemoveDialog && (
+        <div className="overlay">
+          <div className="deck-view modal-content">
+            <div className="deck-header">
+              <h2>破棄するカードを選択</h2>
+            </div>
+            <div className="deck-grid">
+              {deck.map((card: CardType) => (
+                <div
+                  key={card.id}
+                  className={`deck-card ${selectedCard?.id === card.id ? 'selected' : ''}`}
+                  onClick={() => setSelectedCard(card)}
+                >
+                  <CardComponent {...card} />
+                </div>
+              ))}
+            </div>
+            <div className="shop-footer dialog-buttons">
+              <button
+                className="purchase-button"
+                onClick={() => {
+                  if (selectedCard) {
+                    dispatch(spendGold(50))
+                    dispatch(removeCardFromDeck(selectedCard))
+                    setHasUsedRemoveService(true)
+                    setShowRemoveDialog(false)
+                    setSelectedCard(null)
+                  }
+                }}
+                disabled={!selectedCard || gold < 50}
+              >
+                確認（50G）
+              </button>
+              <button
+                className="skip-button"
+                onClick={() => {
+                  setShowRemoveDialog(false)
+                  setSelectedCard(null)
+                }}
+              >
+                キャンセル
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="shop-footer">
         <button
