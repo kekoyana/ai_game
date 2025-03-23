@@ -230,9 +230,22 @@ export const gameSlice: Slice = createSlice({
       
       const card = action.payload
       if (state.energy.current < card.cost) return
+
+      // 首切りの使用条件チェック
+      if (card.id === 'attack_kubi_kiri') {
+        // 現在の手札から対象のカードを除いた残りの手札をチェック
+        const otherCards = state.hand.filter(c => c.id !== card.id)
+        const isAllAttacks = otherCards.length === 0 || otherCards.every(c => c.type === 'attack')
+        if (!isAllAttacks) return
+      }
       
       state.hand = state.hand.filter((c: Card) => c.id !== card.id)
       state.energy.current -= card.cost
+
+      // 即時効果の適用
+      if (card.effects.block) {
+        state.player.block += card.effects.block
+      }
 
       // パワーカードの場合は特別な処理
       if (card.type === 'power') {
@@ -241,20 +254,22 @@ export const gameSlice: Slice = createSlice({
         // 通常のカードは捨て札に追加
         state.discardPile.push(card)
 
-        // 即時効果の適用
         if (card.effects.strength) {
           state.player.strength = (state.player.strength || 0) + card.effects.strength
-        }
-        
-        if (card.effects.block) {
-          state.player.block += card.effects.block
         }
       }
       
       // 敵への効果を適用
       if (state.enemy) {
-        if (card.effects.damage) {
-          let totalDamage = card.effects.damage
+        // ダメージ処理を実行
+        if ('damage' in card.effects) {
+          let totalDamage = card.effects.damage || 0
+          
+          // ブロック値をダメージに加算
+          if (card.effects.blockAsDamage) {
+            totalDamage += state.player.block || 0
+          }
+
           if (state.player.strength) {
             totalDamage += state.player.strength
           }

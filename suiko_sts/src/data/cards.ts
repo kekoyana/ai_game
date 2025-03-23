@@ -18,6 +18,7 @@ export interface Card {
     strength?: number
     dexterity?: number
     weaken?: number
+    blockAsDamage?: boolean  // ブロック値をダメージに加算するフラグ
   }
   character: string
   flavorText?: string
@@ -236,16 +237,51 @@ export const allCards: Card[] = [
     character: '没羽箭 張清',
     flavorText: '羽のように軽やかに放たれる矢は、必ず標的を射抜く'
   },
+
+  // 新規追加カード
   {
-    id: 'skill_daichuu_kamae',
-    name: '大蟲の構え',
+    id: 'attack_skill_houcho_sabaki',
+    name: '包丁捌き',
     cost: 1,
-    type: 'skill',
+    type: 'attack',
     rarity: 'C',
-    description: '7ブロックを得る',
-    effects: { block: 7 },
-    character: '病大蟲 節振同',
-    flavorText: '巨漢の体で敵の攻撃を受け止める'
+    description: '5のブロックを得る。5のダメージを与える',
+    effects: { damage: 5, block: 5 },
+    character: '操刀鬼 曹正',
+    flavorText: '料理人の技が戦場で活きる'
+  },
+  {
+    id: 'attack_kubi_kiri',
+    name: '首切り',
+    cost: 0,
+    type: 'attack',
+    rarity: 'C',
+    description: '手札が全て「アタック」の場合に使用可。14のダメージを与える',
+    effects: { damage: 14 },
+    character: '鉄臂膊 蔡福',
+    flavorText: '首切り役人の力'
+  },
+  {
+    id: 'attack_renkanpei',
+    name: '連環兵',
+    cost: 1,
+    type: 'attack',
+    rarity: 'C',
+    description: '現在のブロック値に等しいダメージを与える',
+    effects: { damage: 0, blockAsDamage: true },
+    character: '百勝将 韓滔',
+    flavorText: '硬い装甲の鉄騎兵による攻撃'
+  },
+  {
+    id: 'attack_hisou',
+    name: '飛鎗',
+    cost: 1,
+    type: 'attack',
+    rarity: 'C',
+    description: '9のダメージを与える。カードを1枚引く',
+    effects: { damage: 9, draw: 1 },
+    character: '花項虎 龔旺',
+    flavorText: '投槍使いの遠距離攻撃'
   }
 ]
 
