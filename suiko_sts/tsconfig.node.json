@@ -7,10 +7,10 @@
     "skipLibCheck": true,
     
     "composite": true,
-    "noEmit": true,
 
     /* Bundler mode */
     "moduleResolution": "bundler",
+    "emitDeclarationOnly": true,
     "allowImportingTsExtensions": true,
     "isolatedModules": true,
     "moduleDetection": "force",
