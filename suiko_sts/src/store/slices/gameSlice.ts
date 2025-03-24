@@ -39,6 +39,7 @@ interface GameState {
   goldMultiplier: number
   healingMultiplier: number
   activePowers: Card[] // 発動中のパワーカード
+  activeSkills: Card[] // ターン終了時まで持続するスキル
 }
 
 const initialState: GameState = {
@@ -68,7 +69,8 @@ const initialState: GameState = {
   relics: [],
   goldMultiplier: 1,
   healingMultiplier: 1,
-  activePowers: []
+  activePowers: [],
+  activeSkills: []
 }
 
 const generateEnemyMove = (enemy: Character) => {
@@ -123,6 +125,7 @@ export const gameSlice: Slice = createSlice({
       state.hand = []
       state.discardPile = []
       state.activePowers = []
+      state.activeSkills = []
 
       state.relics.forEach((relic: Relic) => {
         if (relic.effect.type === 'strength') {
@@ -196,6 +199,7 @@ export const gameSlice: Slice = createSlice({
       state.energy.current = state.energy.max
 
       // アクティブなパワーカードの効果を適用
+      debugger
       state.activePowers.forEach((card: Card) => {
         if (card.effects) {
           // 覇王の威厳タイプ（毎ターン腕力+1）のカード
@@ -208,6 +212,35 @@ export const gameSlice: Slice = createSlice({
           }
         }
       })
+
+      // アクティブなスキルカードの効果を適用
+      state.activeSkills.forEach((card: Card) => {
+        if (card.effects && card.effects.turnEnd) {
+          // ターン終了時の効果を適用
+          if (card.effects.turnEnd.strength) {
+            state.player.strength = (state.player.strength || 0) + card.effects.turnEnd.strength
+          }
+          if (card.effects.turnEnd.block) {
+            state.player.block = (state.player.block || 0) + card.effects.turnEnd.block
+          }
+          if (card.effects.turnEnd.draw) {
+            for (let i = 0; i < card.effects.turnEnd.draw; i++) {
+              if (state.drawPile.length === 0) {
+                state.drawPile = shuffleDeck([...state.discardPile])
+                state.discardPile = []
+              }
+              if (state.drawPile.length > 0) {
+                const drawnCard = state.drawPile[0]
+                state.hand.push(drawnCard)
+                state.drawPile = state.drawPile.slice(1)
+              }
+            }
+          }
+        }
+      })
+
+      // アクティブなスキルカードをリセット
+      state.activeSkills = []
       
       state.discardPile = [...state.discardPile, ...state.hand]
       state.hand = []
@@ -250,10 +283,19 @@ export const gameSlice: Slice = createSlice({
       // パワーカードの場合は特別な処理
       if (card.type === 'power') {
         state.activePowers.push(card)
+      } else if (card.effects.turnEnd) {
+        // ターン終了時効果を持つスキルカードはactiveSkillsに追加
+        state.activeSkills.push(card)
+        // 通常のカードは捨て札に追加
+        state.discardPile.push(card)
+        
+        if (card.effects.strength) {
+          state.player.strength = (state.player.strength || 0) + card.effects.strength
+        }
       } else {
         // 通常のカードは捨て札に追加
         state.discardPile.push(card)
-
+        
         if (card.effects.strength) {
           state.player.strength = (state.player.strength || 0) + card.effects.strength
         }
@@ -323,6 +365,7 @@ export const gameSlice: Slice = createSlice({
       state.turnNumber = 0
       state.player.strength = 0
       state.activePowers = []
+      state.activeSkills = []
     },
 
     addCardToDeck: (state, action: PayloadAction<Card>) => {

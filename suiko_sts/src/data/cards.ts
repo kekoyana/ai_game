@@ -19,6 +19,11 @@ export interface Card {
     dexterity?: number
     weaken?: number
     blockAsDamage?: boolean  // ブロック値をダメージに加算するフラグ
+    turnEnd?: {             // ターン終了時に発動する効果
+      strength?: number      // 筋力の増減
+      block?: number        // ブロックの増減
+      draw?: number         // カードを引く数
+    }
   }
   character: string
   flavorText?: string
@@ -282,6 +287,33 @@ export const allCards: Card[] = [
     effects: { damage: 9, draw: 1 },
     character: '花項虎 龔旺',
     flavorText: '投槍使いの遠距離攻撃'
+  },
+  {
+    id: 'skill_bugei_kyoju',
+    name: '武芸教授',
+    cost: 0,
+    type: 'skill',
+    rarity: 'C',
+    description: '筋力2を得る。ターン終了時に筋力2を失う',
+    effects: {
+      strength: 2,
+      turnEnd: {
+        strength: -2
+      }
+    },
+    character: '打虎将 李忠',
+    flavorText: '梁山泊の武術指南役'
+  },
+  {
+    id: 'skill_tate_hajiku',
+    name: '盾で弾く',
+    cost: 1,
+    type: 'skill',
+    rarity: 'C',
+    description: '8ブロックを得る。カードを1枚引く',
+    effects: { block: 8, draw: 1 },
+    character: '飛天大聖 李袞',
+    flavorText: '天に舞う将の防御術'
   }
 ]
 
