@@ -1,9 +1,11 @@
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 import { RootState } from '../store'
 import CharacterStats from './CharacterStats'
 import BattleArea from './BattleArea'
 import BattleHand from './BattleHand'
 import { Card } from '../data/cards'
+import CardUpgradeSelect from './CardUpgradeSelect'
+import { upgradeCardTemp, cancelCardUpgradeSelection } from '../store/slices/battleSlice'
 
 interface BattleProps {
   onEndTurn: () => void
@@ -11,10 +13,34 @@ interface BattleProps {
 }
 
 const Battle = ({ onEndTurn, onPlayCard }: BattleProps) => {
-  const { enemy, energy, turnNumber, hand, player } = useSelector((state: RootState) => state.game)
+  const dispatch = useDispatch()
+  console.log('=== Battle Component Render ===')
+  const { enemy, energy, turnNumber, hand } = useSelector((state: RootState) => {
+    console.log('Battle state:', {
+      enemy: state.battle.enemy?.name,
+      energy: state.battle.energy,
+      turnNumber: state.battle.turnNumber,
+      handSize: state.battle.hand.length,
+      tempUpgradedCards: state.battle.tempUpgradedCards
+    })
+    return state.battle
+  })
+  const { player } = useSelector((state: RootState) => state.gameGeneral)
+  const isSelectingCardForUpgrade = useSelector((state: RootState) => {
+    console.log('Card upgrade selection state:', {
+      isSelectingCardForUpgrade: state.battle.isSelectingCardForUpgrade,
+      handCards: state.battle.hand.map(c => ({ id: c.id, name: c.name }))
+    })
+    return state.battle.isSelectingCardForUpgrade
+  })
+
+  const handleUpgradeCancel = () => {
+    dispatch(cancelCardUpgradeSelection())
+  }
 
   return (
     <div className="space-y-4">
+
       {/* ターン数表示 */}
       <div className="text-center">
         <span className="inline-block bg-yellow-900/50 px-4 py-2 rounded-full text-yellow-100 font-bold border border-yellow-700/30">

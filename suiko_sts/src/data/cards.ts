@@ -314,6 +314,17 @@ export const allCards: Card[] = [
     effects: { block: 8, draw: 1 },
     character: '飛天大聖 李袞',
     flavorText: '天に舞う将の防御術'
+  },
+  {
+    id: 'skill_kanji',
+    name: '鍛冶',
+    cost: 1,
+    type: 'skill',
+    rarity: 'C',
+    description: '5ブロックを得る。戦闘終了まで手札のカード1枚をアップグレードする。',
+    effects: { block: 5 },
+    character: '金銭豹子 湯隆',
+    flavorText: '鍛冶屋の技で武器を磨き上げる'
   }
 ]
 
@@ -328,6 +339,7 @@ export const initialDeckCardIds = [
   'skill_enkai_shiki',
   'skill_gin_saiku',
   'skill_izakaya_mamori',
+  'skill_kanji',
   'skill_sekiheki'
 ]
 

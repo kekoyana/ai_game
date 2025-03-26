@@ -6,7 +6,7 @@ import Card from './Card'
 import './DeckView.css'
 
 const DeckView = () => {
-  const deck = useSelector((state: RootState) => state.game.deck)
+  const deck = useSelector((state: RootState) => state.gameGeneral.deck)
   const [sortBy, setSortBy] = useState<'rarity' | 'cost'>('cost')
 
   // カードを表示順にソート

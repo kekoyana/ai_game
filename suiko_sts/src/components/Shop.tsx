@@ -4,7 +4,7 @@ import { RootState } from '../store'
 import { generateShopItems, ShopItem } from '../data/shop'
 import { getRewardPool, Card as CardType } from '../data/cards'
 import { relicPool, Relic } from '../data/relics'
-import { addCardToDeck, addRelic, spendGold, removeCardFromDeck } from '../store/slices/gameSlice'
+import { addCardToDeck, addRelic, spendGold, removeCardFromDeck } from '../store/slices/gameGeneralSlice'
 import { clearNode } from '../store/slices/mapSlice'
 import { MapNode } from '../data/mapNodes'
 import CardComponent from './Card'
@@ -13,13 +13,13 @@ import './Shop.css'
 
 export const Shop = () => {
   const dispatch = useDispatch()
-  const gold = useSelector((state: RootState) => state.game.gold)
+  const gold = useSelector((state: RootState) => state.gameGeneral.gold)
   const currentNodeId = useSelector((state: RootState) => state.map.currentNodeId)
   const currentNode = useSelector((state: RootState) => {
     return state.map.currentMap.nodes.find((node: MapNode) => node.id === currentNodeId)
   })
   
-  const deck = useSelector((state: RootState) => state.game.deck)
+  const deck = useSelector((state: RootState) => state.gameGeneral.deck)
   const [shopItems, setShopItems] = useState<ShopItem[]>([])
   const [soldItems, setSoldItems] = useState<Set<string>>(new Set())
   const [showRemoveDialog, setShowRemoveDialog] = useState(false)
