@@ -1,28 +1,38 @@
 import React from 'react'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import { RootState } from '../store'
 import { Card } from '../data/cards'
 import { upgradeCardTemp } from '../store/slices/battleSlice'
 import CardComponent from './Card'
 
 interface CardUpgradeSelectProps {
   cards: Card[]
+  forgeCard: Card
   onClose: () => void
+  onUpgrade: (card: Card) => void
 }
 
-export const CardUpgradeSelect: React.FC<CardUpgradeSelectProps> = ({ cards, onClose }) => {
-  const dispatch = useDispatch()
-
+export const CardUpgradeSelect: React.FC<CardUpgradeSelectProps> = ({
+  cards,
+  forgeCard,
+  onClose,
+  onUpgrade
+}) => {
+  console.log('=== CardUpgradeSelect Mounted ===')
+  console.log('Available cards:', cards.map(c => ({
+    id: c.id,
+    name: c.name
+  })))
+  
   const handleUpgrade = (card: Card) => {
-    console.log('=== CardUpgradeSelect ===')
-    console.log('Selected card for upgrade:', card)
-    console.log('Card details:', {
+    console.log('=== CardUpgradeSelect handleUpgrade ===')
+    console.log('Selected card for upgrade:', {
       id: card.id,
       name: card.name,
       effects: card.effects
     })
-    dispatch(upgradeCardTemp(card))
-    console.log('Dispatched upgradeCardTemp action')
-    console.log('Calling onClose...')
+    
+    onUpgrade(card)
     onClose()
   }
 

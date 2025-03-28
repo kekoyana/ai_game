@@ -31,10 +31,14 @@ const getUpgradedEffect = (effects: Card['effects']): Card['effects'] => {
 
 const getUpgradedDescription = (card: Card): string => {
   const effects = getUpgradedEffect(card.effects)
-  if (effects.block) return `${effects.block}ブロックを得る`
-  if (effects.damage) return `${effects.damage}ダメージを与える`
-  if (effects.draw) return `カードを${effects.draw}枚引く`
-  return card.description
+  let desc = ''
+  
+  if (effects.block) desc = `${effects.block}ブロックを得る (+3)`
+  else if (effects.damage) desc = `${effects.damage}ダメージを与える (+3)`
+  else if (effects.draw) desc = `カードを${effects.draw}枚引く (+1)`
+  else desc = card.description
+
+  return `[強化] ${desc}`
 }
 
 const initialState: BattleState = {
@@ -150,7 +154,12 @@ export const battleSlice = createSlice({
       state.turnNumber += 1
       state.energy.current = state.energy.max
 
-      state.discardPile = [...state.discardPile, ...state.hand]
+      // ディスカードする際にアップグレード状態を維持
+      const cardsToDiscard = state.hand.map(card => {
+        const upgradedCard = state.tempUpgradedCards.find(uc => uc.id === card.id)
+        return upgradedCard || card
+      })
+      state.discardPile = [...state.discardPile, ...cardsToDiscard]
       state.hand = []
 
       for (let i = 0; i < 5; i++) {
@@ -200,23 +209,23 @@ export const battleSlice = createSlice({
       state.hand = state.hand.filter((c: Card) => c.id !== card.id)
       state.energy.current -= card.cost
 
-      let effects = { ...card.effects }
+      // アップグレードされたカードを探す
       const upgradedCard = state.tempUpgradedCards.find(c => c.id === card.id)
-      if (upgradedCard) {
-        console.log('Using upgraded card effects for:', card.name)
-        effects = { ...upgradedCard.effects }
-        console.log('Upgraded effects:', effects)
-      } else {
-        console.log('Using normal card effects for:', card.name)
-        console.log('Normal effects:', effects)
-      }
+      const cardToPlay = upgradedCard || card
+      let effects = { ...cardToPlay.effects }
+      
+      console.log(upgradedCard
+        ? `Using upgraded card effects for: ${card.name}`
+        : `Using normal card effects for: ${card.name}`
+      )
+      console.log('Effects:', effects)
 
-      if (card.type === 'power') {
-        state.activePowers.push({ ...card, effects })
+      if (cardToPlay.type === 'power') {
+        state.activePowers.push({ ...cardToPlay, effects })
       } else {
-        state.discardPile.push({ ...card, effects })
+        state.discardPile.push({ ...cardToPlay, effects })
         if (effects.turnEnd) {
-          state.activeSkills.push({ ...card, effects })
+          state.activeSkills.push({ ...cardToPlay, effects })
         }
       }
 
@@ -250,7 +259,9 @@ export const battleSlice = createSlice({
           }
           if (state.drawPile.length > 0) {
             const drawnCard = state.drawPile[0]
-            state.hand.push(drawnCard)
+            // アップグレード状態を確認
+            const upgradedCard = state.tempUpgradedCards.find(uc => uc.id === drawnCard.id)
+            state.hand.push(upgradedCard || drawnCard)
             state.drawPile = state.drawPile.slice(1)
           }
         }
@@ -290,12 +301,21 @@ export const battleSlice = createSlice({
         const upgradedCard = {
           ...action.payload,
           effects: upgradedEffects,
-          description: upgradedDescription
+          description: upgradedDescription,
+          isUpgraded: true
         }
         console.log('Original effects:', action.payload.effects)
         console.log('Upgraded effects:', upgradedCard.effects)
+        
+        // 一時的なアップグレード状態を保存
         state.tempUpgradedCards.push(upgradedCard)
-        console.log('Added card to tempUpgradedCards:', upgradedCard)
+        
+        // 手札のカードも更新
+        state.hand = state.hand.map(card =>
+          card.id === action.payload.id ? { ...upgradedCard } : card
+        )
+        
+        console.log('Updated hand and tempUpgradedCards with:', upgradedCard)
       } else {
         console.log('Card already upgraded')
       }
