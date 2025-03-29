@@ -1,21 +1,44 @@
 import { NodeType } from '../data/mapNodes'
+import mapIconUrl from '../assets/map_icon.png'
+
+// アイコンのスプライト位置を取得する関数
+const getIconPosition = (type: NodeType, level?: number): { x: number; y: number } => {
+  switch (type) {
+    case 'rest':
+      return { x: 0, y: 0 } // 宿屋
+    case 'shop':
+      return { x: 1, y: 0 } // お店
+    case 'enemy':
+      return level && level > 6 ? { x: 2, y: 1 } : { x: 2, y: 0 } // レベルが6より上はエリート敵、それ以外は弱い敵
+    case 'boss':
+      return { x: 0, y: 1 } // 大ボス
+    case 'elite':
+      return { x: 2, y: 1 } // エリート敵
+    case 'item':
+      return { x: 2, y: 2 } // プレゼント
+    case 'empty':
+      return { x: 0, y: 2 } // 何も無い
+    default:
+      return { x: 1, y: 1 } // イベント
+  }
+}
 
 export const getNodeIcon = (type: NodeType, level?: number) => {
-  switch (type) {
-    case 'enemy':
-      return level && level > 6 ? '👹' : '👿'
-    case 'elite':
-      return '💀'
-    case 'boss':
-      return '🐲'
-    case 'item':
-      return '🎁'
-    case 'rest':
-      return '🏠'
-    case 'shop':
-      return '🛒'
-    case 'empty':
-      return '⭐'
+  const { x, y } = getIconPosition(type, level)
+  const iconSize = 32 // アイコンの1つのサイズ（ピクセル）
+  
+  const iconStyle = `
+    display: inline-block;
+    width: ${iconSize}px;
+    height: ${iconSize}px;
+    background-image: url(${mapIconUrl});
+    background-position: -${x * iconSize}px -${y * iconSize}px;
+    background-size: ${iconSize * 3}px ${iconSize * 3}px;
+    image-rendering: pixelated;
+  `
+  
+  return {
+    __html: `<div style="${iconStyle}"></div>`
   }
 }
 
