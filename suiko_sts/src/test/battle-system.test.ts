@@ -55,6 +55,71 @@ const createTestStore = () => {
 }
 
 describe('Battle System', () => {
+  it('敵の行動パターンと実行のテスト', () => {
+    const store = createTestStore()
+    
+    // 戦闘開始
+    store.dispatch(startBattle({
+      enemy: {
+        id: 'pattern_test_enemy',
+        name: 'テストエネミー',
+        maxHp: 100,
+        currentHp: 100,
+        block: 0,
+        strength: 0,
+        enemyAction: {
+          type: 'attack',
+          value: 14,
+          description: '攻撃 14'
+        }
+      },
+      deck: [],
+      player: store.getState().gameGeneral.player,
+      relics: []
+    }))
+
+    // 1ターン目：攻撃14
+    let state = store.getState()
+    expect(state.battle.enemy?.enemyAction?.type).toBe('attack')
+    expect(state.battle.enemy?.enemyAction?.value).toBe(14)
+    expect(state.battle.incomingDamage).toBe(14)
+
+    // ターン終了：14ダメージを受ける
+    store.dispatch(takeDamage(14))
+    store.dispatch(resetBlock())
+    store.dispatch(endTurn())
+    
+    state = store.getState()
+    expect(state.gameGeneral.player.currentHp).toBe(66) // 80 - 14
+
+    // 2ターン目：防御8
+    expect(state.battle.enemy?.enemyAction?.type).toBe('defend')
+    expect(state.battle.enemy?.enemyAction?.value).toBe(8)
+    expect(state.battle.incomingDamage).toBe(0)
+    expect(state.battle.enemy?.block).toBe(8)
+
+    // ターン終了：ダメージを受けない
+    store.dispatch(takeDamage(0))
+    store.dispatch(resetBlock())
+    store.dispatch(endTurn())
+    
+    state = store.getState()
+    expect(state.gameGeneral.player.currentHp).toBe(66) // 変化なし
+
+    // 3ターン目：攻撃12
+    expect(state.battle.enemy?.enemyAction?.type).toBe('attack')
+    expect(state.battle.enemy?.enemyAction?.value).toBe(12)
+    expect(state.battle.incomingDamage).toBe(12)
+
+    // ターン終了：12ダメージを受ける
+    store.dispatch(takeDamage(12))
+    store.dispatch(resetBlock())
+    store.dispatch(endTurn())
+    
+    state = store.getState()
+    expect(state.gameGeneral.player.currentHp).toBe(54) // 66 - 12
+  })
+
   it('基本的な戦闘フローのテスト', () => {
     const store = createTestStore()
     
@@ -143,7 +208,7 @@ describe('Battle System', () => {
     // 明示的な初期行動（攻撃）で戦闘開始
     store.dispatch(startBattle({
       enemy: {
-        id: 'test_enemy',
+        id: 'pattern_test_enemy',
         name: 'テストエネミー',
         maxHp: 100,
         currentHp: 100,
@@ -161,13 +226,19 @@ describe('Battle System', () => {
     }))
 
     let state = store.getState()
-    const initialAction = state.battle.enemy?.enemyAction
-    expect(initialAction?.type).toBe('attack')
-    expect(initialAction?.value).toBe(14)
+    expect(state.battle.enemy?.enemyAction?.type).toBe('attack')
+    expect(state.battle.enemy?.enemyAction?.value).toBe(14)
+    expect(state.battle.incomingDamage).toBe(14)
     
-    // ターン終了処理
-    store.dispatch(takeDamage(state.battle.enemy?.enemyAction?.value || 0))
+    // ターン終了処理で次の行動が防御8になることを確認
+    store.dispatch(takeDamage(14))
     store.dispatch(resetBlock())
     store.dispatch(endTurn())
+    
+    state = store.getState()
+    expect(state.battle.enemy?.enemyAction?.type).toBe('defend')
+    expect(state.battle.enemy?.enemyAction?.value).toBe(8)
+    expect(state.battle.incomingDamage).toBe(0)
+    expect(state.battle.enemy?.block).toBe(8)
   })
 })

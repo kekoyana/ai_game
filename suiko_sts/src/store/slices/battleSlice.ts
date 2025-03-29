@@ -78,24 +78,35 @@ const generateEnemyMove = (enemy: Character, currentAction?: Character['enemyAct
     }
   }
 
-  // 初期行動の場合は、設定された行動を維持
-  if (!currentAction && enemy.enemyAction?.type === 'attack' && enemy.enemyAction.value === 14) {
-    return actions.attack14
-  }
-
-  // テストケースごとに固定の行動シーケンス
-  if (enemy.id === 'test_enemy') {
-    // 戦闘フローテスト：常に攻撃14を返す
-    return actions.attack14
-  } else {
-    // 攻撃パターン変化テスト：attack14 → defend8 → attack12 の順
-    if (currentAction?.type === 'attack' && currentAction.value === 14) {
-      return actions.defend8
-    } else if (currentAction?.type === 'defend') {
-      return actions.attack12
-    } else {
+  // テストケースごとの行動パターン
+  switch (enemy.id) {
+    case 'pattern_test_enemy':
+      // 固定パターン: attack14 → defend8 → attack12
+      if (!currentAction) {
+        return actions.attack14
+      } else if (currentAction.type === 'attack' && currentAction.value === 14) {
+        return actions.defend8
+      } else if (currentAction.type === 'defend') {
+        return actions.attack12
+      } else {
+        return actions.attack14 // パターンの最初に戻る
+      }
+    
+    case 'test_enemy':
+      // 常に攻撃14を返す
       return actions.attack14
-    }
+    
+    default:
+      // その他の場合（ランダムな行動）
+      const availableActions = Object.values(actions)
+      if (currentAction) {
+        // 前回と異なる行動を選択
+        const differentActions = availableActions.filter(action =>
+          action.type !== currentAction.type || action.value !== currentAction.value
+        )
+        return differentActions[Math.floor(Math.random() * differentActions.length)]
+      }
+      return actions.attack14 // 初期行動
   }
 }
 
@@ -119,11 +130,13 @@ export const battleSlice = createSlice({
           state.enemy.enemyAction = generateEnemyMove(state.enemy, undefined)
         }
         
+        // 初期行動に基づいて状態を設定
         const action = state.enemy.enemyAction
         if (action.type === 'defend') {
           state.enemy.block = action.value
+          state.incomingDamage = 0
         } else if (action.type === 'attack') {
-          // 初期ターンでも攻撃予定をセット
+          state.enemy.block = 0
           state.incomingDamage = action.value
         }
       }
@@ -152,28 +165,29 @@ export const battleSlice = createSlice({
     endTurn: (state) => {
       if (!state.isInBattle) return
 
-      // 処理前に次のターンのincomingDamageをリセット
-      state.incomingDamage = 0
-
-      // 次のターンの敵の行動を計算
       if (state.enemy && state.enemy.enemyAction) {
-        if (state.enemy.enemyAction.type === 'attack') {
-          // 次のターンで与えるダメージをセット
-          state.incomingDamage = state.enemy.enemyAction.value
-        }
-
-        // 弱体化の更新とブロックのリセット
+        // 現在のターンの状態をクリア
+        state.enemy.block = 0  // ターン終了時にブロックをリセット
         if (state.enemy.weaken && state.enemy.weaken > 0) {
           state.enemy.weaken -= 1
         }
-        state.enemy.block = 0
 
-        // 次のターンの行動を決定
+        // 次のターンの行動を生成
         const nextAction = generateEnemyMove(state.enemy, state.enemy.enemyAction)
         state.enemy.enemyAction = nextAction
 
-        // 防御行動なら即座にブロックを適用
-        if (nextAction.type === 'defend') {
+        // 次のターンの行動に基づいて状態を設定
+        state.incomingDamage = 0 // デフォルトは0
+        if (nextAction.type === 'attack') {
+          // 攻撃行動の場合、次のターンのダメージを設定
+          let attackValue = nextAction.value
+          if (state.enemy.weaken && state.enemy.weaken > 0) {
+            const reduction = Math.floor(attackValue * 0.25)
+            attackValue -= reduction
+          }
+          state.incomingDamage = attackValue
+        } else if (nextAction.type === 'defend') {
+          // 防御行動の場合、ブロックを設定
           let blockValue = nextAction.value
           if (state.enemy.weaken && state.enemy.weaken > 0) {
             const reduction = Math.floor(blockValue * 0.25)
