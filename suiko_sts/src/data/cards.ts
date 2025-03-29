@@ -339,7 +339,6 @@ export const initialDeckCardIds = [
   'skill_enkai_shiki',
   'skill_gin_saiku',
   'skill_izakaya_mamori',
-  'skill_kanji',
   'skill_sekiheki'
 ]
 

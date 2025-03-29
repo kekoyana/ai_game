@@ -18,11 +18,6 @@ export const CardUpgradeSelect: React.FC<CardUpgradeSelectProps> = ({
   onClose,
   onUpgrade
 }) => {
-  console.log('=== CardUpgradeSelect Mounted ===')
-  console.log('Available cards:', cards.map(c => ({
-    id: c.id,
-    name: c.name
-  })))
   
   const handleUpgrade = (card: Card) => {
     console.log('=== CardUpgradeSelect handleUpgrade ===')

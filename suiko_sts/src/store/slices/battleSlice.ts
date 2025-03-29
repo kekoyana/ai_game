@@ -181,21 +181,12 @@ export const battleSlice = createSlice({
       const { card } = action.payload
       if (!state.isInBattle || state.energy.current < card.cost) return
 
-      console.log('=== playCard ===')
-      console.log('Playing card:', card.name)
-
       // 鍛冶カードの特別処理
       if (card.id === 'skill_kanji') {
-        console.log('Processing forge card')
         state.hand = state.hand.filter((c: Card) => c.id !== card.id)
         state.energy.current -= card.cost
-        
-        // カードをディスカードパイルに追加
         state.discardPile.push(card)
-
-        // isSelectingCardForUpgradeフラグを設定
         state.isSelectingCardForUpgrade = true
-        console.log('Set isSelectingCardForUpgrade to true')
         return
       }
 
@@ -213,12 +204,6 @@ export const battleSlice = createSlice({
       const upgradedCard = state.tempUpgradedCards.find(c => c.id === card.id)
       const cardToPlay = upgradedCard || card
       let effects = { ...cardToPlay.effects }
-      
-      console.log(upgradedCard
-        ? `Using upgraded card effects for: ${card.name}`
-        : `Using normal card effects for: ${card.name}`
-      )
-      console.log('Effects:', effects)
 
       if (cardToPlay.type === 'power') {
         state.activePowers.push({ ...cardToPlay, effects })
@@ -288,11 +273,7 @@ export const battleSlice = createSlice({
     },
 
     upgradeCardTemp: (state, action: PayloadAction<Card>) => {
-      console.log('Attempting to upgrade card:', action.payload.name)
-      if (!state.isInBattle) {
-        console.log('Not in battle, upgrade cancelled')
-        return
-      }
+      if (!state.isInBattle) return
       
       const isAlreadyUpgraded = state.tempUpgradedCards.some(card => card.id === action.payload.id)
       if (!isAlreadyUpgraded) {
@@ -304,20 +285,11 @@ export const battleSlice = createSlice({
           description: upgradedDescription,
           isUpgraded: true
         }
-        console.log('Original effects:', action.payload.effects)
-        console.log('Upgraded effects:', upgradedCard.effects)
         
-        // 一時的なアップグレード状態を保存
         state.tempUpgradedCards.push(upgradedCard)
-        
-        // 手札のカードも更新
         state.hand = state.hand.map(card =>
           card.id === action.payload.id ? { ...upgradedCard } : card
         )
-        
-        console.log('Updated hand and tempUpgradedCards with:', upgradedCard)
-      } else {
-        console.log('Card already upgraded')
       }
       state.isSelectingCardForUpgrade = false
     },

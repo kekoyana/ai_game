@@ -84,13 +84,11 @@ const createTestStore = () => configureStore({
 // テストケース
 describe('BattleScreen', () => {
   it('鍛冶カード使用時にアップグレード選択UIが表示される', () => {
-    console.log('=== Test: 鍛冶カード使用時のUI表示 ===')
-    
     const store = createTestStore()
     const mockOnPlayCard = vi.fn()
     const mockOnEndTurn = vi.fn()
 
-    const { container } = render(
+    render(
       <Provider store={store}>
         <BattleScreen
           enemy={mockCharacter}
@@ -106,32 +104,26 @@ describe('BattleScreen', () => {
 
     // 初期状態では選択UIは表示されていない
     expect(screen.queryByText('一時的にアップグレードするカードを選択')).toBeNull()
-    console.log('初期状態: 選択UIは非表示')
 
     // 鍛冶カードをクリック
     const forgeCard = screen.getByText('鍛冶')
-    console.log('鍛冶カードをクリック')
     fireEvent.click(forgeCard)
 
     // 選択UIが表示されることを確認
     const upgradeUI = screen.getByText('一時的にアップグレードするカードを選択')
     expect(upgradeUI).toBeInTheDocument()
-    console.log('選択UIが表示された')
 
     // 通常カードが選択可能なことを確認
     const normalCard = screen.getAllByText('テスト攻撃')[0]
     expect(normalCard).toBeInTheDocument()
-    console.log('通常カードが選択可能')
   })
 
   it('アップグレード選択後に正しく処理が実行される', () => {
-    console.log('=== Test: アップグレード選択後の処理 ===')
-    
     const store = createTestStore()
     const mockOnPlayCard = vi.fn()
     const mockOnEndTurn = vi.fn()
 
-    const { container } = render(
+    render(
       <Provider store={store}>
         <BattleScreen
           enemy={mockCharacter}
@@ -147,16 +139,13 @@ describe('BattleScreen', () => {
 
     // 鍛冶カードをクリック
     const forgeCard = screen.getByText('鍛冶')
-    console.log('鍛冶カードをクリック')
     fireEvent.click(forgeCard)
 
     // 通常カードを選択
     const normalCard = screen.getAllByText('テスト攻撃')[0]
-    console.log('通常カードを選択')
     fireEvent.click(normalCard)
 
     // onPlayCardが1回呼ばれることを確認
     expect(mockOnPlayCard).toHaveBeenCalledTimes(1)
-    console.log('onPlayCard呼び出し回数:', mockOnPlayCard.mock.calls.length)
   })
 })
