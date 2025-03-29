@@ -61,8 +61,8 @@ const MAP_CONFIG = {
   TOTAL_LEVELS: 12,
   NODES_PER_LEVEL: 3,
   NODE_SPACING: {
-    X: 160,
-    Y: 60
+    X: 120,
+    Y: 100
   },
   PROBABILITIES: {
     early: {

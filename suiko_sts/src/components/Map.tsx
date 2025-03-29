@@ -26,19 +26,21 @@ const Map = () => {
   const nodeSize = 40 // ノードサイズを小さく
   const padding = 20 // パディングも小さく
   
-  // マップ全体のサイズを計算
-  const width = Math.min(1024, maxX - minX + nodeSize + padding * 2)
-  const height = Math.min(768, maxY - minY + nodeSize + padding * 2)
+  // マップ全体のサイズを計算（ノードサイズを考慮）
+  const mapWidth = maxX - minX
+  const mapHeight = maxY - minY
+  const width = Math.min(1024, (mapWidth + 1) * nodeSize + padding * 2)
+  const height = Math.min(768, (mapHeight + 1) * nodeSize + padding * 2)
   
   // スケール係数を計算（画面に収まるように）
-  const scaleX = (width - padding * 2) / (maxX - minX + nodeSize)
-  const scaleY = (height - padding * 2) / (maxY - minY + nodeSize)
-  const scale = Math.min(scaleX, scaleY)
+  const scaleX = (width - padding * 2) / mapWidth
+  const scaleY = (height - padding * 2) / mapHeight
+  const scale = Math.min(scaleX, scaleY, nodeSize) // nodeSize以上にスケールしない
 
   // ノードの位置を計算する関数
   const getNodePosition = (x: number, y: number) => ({
-    x: (x - minX) * scale + padding,
-    y: (y - minY) * scale + padding
+    x: (x - minX) * scale + padding + nodeSize / 2,
+    y: (y - minY) * scale + padding + nodeSize / 2
   })
 
   const handleNodeClick = (nodeId: string) => {
