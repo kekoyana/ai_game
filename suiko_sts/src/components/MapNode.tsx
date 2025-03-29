@@ -33,11 +33,11 @@ const MapNode = ({
         className="overflow-visible"
       >
         <div
-          className={`w-full h-full rounded-full flex items-center justify-center text-xl
-                    transition-all duration-200 transform hover:scale-110
-                    shadow-lg ${getNodeColor(node.id, currentNodeId, clearedNodes, availableNodes, node.type, node.level)}`}
-        >
-          {getNodeIcon(node.type, node.level)}
+          className={`w-full h-full rounded-full flex items-center justify-center
+                     transition-all duration-200 transform hover:scale-110
+                     shadow-lg ${getNodeColor(node.id, currentNodeId, clearedNodes, availableNodes, node.type, node.level)}`}
+          dangerouslySetInnerHTML={getNodeIcon(node.type, node.level)}
+>
         </div>
       </foreignObject>
 
