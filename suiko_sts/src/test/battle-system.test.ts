@@ -1,12 +1,17 @@
 import { configureStore } from '@reduxjs/toolkit'
 import { describe, it, expect } from 'vitest'
-import battleReducer, { startBattle, endTurn } from '../store/slices/battleSlice'
+import battleReducer, {
+  startBattle,
+  endTurn,
+  setHand,
+  setEnergyCurrent
+} from '../store/slices/battleSlice'
 import gameGeneralReducer, {
   addBlock,
   takeDamage,
   resetBlock
 } from '../store/slices/gameGeneralSlice'
-import { Card } from '../data/cards'
+import { Card, allCards } from '../data/cards'
 
 const createTestStore = () => {
   const player = {
@@ -55,6 +60,75 @@ const createTestStore = () => {
 }
 
 describe('Battle System', () => {
+  it('attack_kubi_kiriのテスト', () => {
+    const store = createTestStore()
+    
+    // 戦闘開始（敵の設定は任意）
+    store.dispatch(startBattle({
+      enemy: {
+        id: 'test_enemy',
+        name: 'テストエネミー',
+        maxHp: 100,
+        currentHp: 100,
+        block: 0,
+        strength: 0,
+        enemyAction: {
+          type: 'attack',
+          value: 14,
+          description: '攻撃 14'
+        }
+      },
+      deck: [],
+      player: store.getState().gameGeneral.player,
+      relics: []
+    }))
+
+    let state = store.getState()
+    const kubiKiri = allCards.find(card => card.id === 'attack_kubi_kiri')!
+    const attackCard: Card = {
+      id: 'test_attack',
+      name: 'テスト攻撃',
+      type: 'attack',
+      cost: 1,
+      effects: { damage: 6 },
+      description: '6ダメージを与える',
+      rarity: 'C',
+      character: 'テストキャラクター'
+    }
+    const skillCard: Card = {
+      id: 'test_skill',
+      name: 'テストスキル',
+      type: 'skill',
+      cost: 1,
+      effects: { block: 5 },
+      description: '5ブロックを得る',
+      rarity: 'C',
+      character: 'テストキャラクター'
+    }
+
+    // ケース1: 手札が空の場合（使用可能）
+    store.dispatch(setHand([kubiKiri]))
+    store.dispatch(setEnergyCurrent(2))
+    store.dispatch({ type: 'battle/playCard', payload: { card: kubiKiri } })
+    state = store.getState()
+    expect(state.battle.hand).toHaveLength(0)
+
+    // ケース2: 手札が全てアタックカードの場合（使用可能）
+    store.dispatch(setHand([kubiKiri, attackCard]))
+    store.dispatch(setEnergyCurrent(2))
+    store.dispatch({ type: 'battle/playCard', payload: { card: kubiKiri } })
+    state = store.getState()
+    expect(state.battle.hand).toHaveLength(1)
+    expect(state.battle.hand[0].id).toBe('test_attack')
+
+    // ケース3: 手札にスキルカードが含まれる場合（使用不可）
+    store.dispatch(setHand([kubiKiri, attackCard, skillCard]))
+    store.dispatch(setEnergyCurrent(2))
+    store.dispatch({ type: 'battle/playCard', payload: { card: kubiKiri } })
+    state = store.getState()
+    expect(state.battle.hand).toHaveLength(3) // カードが使用されていないことを確認
+  })
+
   it('敵の行動パターンと実行のテスト', () => {
     const store = createTestStore()
     

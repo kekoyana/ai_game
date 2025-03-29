@@ -236,10 +236,14 @@ export const battleSlice = createSlice({
         return
       }
 
+      // 首切りカードの特別処理：他のカードが全て攻撃カードの場合のみ使用可能
       if (card.id === 'attack_kubi_kiri') {
+        // 自分以外の手札を取得
         const otherCards = state.hand.filter(c => c.id !== card.id)
-        const isAllAttacks = otherCards.length === 0 || otherCards.every(c => c.type === 'attack')
-        if (!isAllAttacks) return
+        // 手札が空でない場合は、全てがattackカードであることを確認
+        if (otherCards.length > 0 && !otherCards.every(c => c.type === 'attack')) {
+          return
+        }
       }
 
 
@@ -342,6 +346,15 @@ export const battleSlice = createSlice({
 
     cancelCardUpgradeSelection: (state) => {
       state.isSelectingCardForUpgrade = false
+    },
+
+    // テスト用アクション
+    setHand: (state, action: PayloadAction<Card[]>) => {
+      state.hand = action.payload
+    },
+
+    setEnergyCurrent: (state, action: PayloadAction<number>) => {
+      state.energy.current = action.payload
     }
   }
 })
@@ -353,7 +366,9 @@ export const {
   endBattle,
   setEnergyMax,
   upgradeCardTemp,
-  cancelCardUpgradeSelection
+  cancelCardUpgradeSelection,
+  setHand,
+  setEnergyCurrent
 } = battleSlice.actions
 
 export default battleSlice.reducer
