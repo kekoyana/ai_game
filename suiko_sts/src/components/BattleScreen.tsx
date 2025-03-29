@@ -96,7 +96,6 @@ const BattleScreen = ({
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <CardUpgradeSelect
             cards={hand.filter(card => card !== selectedKanjiCard && card.type !== 'power')}
-            forgeCard={selectedKanjiCard}
             onClose={() => {
               setShowUpgradeSelect(false)
               setSelectedKanjiCard(null)
