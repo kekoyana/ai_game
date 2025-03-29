@@ -1,6 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit'
 import { enableMapSet } from 'immer'
-import gameReducer from './slices/gameSlice'
+import gameGeneralReducer from './slices/gameGeneralSlice'
+import battleReducer from './slices/battleSlice'
 import mapReducer from './slices/mapSlice'
 
 // Enable support for Set objects in Immer
@@ -8,7 +9,8 @@ enableMapSet()
 
 export const store = configureStore({
   reducer: {
-    game: gameReducer,
+    gameGeneral: gameGeneralReducer,
+    battle: battleReducer,
     map: mapReducer,
   },
 })

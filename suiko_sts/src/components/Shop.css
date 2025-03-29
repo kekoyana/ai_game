@@ -126,6 +126,58 @@
   @apply border-red-600;
 }
 
+/* オーバーレイ */
+.overlay {
+  @apply fixed inset-0 z-[9999] flex items-center justify-center;
+  animation: appear 0.3s ease-out;
+}
+
+.overlay::before {
+  content: '';
+  @apply fixed inset-0 bg-black/80;
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* モーダル表示時の本体 */
+.overlay .deck-view {
+  @apply relative bg-gray-900 rounded-xl p-8 w-full max-w-4xl z-[10000];
+  animation: appear 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 0.8; }
+}
+
+/* モーダル表示時のカードグリッドとボタン */
+.overlay .deck-grid,
+.overlay .dialog-buttons,
+.overlay .deck-card,
+.overlay button {
+  @apply relative z-[10001];
+  pointer-events: auto;
+}
+
+/* モーダル表示時のメインコンテンツを無効化 */
+.overlay ~ * {
+  pointer-events: none !important;
+}
+
+.deck-card.selected {
+  @apply ring-2 ring-blue-500 ring-offset-2 ring-offset-gray-900;
+  transform: scale(1.05);
+}
+
+.dialog-buttons {
+  @apply flex justify-center gap-4;
+}
+
+.service-button {
+  @apply py-2 px-6 bg-blue-600 text-white font-bold rounded
+         hover:bg-blue-500 disabled:bg-gray-600 disabled:cursor-not-allowed
+         transition-colors duration-200;
+}
+
 /* アニメーション */
 @keyframes appear {
   from {

@@ -28,7 +28,7 @@ export const relicPool: Relic[] = [
   {
     id: nanoid(),
     name: '龍の爪',
-    description: '戦闘開始時に筋力が2増加する',
+    description: '戦闘開始時に腕力が2増加する',
     rarity: 'rare',
     effect: {
       type: 'strength',
@@ -52,7 +52,7 @@ export const relicPool: Relic[] = [
   {
     id: nanoid(),
     name: '戦士の腕輪',
-    description: '戦闘開始時に筋力が1増加する',
+    description: '戦闘開始時に腕力が1増加する',
     rarity: 'uncommon',
     effect: {
       type: 'strength',

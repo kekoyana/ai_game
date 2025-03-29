@@ -1,12 +1,30 @@
 import { useSelector, useDispatch } from 'react-redux'
 import { RootState } from './store'
-import { startBattle, endTurn, playCard, endBattle, addCardToDeck, restAtCampfire, setGameCleared, resetGame, upgradeCard, addRelic } from './store/slices/gameSlice'
+import {
+  addCardToDeck,
+  restAtCampfire,
+  setGameCleared,
+  resetGame,
+  upgradeCard,
+  addRelic,
+  resetBlock,
+  takeDamage,
+  addBlock,
+  addStrength
+} from './store/slices/gameGeneralSlice'
+import {
+  startBattle,
+  endTurn,
+  playCard,
+  endBattle
+} from './store/slices/battleSlice'
 import { clearNode, resetMap, selectIsNodeConsumed } from './store/slices/mapSlice'
 import BattleScreen from './components/BattleScreen'
 import { Shop } from './components/Shop'
 import CardReward from './components/CardReward'
 import RelicReward from './components/RelicReward'
 import CardUpgrade from './components/CardUpgrade'
+import DeckView from './components/DeckView'
 import GameClear from './components/GameClear'
 import GameOver from './components/GameOver'
 import GoldDisplay from './components/GoldDisplay'
@@ -20,19 +38,26 @@ import { useState, useEffect } from 'react'
 
 function App() {
   const dispatch = useDispatch()
-  const gameState = useSelector((state: RootState) => state.game)
+  const generalState = useSelector((state: RootState) => state.gameGeneral)
+  const battleState = useSelector((state: RootState) => state.battle)
   const mapState = useSelector((state: RootState) => state.map)
-  const { 
-    player, 
-    enemy, 
-    energy, 
-    isInBattle, 
-    hand, 
-    turnNumber, 
+  
+  const {
+    player,
     isGameCleared,
     isGameOver,
-    gold
-  } = gameState
+    gold,
+    deck,
+    relics
+  } = generalState
+
+  const {
+    enemy,
+    energy,
+    isInBattle,
+    hand,
+    turnNumber
+  } = battleState
   const { currentMap, currentNodeId } = mapState
 
   const [showCardReward, setShowCardReward] = useState(false)
@@ -42,6 +67,7 @@ function App() {
   const [showVictoryMessage, setShowVictoryMessage] = useState(false)
   const [isShowingVictorySequence, setIsShowingVictorySequence] = useState(false)
   const [showCardUpgrade, setShowCardUpgrade] = useState(false)
+  const [showDeckView, setShowDeckView] = useState(false)
   const [rewardAmount, setRewardAmount] = useState(0)
   const [defeatedEnemy, setDefeatedEnemy] = useState<string>('')
 
@@ -67,7 +93,7 @@ function App() {
         setShowGoldReward(false)
 
         // 戦闘終了とノードクリア
-        dispatch(endBattle({}))
+        dispatch(endBattle())
         dispatch(clearNode(currentNodeId))
         
         // 戦闘ノードを消費済みにする
@@ -92,7 +118,7 @@ function App() {
   // プレイヤーのHPを監視
   useEffect(() => {
     if (player.currentHp <= 0) {
-      dispatch(endBattle({}))
+      dispatch(endBattle())
     }
   }, [player.currentHp, dispatch])
 
@@ -118,17 +144,32 @@ function App() {
                  currentNode.type === 'elite' ? 3 : 
                  2
       }
-      dispatch(startBattle(enemy))
+      dispatch(startBattle({ enemy, deck, player, relics }))
     }
   }
 
   const handleEndTurn = () => {
-    dispatch(endTurn({}))
+    dispatch(endTurn())
+    dispatch(resetBlock())
+    
+    // endTurnの後、incomingDamageを処理
+    const incomingDamage = battleState.incomingDamage
+    if (incomingDamage > 0) {
+      dispatch(takeDamage(incomingDamage))
+    }
   }
 
   const handlePlayCard = (card: Card) => {
     if (energy.current >= card.cost) {
-      dispatch(playCard(card))
+      // カードの効果を適用
+      if (card.effects.block) {
+        dispatch(addBlock(card.effects.block))
+      }
+      if (card.effects.strength) {
+        dispatch(addStrength(card.effects.strength))
+      }
+
+      dispatch(playCard({ card }))
     }
   }
 
@@ -156,7 +197,7 @@ function App() {
 
   const handleRest = () => {
     if (!isCurrentNodeConsumed) {
-      dispatch(restAtCampfire({}))
+      dispatch(restAtCampfire())
       setShowHealEffect(true)
       setTimeout(() => {
         setShowHealEffect(false)
@@ -177,7 +218,7 @@ function App() {
   }
 
   const handleRestart = () => {
-    dispatch(resetGame({}))
+    dispatch(resetGame())
     dispatch(resetMap())
     dispatch(setGameCleared(false))
   }
@@ -301,7 +342,7 @@ function App() {
 
         {showCardUpgrade && (
           <CardUpgrade
-            deck={gameState.deck}
+            deck={deck}
             onUpgradeCard={handleUpgradeCard}
             onSkip={handleSkipUpgrade}
           />
@@ -347,9 +388,22 @@ function App() {
           </div>
 
           <div className="flex gap-4 items-center">
+            <button
+              onClick={() => setShowDeckView(true)}
+              className="deck-view-button"
+            >
+              デッキ一覧
+            </button>
             <GoldDisplay amount={gold} />
-            <RelicDisplay relics={gameState.relics} />
+            <RelicDisplay relics={relics} />
           </div>
+
+          {/* デッキ一覧オーバーレイ */}
+          {showDeckView && (
+            <div className="game-overlay" onClick={() => setShowDeckView(false)}>
+              <DeckView />
+            </div>
+          )}
         </div>
       </div>
     </div>

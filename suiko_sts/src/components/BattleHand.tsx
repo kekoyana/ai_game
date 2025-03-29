@@ -7,13 +7,31 @@ interface BattleHandProps {
 }
 
 const BattleHand = ({ hand, onPlayCard }: BattleHandProps) => {
+  console.log('=== BattleHand Render ===')
+  console.log('Hand cards:', hand.map(card => ({
+    id: card.id,
+    name: card.name,
+    type: card.type
+  })))
+
+  const handlePlayCard = (card: Card) => {
+    console.log('=== BattleHand handlePlayCard ===')
+    console.log('Playing card:', {
+      id: card.id,
+      name: card.name,
+      type: card.type,
+      effects: card.effects
+    })
+    onPlayCard(card)
+  }
+
   return (
     <div className="flex gap-4 justify-center flex-wrap py-4">
       {hand.map((card) => (
         <CardComponent
           key={card.id}
           {...card}
-          onClick={() => onPlayCard(card)}
+          onClick={() => handlePlayCard(card)}
         />
       ))}
     </div>

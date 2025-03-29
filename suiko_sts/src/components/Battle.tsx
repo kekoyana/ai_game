@@ -11,10 +11,12 @@ interface BattleProps {
 }
 
 const Battle = ({ onEndTurn, onPlayCard }: BattleProps) => {
-  const { enemy, energy, turnNumber, hand, player } = useSelector((state: RootState) => state.game)
-
+  console.log('=== Battle Component Render ===')
+  const { enemy, energy, turnNumber, hand } = useSelector((state: RootState) => state.battle)
+  const { player } = useSelector((state: RootState) => state.gameGeneral)
   return (
     <div className="space-y-4">
+
       {/* ターン数表示 */}
       <div className="text-center">
         <span className="inline-block bg-yellow-900/50 px-4 py-2 rounded-full text-yellow-100 font-bold border border-yellow-700/30">

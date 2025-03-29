@@ -1,12 +1,13 @@
 import './CharacterStats.css'
 
 interface CharacterStatsProps { 
-  character: { 
+  character: {
     name: string
     currentHp: number
     maxHp: number
     block: number
     strength?: number
+    weaken?: number
     description?: string
   } | null
   isEnemy?: boolean
@@ -34,20 +35,26 @@ const CharacterStats = ({ character, isEnemy = false, enemyAction }: CharacterSt
             <span className="status-icon">❤️</span>
             {character.currentHp}/{character.maxHp}
           </span>
+{character.block > 0 && (
+  <span className="stats-block" title="ブロック">
+    <span className="status-icon">🛡️</span>
+    {character.block}
+  </span>
+)}
 
-          {character.block > 0 && (
-            <span className="stats-block" title="ブロック">
-              <span className="status-icon">🛡️</span>
-              {character.block}
-            </span>
-          )}
+{character.strength !== undefined && character.strength > 0 && (
+  <span className="stats-strength" title="攻撃力">
+    <span className="status-icon">⚔️</span>
+    {character.strength}
+  </span>
+)}
 
-          {isEnemy && character.strength !== undefined && character.strength > 0 && (
-            <span className="stats-strength" title="攻撃力">
-              <span className="status-icon">⚔️</span>
-              {character.strength}
-            </span>
-          )}
+{character.weaken !== undefined && character.weaken > 0 && (
+  <span className="stats-weaken" title="弱体化 (防御力-25%)">
+    <span className="status-icon">💫</span>
+    {character.weaken}
+  </span>
+)}
         </div>
 
         {/* 説明文 */}
