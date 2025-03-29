@@ -149,14 +149,16 @@ function App() {
   }
 
   const handleEndTurn = () => {
+    // ターンを終了して次の敵の行動を決定
     dispatch(endTurn())
-    dispatch(resetBlock())
-    
-    // endTurnの後、incomingDamageを処理
-    const incomingDamage = battleState.incomingDamage
-    if (incomingDamage > 0) {
-      dispatch(takeDamage(incomingDamage))
+
+    // 現在の敵の攻撃を処理（現在のブロック値を考慮）
+    if (battleState.incomingDamage > 0) {
+      dispatch(takeDamage(battleState.incomingDamage))
     }
+
+    // 最後にブロックをリセット
+    dispatch(resetBlock())
   }
 
   const handlePlayCard = (card: Card) => {

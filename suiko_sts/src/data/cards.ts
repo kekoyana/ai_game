@@ -243,6 +243,34 @@ export const allCards: Card[] = [
     flavorText: '羽のように軽やかに放たれる矢は、必ず標的を射抜く'
   },
 
+  // パワーカード追加
+  {
+    id: 'power_bujutsu_shidou',
+    name: '武術指導',
+    cost: 1,
+    type: 'power',
+    rarity: 'R',
+    description: '筋力2を得る',
+    effects: { strength: 2 },
+    character: '青眼虎 李雲',
+    flavorText: '虎のように鋭い目を持つ武術の達人'
+  },
+  {
+    id: 'power_soubi_youi',
+    name: '装備用意',
+    cost: 1,
+    type: 'power',
+    rarity: 'R',
+    description: 'ターン終了時に3ブロックを得る',
+    effects: {
+      turnEnd: {
+        block: 3
+      }
+    },
+    character: '通臂猿 侯健',
+    flavorText: '猿のように素早い動きで装備を整える'
+  },
+  
   // 新規追加カード
   {
     id: 'attack_skill_houcho_sabaki',
