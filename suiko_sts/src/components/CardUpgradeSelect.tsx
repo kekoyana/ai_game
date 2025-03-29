@@ -1,20 +1,15 @@
 import React from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { RootState } from '../store'
 import { Card } from '../data/cards'
-import { upgradeCardTemp } from '../store/slices/battleSlice'
 import CardComponent from './Card'
 
 interface CardUpgradeSelectProps {
   cards: Card[]
-  forgeCard: Card
   onClose: () => void
   onUpgrade: (card: Card) => void
 }
 
 export const CardUpgradeSelect: React.FC<CardUpgradeSelectProps> = ({
   cards,
-  forgeCard,
   onClose,
   onUpgrade
 }) => {
