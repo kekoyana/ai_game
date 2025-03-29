@@ -164,6 +164,11 @@
   @apply h-full bg-gradient-to-r from-red-600 to-red-400 transition-all duration-300;
 }
 
+.status-effect {
+  @apply bg-gray-900/80 px-3 py-2 rounded-lg border border-gray-700 text-sm text-yellow-300;
+  @apply flex items-center gap-2;
+}
+
 /* レスポンシブ対応 */
 @media (max-width: 640px) {
   .app-content {

@@ -40,7 +40,6 @@ const getUpgradedDescription = (card: Card): string => {
 
   return `[強化] ${desc}`
 }
-
 const initialState: BattleState = {
   enemy: null,
   hand: [],
@@ -194,6 +193,11 @@ export const battleSlice = createSlice({
             blockValue -= reduction
           }
           state.enemy.block = blockValue
+          }
+    
+          // この部分は削除: プレイヤーの重装備効果はgameGeneralSliceで処理
+          if (!state.isInBattle) {
+            return
         }
       }
 
@@ -255,6 +259,7 @@ export const battleSlice = createSlice({
       const cardToPlay = upgradedCard || card
       let effects = { ...cardToPlay.effects }
 
+      // パワーカードの処理
       if (cardToPlay.type === 'power') {
         state.activePowers.push({ ...cardToPlay, effects })
       } else {

@@ -10,7 +10,9 @@ import {
   resetBlock,
   takeDamage,
   addBlock,
-  addStrength
+  addStrength,
+  addHeavyArmor,
+  applyHeavyArmor
 } from './store/slices/gameGeneralSlice'
 import {
   startBattle,
@@ -152,6 +154,9 @@ function App() {
     // ターンを終了して次の敵の行動を決定
     dispatch(endTurn())
 
+    // 重装備の効果を適用
+    dispatch(applyHeavyArmor())
+
     // 現在の敵の攻撃を処理（現在のブロック値を考慮）
     if (battleState.incomingDamage > 0) {
       dispatch(takeDamage(battleState.incomingDamage))
@@ -169,6 +174,9 @@ function App() {
       }
       if (card.effects.strength) {
         dispatch(addStrength(card.effects.strength))
+      }
+      if (card.effects.heavyArmor) {
+        dispatch(addHeavyArmor(card.effects.heavyArmor))
       }
 
       dispatch(playCard({ card }))

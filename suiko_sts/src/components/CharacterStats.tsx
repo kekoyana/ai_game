@@ -8,6 +8,7 @@ interface CharacterStatsProps {
     block: number
     strength?: number
     weaken?: number
+    heavyArmor?: number
     description?: string
   } | null
   isEnemy?: boolean
@@ -48,11 +49,17 @@ const CharacterStats = ({ character, isEnemy = false, enemyAction }: CharacterSt
     {character.strength}
   </span>
 )}
-
 {character.weaken !== undefined && character.weaken > 0 && (
   <span className="stats-weaken" title="弱体化 (防御力-25%)">
     <span className="status-icon">💫</span>
     {character.weaken}
+  </span>
+)}
+
+{character.heavyArmor !== undefined && character.heavyArmor > 0 && (
+  <span className="stats-heavy-armor" title="重装備 (ターン終了時にブロック獲得)">
+    <span className="status-icon">️🏯</span>
+    {character.heavyArmor}
   </span>
 )}
         </div>
