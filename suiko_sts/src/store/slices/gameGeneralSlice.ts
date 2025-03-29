@@ -10,6 +10,7 @@ export interface Character {
   block: number
   strength?: number
   weaken?: number
+  heavyArmor?: number  // 重装備の値
   goldReward?: number
   enemyAction?: {
     type: 'attack' | 'defend' | 'buff'
@@ -169,6 +170,12 @@ export const gameGeneralSlice = createSlice({
     addBlock: (state, action: PayloadAction<number>) => {
       if (state.isGameOver) return
       state.player.block = (state.player.block || 0) + action.payload
+    },
+
+    // 重装備の効果を適用
+    applyHeavyArmor: (state) => {
+      if (state.isGameOver || !state.player.heavyArmor) return
+      state.player.block += state.player.heavyArmor
     }
   }
 })
@@ -188,7 +195,8 @@ export const {
   takeDamage,
   resetBlock,
   addStrength,
-  addBlock
+  addBlock,
+  applyHeavyArmor
 } = gameGeneralSlice.actions
 
 export default gameGeneralSlice.reducer

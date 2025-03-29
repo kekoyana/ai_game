@@ -170,6 +170,9 @@ function App() {
       if (card.effects.strength) {
         dispatch(addStrength(card.effects.strength))
       }
+      if (card.effects.heavyArmor) {
+        dispatch(addHeavyArmor(card.effects.heavyArmor))
+      }
 
       dispatch(playCard({ card }))
     }

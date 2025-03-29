@@ -19,6 +19,7 @@ export interface Card {
     dexterity?: number
     weaken?: number
     blockAsDamage?: boolean  // ブロック値をダメージに加算するフラグ
+    heavyArmor?: number     // 重装備の値
     turnEnd?: {             // ターン終了時に発動する効果
       strength?: number      // 筋力の増減
       block?: number        // ブロックの増減
@@ -29,9 +30,7 @@ export interface Card {
   flavorText?: string
 }
 
-// すべてのカードの定義
 export const allCards: Card[] = [
-  // コスト1アタックカード（ダメージ6）
   {
     id: 'attack_bokutou_ryoudan',
     name: '朴刀両断',
@@ -87,8 +86,6 @@ export const allCards: Card[] = [
     character: '独火星 孔亮',
     flavorText: '地をも貫く一撃'
   },
-  
-  // コスト2アタックカード（ダメージ8）
   {
     id: 'attack_daichi_giri',
     name: '大地斬',
@@ -100,8 +97,6 @@ export const allCards: Card[] = [
     character: '錦毛虎 燕順',
     flavorText: '大地を切り裂き、敵の力を奪う一撃'
   },
-
-  // コスト1スキルカード（防御5）
   {
     id: 'skill_enkai_shiki',
     name: '宴会の指揮',
@@ -146,8 +141,6 @@ export const allCards: Card[] = [
     character: '石将軍 石勇',
     flavorText: '岩のように揺るがぬ防御'
   },
-
-  // SSRカード
   {
     id: 'power_tekkou_genpeijin',
     name: '鉄甲玄兵陣',
@@ -181,8 +174,6 @@ export const allCards: Card[] = [
     character: '天魔王 晁蓋',
     flavorText: '梁山泊の初代首領、その威厳は敵をも味方にする'
   },
-
-  // SRカード
   {
     id: 'attack_hatenkou',
     name: '破天荒',
@@ -205,8 +196,6 @@ export const allCards: Card[] = [
     character: '呼保義 宋江',
     flavorText: '梁山泊の兄弟たちの心を一つに結ぶ'
   },
-
-  // Rカード
   {
     id: 'power_bushin_kakusei',
     name: '武神の覚醒',
@@ -229,8 +218,6 @@ export const allCards: Card[] = [
     character: '金鎖手 鮮于通',
     flavorText: '金の鎖で織りなす完璧な防御'
   },
-
-  // Cカード
   {
     id: 'attack_hishou_ya',
     name: '飛翔箭',
@@ -242,8 +229,6 @@ export const allCards: Card[] = [
     character: '没羽箭 張清',
     flavorText: '羽のように軽やかに放たれる矢は、必ず標的を射抜く'
   },
-
-  // パワーカード追加
   {
     id: 'power_bujutsu_shidou',
     name: '武術指導',
@@ -261,17 +246,13 @@ export const allCards: Card[] = [
     cost: 1,
     type: 'power',
     rarity: 'R',
-    description: 'ターン終了時に3ブロックを得る',
+    description: '重装備+3（ターン終了時にブロック+3）',
     effects: {
-      turnEnd: {
-        block: 3
-      }
+      heavyArmor: 3
     },
     character: '通臂猿 侯健',
     flavorText: '猿のように素早い動きで装備を整える'
   },
-  
-  // 新規追加カード
   {
     id: 'attack_skill_houcho_sabaki',
     name: '包丁捌き',
@@ -368,6 +349,10 @@ export const initialDeckCardIds = [
   'skill_gin_saiku',
   'skill_izakaya_mamori',
   'skill_sekiheki'
+
+,'power_bujutsu_shidou'
+,'power_soubi_youi'
+
 ]
 
 // カードIDからカードを取得

@@ -9,7 +9,8 @@ import battleReducer, {
 import gameGeneralReducer, {
   addBlock,
   takeDamage,
-  resetBlock
+  resetBlock,
+  applyHeavyArmor
 } from '../store/slices/gameGeneralSlice'
 import { Card, allCards } from '../data/cards'
 
@@ -314,5 +315,59 @@ describe('Battle System', () => {
     expect(state.battle.enemy?.enemyAction?.value).toBe(8)
     expect(state.battle.incomingDamage).toBe(0)
     expect(state.battle.enemy?.block).toBe(8)
+  })
+
+  it('重装備バフのテスト', () => {
+    const store = createTestStore()
+    
+    // 戦闘開始：プレイヤーに重装備3を設定
+    store.dispatch(startBattle({
+      enemy: {
+        id: 'test_enemy',
+        name: 'テストエネミー',
+        maxHp: 100,
+        currentHp: 100,
+        block: 0,
+        strength: 0,
+        enemyAction: {
+          type: 'attack',
+          value: 14,
+          description: '攻撃 14'
+        }
+      },
+      deck: [],
+      player: {
+        ...store.getState().gameGeneral.player,
+        heavyArmor: 3  // 重装備+3の状態
+      },
+      relics: []
+    }))
+
+    let state = store.getState()
+    expect(state.gameGeneral.player.heavyArmor).toBe(3)
+    expect(state.gameGeneral.player.block).toBe(0)
+
+    // 1ターン目：ターン終了時に重装備の効果でブロック+3
+    store.dispatch(addBlock(5))  // 通常の防御
+    state = store.getState()
+    expect(state.gameGeneral.player.block).toBe(5)
+store.dispatch(takeDamage(14))
+store.dispatch(resetBlock())
+store.dispatch(applyHeavyArmor()) // 重装備の効果を適用
+store.dispatch(endTurn())
+
+state = store.getState()
+expect(state.gameGeneral.player.block).toBe(3)  // 重装備の効果で+3
+expect(state.gameGeneral.player.currentHp).toBe(74)  // 80 - (14 - 8[5+3])
+
+// 2ターン目：重装備の効果が持続
+store.dispatch(takeDamage(14))
+store.dispatch(resetBlock())
+store.dispatch(applyHeavyArmor()) // 重装備の効果を適用
+store.dispatch(endTurn())
+
+state = store.getState()
+expect(state.gameGeneral.player.block).toBe(3)  // 再度重装備の効果で+3
+    expect(state.gameGeneral.player.block).toBe(3)  // 再度重装備の効果で+3
   })
 })
