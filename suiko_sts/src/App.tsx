@@ -403,6 +403,7 @@ function App() {
             </button>
             <GoldDisplay amount={gold} />
             <RelicDisplay relics={relics} />
+            {/* heavy-armor-status removed as per user request */}
           </div>
 
           {/* デッキ一覧オーバーレイ */}

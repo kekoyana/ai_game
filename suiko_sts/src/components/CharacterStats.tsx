@@ -1,6 +1,6 @@
 import './CharacterStats.css'
 
-interface CharacterStatsProps { 
+interface CharacterStatsProps {
   character: {
     name: string
     currentHp: number
@@ -8,6 +8,7 @@ interface CharacterStatsProps {
     block: number
     strength?: number
     weaken?: number
+    heavyArmor?: number
     description?: string
   } | null
   isEnemy?: boolean
@@ -39,6 +40,12 @@ const CharacterStats = ({ character, isEnemy = false, enemyAction }: CharacterSt
   <span className="stats-block" title="ブロック">
     <span className="status-icon">🛡️</span>
     {character.block}
+  </span>
+)}
+{character.heavyArmor !== undefined && character.heavyArmor > 0 && (
+  <span className="stats-heavy-armor" title="重装備">
+    <span className="status-icon">🏯</span>
+    {character.heavyArmor}
   </span>
 )}
 
