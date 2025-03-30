@@ -40,6 +40,7 @@ const getUpgradedDescription = (card: Card): string => {
 
   return `[強化] ${desc}`
 }
+
 const initialState: BattleState = {
   enemy: null,
   hand: [],
@@ -77,10 +78,8 @@ const generateEnemyMove = (enemy: Character, currentAction?: Character['enemyAct
     }
   }
 
-  // テストケースごとの行動パターン
   switch (enemy.id) {
     case 'pattern_test_enemy':
-      // 固定パターン: attack14 → defend8 → attack12
       if (!currentAction) {
         return actions.attack14
       } else if (currentAction.type === 'attack' && currentAction.value === 14) {
@@ -88,24 +87,21 @@ const generateEnemyMove = (enemy: Character, currentAction?: Character['enemyAct
       } else if (currentAction.type === 'defend') {
         return actions.attack12
       } else {
-        return actions.attack14 // パターンの最初に戻る
+        return actions.attack14
       }
     
     case 'test_enemy':
-      // 常に攻撃14を返す
       return actions.attack14
     
     default:
-      // その他の場合（ランダムな行動）
       const availableActions = Object.values(actions)
       if (currentAction) {
-        // 前回と異なる行動を選択
         const differentActions = availableActions.filter(action =>
           action.type !== currentAction.type || action.value !== currentAction.value
         )
         return differentActions[Math.floor(Math.random() * differentActions.length)]
       }
-      return actions.attack14 // 初期行動
+      return actions.attack14
   }
 }
 
@@ -121,15 +117,13 @@ export const battleSlice = createSlice({
 
       state.enemy = enemy
       state.isInBattle = true
-      state.incomingDamage = 0  // 初期化
+      state.incomingDamage = 0
 
       if (state.enemy) {
-        // 初期行動が設定されていない場合のみ生成
         if (!state.enemy.enemyAction) {
           state.enemy.enemyAction = generateEnemyMove(state.enemy, undefined)
         }
         
-        // 初期行動に基づいて状態を設定
         const action = state.enemy.enemyAction
         if (action.type === 'defend') {
           state.enemy.block = action.value
@@ -165,20 +159,16 @@ export const battleSlice = createSlice({
       if (!state.isInBattle) return
 
       if (state.enemy && state.enemy.enemyAction) {
-        // 現在のターンの状態をクリア
-        state.enemy.block = 0  // ターン終了時にブロックをリセット
+        state.enemy.block = 0
         if (state.enemy.weaken && state.enemy.weaken > 0) {
           state.enemy.weaken -= 1
         }
 
-        // 次のターンの行動を生成
         const nextAction = generateEnemyMove(state.enemy, state.enemy.enemyAction)
         state.enemy.enemyAction = nextAction
 
-        // 次のターンの行動に基づいて状態を設定
-        state.incomingDamage = 0 // デフォルトは0
+        state.incomingDamage = 0
         if (nextAction.type === 'attack') {
-          // 攻撃行動の場合、次のターンのダメージを設定
           let attackValue = nextAction.value
           if (state.enemy.weaken && state.enemy.weaken > 0) {
             const reduction = Math.floor(attackValue * 0.25)
@@ -186,25 +176,18 @@ export const battleSlice = createSlice({
           }
           state.incomingDamage = attackValue
         } else if (nextAction.type === 'defend') {
-          // 防御行動の場合、ブロックを設定
           let blockValue = nextAction.value
           if (state.enemy.weaken && state.enemy.weaken > 0) {
             const reduction = Math.floor(blockValue * 0.25)
             blockValue -= reduction
           }
           state.enemy.block = blockValue
-          }
-    
-          // この部分は削除: プレイヤーの重装備効果はgameGeneralSliceで処理
-          if (!state.isInBattle) {
-            return
         }
       }
 
       state.turnNumber += 1
       state.energy.current = state.energy.max
 
-      // ディスカードする際にアップグレード状態を維持
       const cardsToDiscard = state.hand.map(card => {
         const upgradedCard = state.tempUpgradedCards.find(uc => uc.id === card.id)
         return upgradedCard || card
@@ -231,7 +214,6 @@ export const battleSlice = createSlice({
       const { card } = action.payload
       if (!state.isInBattle || state.energy.current < card.cost) return
 
-      // 鍛冶カードの特別処理
       if (card.id === 'skill_kanji') {
         state.hand = state.hand.filter((c: Card) => c.id !== card.id)
         state.energy.current -= card.cost
@@ -240,26 +222,20 @@ export const battleSlice = createSlice({
         return
       }
 
-      // 首切りカードの特別処理：他のカードが全て攻撃カードの場合のみ使用可能
       if (card.id === 'attack_kubi_kiri') {
-        // 自分以外の手札を取得
         const otherCards = state.hand.filter(c => c.id !== card.id)
-        // 手札が空でない場合は、全てがattackカードであることを確認
         if (otherCards.length > 0 && !otherCards.every(c => c.type === 'attack')) {
           return
         }
       }
 
-
       state.hand = state.hand.filter((c: Card) => c.id !== card.id)
       state.energy.current -= card.cost
 
-      // アップグレードされたカードを探す
       const upgradedCard = state.tempUpgradedCards.find(c => c.id === card.id)
       const cardToPlay = upgradedCard || card
       let effects = { ...cardToPlay.effects }
 
-      // パワーカードの処理
       if (cardToPlay.type === 'power') {
         state.activePowers.push({ ...cardToPlay, effects })
       } else {
@@ -299,7 +275,6 @@ export const battleSlice = createSlice({
           }
           if (state.drawPile.length > 0) {
             const drawnCard = state.drawPile[0]
-            // アップグレード状態を確認
             const upgradedCard = state.tempUpgradedCards.find(uc => uc.id === drawnCard.id)
             state.hand.push(upgradedCard || drawnCard)
             state.drawPile = state.drawPile.slice(1)
@@ -353,7 +328,6 @@ export const battleSlice = createSlice({
       state.isSelectingCardForUpgrade = false
     },
 
-    // テスト用アクション
     setHand: (state, action: PayloadAction<Card[]>) => {
       state.hand = action.payload
     },

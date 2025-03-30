@@ -10,8 +10,10 @@ import {
   resetBlock,
   takeDamage,
   addBlock,
-  addStrength
+  addStrength,
+  addHeavyArmor
 } from './store/slices/gameGeneralSlice'
+import * as gameGeneralActions from './store/slices/gameGeneralSlice'
 import {
   startBattle,
   endTurn,
