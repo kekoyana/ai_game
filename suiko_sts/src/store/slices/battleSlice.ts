@@ -2,6 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { Card, shuffleDeck } from '../../data/cards'
 import { Relic } from '../../data/relics'
 import { Character } from './gameGeneralSlice'
+import { getBehaviorForEnemy } from '../../data/enemyActions'
 
 interface BattleState {
   enemy: Character | null
@@ -60,49 +61,8 @@ const initialState: BattleState = {
 }
 
 const generateEnemyMove = (enemy: Character, currentAction?: Character['enemyAction']) => {
-  const actions = {
-    attack14: {
-      type: 'attack' as const,
-      value: 14,
-      description: '攻撃 14'
-    },
-    defend8: {
-      type: 'defend' as const,
-      value: 8,
-      description: '防御態勢 (8ブロック)'
-    },
-    attack12: {
-      type: 'attack' as const,
-      value: 12,
-      description: '強襲 12'
-    }
-  }
-
-  switch (enemy.id) {
-    case 'pattern_test_enemy':
-      if (!currentAction) {
-        return actions.attack14
-      } else if (currentAction.type === 'attack' && currentAction.value === 14) {
-        return actions.defend8
-      } else if (currentAction.type === 'defend') {
-        return actions.attack12
-      } else {
-        return actions.attack14
-      }
-    
-    case 'test_enemy':
-      return actions.attack14
-    
-    default:
-      const availableActions = Object.values(actions)
-      if (currentAction) {
-        const differentActions = availableActions.filter(action =>
-          action.type !== currentAction.type || action.value !== currentAction.value
-        )
-        return differentActions[Math.floor(Math.random() * differentActions.length)]
-      }
-      return actions.attack14
-  }
+  const behavior = getBehaviorForEnemy(enemy.id)
+  return behavior.getNextAction(enemy, currentAction)
 }
 
 export const battleSlice = createSlice({
