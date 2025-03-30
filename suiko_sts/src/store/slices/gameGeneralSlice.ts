@@ -1,6 +1,8 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { Card, createInitialDeck } from '../../data/cards'
 import { Relic } from '../../data/relics'
+import { startBattle } from './battleSlice'
+import { endBattle } from './battleSlice'
 
 export interface Character {
   id: string
@@ -10,6 +12,7 @@ export interface Character {
   block: number
   strength?: number
   weaken?: number
+  heavyArmor?: number  // 重装備の値
   goldReward?: number
   enemyAction?: {
     type: 'attack' | 'defend' | 'buff'
@@ -132,27 +135,18 @@ export const gameGeneralSlice = createSlice({
           break
       }
     },
-
-    // プレイヤーへのダメージ処理
-    takeDamage: (state, action: PayloadAction<number>) => {
-      if (state.isGameOver) return
-      const incomingDamage = action.payload
-
-      if (state.player.block > 0) {
-        const blockedDamage = Math.min(state.player.block, incomingDamage)
-        const remainingDamage = incomingDamage - blockedDamage
-        if (remainingDamage > 0) {
-          state.player.currentHp = Math.max(0, state.player.currentHp - remainingDamage)
-        }
-      } else {
-        state.player.currentHp = Math.max(0, state.player.currentHp - incomingDamage)
-      }
-
-      if (state.player.currentHp === 0) {
-        state.isGameOver = true
-      }
-    },
-
+// プレイヤーへのダメージ処理
+takeDamage: (state, action: PayloadAction<number>) => {
+  if (state.isGameOver) return
+  const incomingDamage = action.payload
+  const effectiveBlock = (state.player.block || 0) + (state.player.heavyArmor || 0)
+  const blockedDamage = Math.min(effectiveBlock, incomingDamage)
+  const remainingDamage = incomingDamage - blockedDamage
+  state.player.currentHp = Math.max(0, state.player.currentHp - remainingDamage)
+  if (state.player.currentHp === 0) {
+    state.isGameOver = true
+  }
+},
     // プレイヤーのブロックをリセット
     resetBlock: (state) => {
       if (state.isGameOver) return
@@ -169,7 +163,41 @@ export const gameGeneralSlice = createSlice({
     addBlock: (state, action: PayloadAction<number>) => {
       if (state.isGameOver) return
       state.player.block = (state.player.block || 0) + action.payload
+    },
+    addHeavyArmor: (state, action: PayloadAction<number>) => {
+      if (state.isGameOver) return
+      state.player.heavyArmor = (state.player.heavyArmor || 0) + action.payload
+    },
+
+    // 重装備の効果を適用
+    applyHeavyArmor: (state) => {
+      if (state.isGameOver || !state.player.heavyArmor) return
+      state.player.block += state.player.heavyArmor
+    },
+
+    // 重装備をリセット
+    resetHeavyArmor: (state) => {
+      if (state.isGameOver) return
+      state.player.heavyArmor = 0
+    },
+
+    // パワーカードの効果をリセット
+    resetPowerEffects: (state) => {
+      if (state.isGameOver) return
+      state.player.strength = 0
+      state.player.heavyArmor = 0
     }
+  }
+  ,
+  extraReducers: (builder) => {
+    builder.addCase(startBattle, (state, action) => {
+      state.player = { ...action.payload.player, heavyArmor: action.payload.player.heavyArmor !== undefined ? action.payload.player.heavyArmor : 0 }
+    })
+    builder.addCase(endBattle, (state) => {
+      // Reset power card effects when battle ends
+      state.player.strength = 0
+      state.player.heavyArmor = 0
+    })
   }
 })
 
@@ -188,7 +216,11 @@ export const {
   takeDamage,
   resetBlock,
   addStrength,
-  addBlock
+  addBlock,
+  addHeavyArmor,
+  applyHeavyArmor,
+  resetHeavyArmor,
+  resetPowerEffects
 } = gameGeneralSlice.actions
 
 export default gameGeneralSlice.reducer

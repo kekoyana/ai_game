@@ -10,8 +10,10 @@ import {
   resetBlock,
   takeDamage,
   addBlock,
-  addStrength
+  addStrength,
+  addHeavyArmor
 } from './store/slices/gameGeneralSlice'
+import * as gameGeneralActions from './store/slices/gameGeneralSlice'
 import {
   startBattle,
   endTurn,
@@ -149,14 +151,16 @@ function App() {
   }
 
   const handleEndTurn = () => {
+    // ターンを終了して次の敵の行動を決定
     dispatch(endTurn())
-    dispatch(resetBlock())
-    
-    // endTurnの後、incomingDamageを処理
-    const incomingDamage = battleState.incomingDamage
-    if (incomingDamage > 0) {
-      dispatch(takeDamage(incomingDamage))
+
+    // 現在の敵の攻撃を処理（現在のブロック値を考慮）
+    if (battleState.incomingDamage > 0) {
+      dispatch(takeDamage(battleState.incomingDamage))
     }
+
+    // 最後にブロックをリセット
+    dispatch(resetBlock())
   }
 
   const handlePlayCard = (card: Card) => {
@@ -167,6 +171,9 @@ function App() {
       }
       if (card.effects.strength) {
         dispatch(addStrength(card.effects.strength))
+      }
+      if (card.effects.heavyArmor) {
+        dispatch(addHeavyArmor(card.effects.heavyArmor))
       }
 
       dispatch(playCard({ card }))

@@ -59,25 +59,50 @@ const initialState: BattleState = {
   isSelectingCardForUpgrade: false
 }
 
-const generateEnemyMove = (enemy: Character) => {
-  const actions = [
-    { 
-      type: 'attack' as const, 
-      value: 12 + (enemy.strength || 0), 
-      description: `強襲 (${12 + (enemy.strength || 0)}ダメージ)`
+const generateEnemyMove = (enemy: Character, currentAction?: Character['enemyAction']) => {
+  const actions = {
+    attack14: {
+      type: 'attack' as const,
+      value: 14,
+      description: '攻撃 14'
     },
-    { 
-      type: 'defend' as const, 
-      value: 8, 
+    defend8: {
+      type: 'defend' as const,
+      value: 8,
       description: '防御態勢 (8ブロック)'
     },
-    { 
-      type: 'attack' as const, 
-      value: 8 + (enemy.strength || 0), 
-      description: `攻撃 (${8 + (enemy.strength || 0)}ダメージ)`
+    attack12: {
+      type: 'attack' as const,
+      value: 12,
+      description: '強襲 12'
     }
-  ]
-  return actions[Math.floor(Math.random() * actions.length)]
+  }
+
+  switch (enemy.id) {
+    case 'pattern_test_enemy':
+      if (!currentAction) {
+        return actions.attack14
+      } else if (currentAction.type === 'attack' && currentAction.value === 14) {
+        return actions.defend8
+      } else if (currentAction.type === 'defend') {
+        return actions.attack12
+      } else {
+        return actions.attack14
+      }
+    
+    case 'test_enemy':
+      return actions.attack14
+    
+    default:
+      const availableActions = Object.values(actions)
+      if (currentAction) {
+        const differentActions = availableActions.filter(action =>
+          action.type !== currentAction.type || action.value !== currentAction.value
+        )
+        return differentActions[Math.floor(Math.random() * differentActions.length)]
+      }
+      return actions.attack14
+  }
 }
 
 export const battleSlice = createSlice({
@@ -91,16 +116,23 @@ export const battleSlice = createSlice({
                         25
 
       state.enemy = enemy
+      state.isInBattle = true
+      state.incomingDamage = 0
+
       if (state.enemy) {
-        const action = generateEnemyMove(state.enemy)
-        state.enemy.enemyAction = action
+        if (!state.enemy.enemyAction) {
+          state.enemy.enemyAction = generateEnemyMove(state.enemy, undefined)
+        }
         
+        const action = state.enemy.enemyAction
         if (action.type === 'defend') {
           state.enemy.block = action.value
+          state.incomingDamage = 0
+        } else if (action.type === 'attack') {
+          state.enemy.block = 0
+          state.incomingDamage = action.value
         }
       }
-
-      state.isInBattle = true
       state.energy.current = state.energy.max
       state.turnNumber = 1
       state.drawPile = shuffleDeck([...deck])
@@ -108,7 +140,6 @@ export const battleSlice = createSlice({
       state.discardPile = []
       state.activePowers = []
       state.activeSkills = []
-      state.incomingDamage = 0
       state.tempUpgradedCards = []
       state.isSelectingCardForUpgrade = false
 
@@ -127,21 +158,24 @@ export const battleSlice = createSlice({
     endTurn: (state) => {
       if (!state.isInBattle) return
 
-      if (state.enemy?.enemyAction?.type === 'attack') {
-        state.incomingDamage = state.enemy.enemyAction.value
-      }
-
-      if (state.enemy) {
+      if (state.enemy && state.enemy.enemyAction) {
+        state.enemy.block = 0
         if (state.enemy.weaken && state.enemy.weaken > 0) {
           state.enemy.weaken -= 1
         }
 
-        state.enemy.block = 0
-
-        const nextAction = generateEnemyMove(state.enemy)
+        const nextAction = generateEnemyMove(state.enemy, state.enemy.enemyAction)
         state.enemy.enemyAction = nextAction
 
-        if (nextAction.type === 'defend') {
+        state.incomingDamage = 0
+        if (nextAction.type === 'attack') {
+          let attackValue = nextAction.value
+          if (state.enemy.weaken && state.enemy.weaken > 0) {
+            const reduction = Math.floor(attackValue * 0.25)
+            attackValue -= reduction
+          }
+          state.incomingDamage = attackValue
+        } else if (nextAction.type === 'defend') {
           let blockValue = nextAction.value
           if (state.enemy.weaken && state.enemy.weaken > 0) {
             const reduction = Math.floor(blockValue * 0.25)
@@ -154,7 +188,6 @@ export const battleSlice = createSlice({
       state.turnNumber += 1
       state.energy.current = state.energy.max
 
-      // ディスカードする際にアップグレード状態を維持
       const cardsToDiscard = state.hand.map(card => {
         const upgradedCard = state.tempUpgradedCards.find(uc => uc.id === card.id)
         return upgradedCard || card
@@ -181,7 +214,6 @@ export const battleSlice = createSlice({
       const { card } = action.payload
       if (!state.isInBattle || state.energy.current < card.cost) return
 
-      // 鍛冶カードの特別処理
       if (card.id === 'skill_kanji') {
         state.hand = state.hand.filter((c: Card) => c.id !== card.id)
         state.energy.current -= card.cost
@@ -192,15 +224,14 @@ export const battleSlice = createSlice({
 
       if (card.id === 'attack_kubi_kiri') {
         const otherCards = state.hand.filter(c => c.id !== card.id)
-        const isAllAttacks = otherCards.length === 0 || otherCards.every(c => c.type === 'attack')
-        if (!isAllAttacks) return
+        if (otherCards.length > 0 && !otherCards.every(c => c.type === 'attack')) {
+          return
+        }
       }
-
 
       state.hand = state.hand.filter((c: Card) => c.id !== card.id)
       state.energy.current -= card.cost
 
-      // アップグレードされたカードを探す
       const upgradedCard = state.tempUpgradedCards.find(c => c.id === card.id)
       const cardToPlay = upgradedCard || card
       let effects = { ...cardToPlay.effects }
@@ -221,7 +252,7 @@ export const battleSlice = createSlice({
         for (let i = 0; i < hitCount; i++) {
           if (state.enemy.block > 0) {
             const blockedDamage = Math.min(state.enemy.block, totalDamage)
-            state.enemy.block = Math.max(0, state.enemy.block - totalDamage)
+            state.enemy.block = Math.max(0, state.enemy.block - blockedDamage)
             const remainingDamage = totalDamage - blockedDamage
             if (remainingDamage > 0) {
               state.enemy.currentHp = Math.max(0, state.enemy.currentHp - remainingDamage)
@@ -244,7 +275,6 @@ export const battleSlice = createSlice({
           }
           if (state.drawPile.length > 0) {
             const drawnCard = state.drawPile[0]
-            // アップグレード状態を確認
             const upgradedCard = state.tempUpgradedCards.find(uc => uc.id === drawnCard.id)
             state.hand.push(upgradedCard || drawnCard)
             state.drawPile = state.drawPile.slice(1)
@@ -296,6 +326,14 @@ export const battleSlice = createSlice({
 
     cancelCardUpgradeSelection: (state) => {
       state.isSelectingCardForUpgrade = false
+    },
+
+    setHand: (state, action: PayloadAction<Card[]>) => {
+      state.hand = action.payload
+    },
+
+    setEnergyCurrent: (state, action: PayloadAction<number>) => {
+      state.energy.current = action.payload
     }
   }
 })
@@ -307,7 +345,9 @@ export const {
   endBattle,
   setEnergyMax,
   upgradeCardTemp,
-  cancelCardUpgradeSelection
+  cancelCardUpgradeSelection,
+  setHand,
+  setEnergyCurrent
 } = battleSlice.actions
 
 export default battleSlice.reducer
