@@ -5,7 +5,7 @@ import { Card } from '../data/cards'
 import CharacterStats from './CharacterStats'
 import { upgradeCardTemp } from '../store/slices/battleSlice'
 import EnergyDisplay from './EnergyDisplay'
-import CardComponent from './Card'
+import BattleHand from './BattleHand'
 import CardUpgradeSelect from './CardUpgradeSelect'
 
 interface BattleScreenProps {
@@ -79,16 +79,10 @@ const BattleScreen = ({
 
       {/* 手札エリア */}
       <div className="hand-container">
-        <div className="hand-cards">
-          {hand.map((card) => (
-            <div key={card.id} className="card-wrapper">
-              <CardComponent
-                {...card}
-                onClick={() => handlePlayCard(card)}
-              />
-            </div>
-          ))}
-        </div>
+        <BattleHand
+          hand={hand}
+          onPlayCard={handlePlayCard}
+        />
       </div>
 
       {/* カードアップグレード選択UI */}
