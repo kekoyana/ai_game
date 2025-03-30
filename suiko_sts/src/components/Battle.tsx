@@ -11,7 +11,6 @@ interface BattleProps {
 }
 
 const Battle = ({ onEndTurn, onPlayCard }: BattleProps) => {
-  console.log('=== Battle Component Render ===')
   const { enemy, energy, turnNumber, hand } = useSelector((state: RootState) => state.battle)
   const { player } = useSelector((state: RootState) => state.gameGeneral)
   return (

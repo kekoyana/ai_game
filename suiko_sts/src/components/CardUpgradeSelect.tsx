@@ -15,13 +15,6 @@ export const CardUpgradeSelect: React.FC<CardUpgradeSelectProps> = ({
 }) => {
   
   const handleUpgrade = (card: Card) => {
-    console.log('=== CardUpgradeSelect handleUpgrade ===')
-    console.log('Selected card for upgrade:', {
-      id: card.id,
-      name: card.name,
-      effects: card.effects
-    })
-    
     onUpgrade(card)
     onClose()
   }

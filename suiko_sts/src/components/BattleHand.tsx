@@ -9,13 +9,6 @@ interface BattleHandProps {
 const BattleHand = ({ hand, onPlayCard }: BattleHandProps) => {
 
   const handlePlayCard = (card: Card) => {
-    console.log('=== BattleHand handlePlayCard ===')
-    console.log('Playing card:', {
-      id: card.id,
-      name: card.name,
-      type: card.type,
-      effects: card.effects
-    })
     onPlayCard(card)
   }
 
