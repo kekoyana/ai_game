@@ -1,13 +1,23 @@
 .deck-view {
-  @apply p-6 bg-gray-900/80 min-h-screen;
+  @apply fixed inset-0 p-6 bg-gray-900/80 flex flex-col;
 }
 
 .deck-header {
   @apply flex justify-between items-center mb-6;
 }
 
+.header-left {
+  @apply flex items-center gap-4;
+}
+
 .deck-header h2 {
   @apply text-2xl font-bold text-yellow-100;
+}
+
+.close-button {
+  @apply w-8 h-8 flex items-center justify-center rounded-full;
+  @apply text-gray-400 hover:text-white bg-gray-800 hover:bg-gray-700;
+  @apply transition-colors duration-200;
 }
 
 .sort-controls {
@@ -28,6 +38,20 @@
 
 .deck-grid {
   @apply grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4;
+  @apply overflow-y-auto flex-1 p-4;
+}
+
+/* スクロールバーのスタイル */
+.deck-grid::-webkit-scrollbar {
+  @apply w-2;
+}
+
+.deck-grid::-webkit-scrollbar-track {
+  @apply bg-gray-800/50 rounded;
+}
+
+.deck-grid::-webkit-scrollbar-thumb {
+  @apply bg-yellow-700/50 rounded hover:bg-yellow-700;
 }
 
 .deck-card {

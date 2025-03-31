@@ -353,7 +353,7 @@ function App() {
           {/* デッキ一覧オーバーレイ */}
           {showDeckView && (
             <div className="game-overlay" onClick={() => setShowDeckView(false)}>
-              <DeckView />
+              <DeckView onClose={() => setShowDeckView(false)} />
             </div>
           )}
         </div>
