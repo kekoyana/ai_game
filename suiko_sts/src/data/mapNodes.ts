@@ -17,35 +17,51 @@ export interface MapLevel {
   nodes: MapNode[]
   startNodeId: string
   bossNodeId: string
+  stageNumber: number // 追加: ステージ番号
 }
 
 // 敵の種類とその出現階層
 const enemyPool = {
-  early: [ // 序盤（レベル1-3）
-    { type: '山賊', difficulty: 1 },
-    { type: '官兵', difficulty: 1 },
-    { type: '密偵', difficulty: 2 },
-    { type: '脱獄囚', difficulty: 2 }
-  ],
-  mid: [ // 中盤（レベル4-6）
-    { type: '賊将', difficulty: 3 },
-    { type: '武芸者', difficulty: 3 },
-    { type: '流れ者', difficulty: 3 },
-    { type: '山賊頭', difficulty: 4 }
-  ],
-  late: [ // 終盤（レベル7-9）
-    { type: '軍師', difficulty: 4 },
-    { type: '将軍', difficulty: 5 },
-    { type: '侠客', difficulty: 5 }
-  ],
-  elite: [ // エリート敵
-    { type: '高級官兵', difficulty: 6 },
-    { type: '辺境の将', difficulty: 7 },
-    { type: '朝廷の刺客', difficulty: 8 }
-  ],
-  boss: [ // ボス
-    { type: '高俅', difficulty: 10 }
-  ]
+  stage1: {
+    early: [
+      { type: '山賊', difficulty: 1 },
+      { type: '官兵', difficulty: 1 },
+      { type: '密偵', difficulty: 2 }
+    ],
+    elite: [
+      { type: '山賊頭', difficulty: 3 }
+    ],
+    boss: [
+      { type: '王倫', difficulty: 4 }
+    ]
+  },
+  stage2: {
+    early: [
+      { type: '賊将', difficulty: 2 },
+      { type: '武芸者', difficulty: 2 },
+      { type: '流れ者', difficulty: 3 }
+    ],
+    elite: [
+      { type: '高級官兵', difficulty: 4 },
+      { type: '辺境の将', difficulty: 5 }
+    ],
+    boss: [
+      { type: '林冲', difficulty: 6 }
+    ]
+  },
+  stage3: {
+    early: [
+      { type: '軍師', difficulty: 4 },
+      { type: '将軍', difficulty: 5 },
+      { type: '侠客', difficulty: 5 }
+    ],
+    elite: [
+      { type: '朝廷の刺客', difficulty: 6 }
+    ],
+    boss: [
+      { type: '高俅', difficulty: 8 }
+    ]
+  }
 }
 
 // アイテムの種類
@@ -58,7 +74,7 @@ const itemTypes = [
 
 // マップ生成のための設定
 const MAP_CONFIG = {
-  TOTAL_LEVELS: 12,
+  LEVELS_PER_STAGE: 4, // 各ステージの階層数
   NODES_PER_LEVEL: 3,
   NODE_SPACING: {
     X: 120,
@@ -85,13 +101,6 @@ const MAP_CONFIG = {
       rest: 0.15,
       shop: 0.2,
       elite: 0.2
-    },
-    final: {
-      enemy: 0.25,
-      item: 0.15,
-      rest: 0.15,
-      shop: 0.2,
-      elite: 0.25
     }
   }
 }
@@ -102,76 +111,72 @@ const randomChoice = <T>(arr: T[]): T => {
 }
 
 // 指定された確率に基づいてノードタイプを選択
-const selectNodeType = (level: number): NodeType => {
+const selectNodeType = (level: number, totalLevels: number): NodeType => {
   const rand = Math.random()
   let probs
 
-  if (level <= 3) probs = MAP_CONFIG.PROBABILITIES.early
-  else if (level <= 6) probs = MAP_CONFIG.PROBABILITIES.mid
-  else if (level <= 9) probs = MAP_CONFIG.PROBABILITIES.late
-  else probs = MAP_CONFIG.PROBABILITIES.final
+  if (level <= totalLevels * 0.3) probs = MAP_CONFIG.PROBABILITIES.early
+  else if (level <= totalLevels * 0.6) probs = MAP_CONFIG.PROBABILITIES.mid
+  else probs = MAP_CONFIG.PROBABILITIES.late
 
   let threshold = 0
 
-  // 戦闘
   threshold += probs.enemy
   if (rand < threshold) return 'enemy'
 
-  // アイテム
   threshold += probs.item
   if (rand < threshold) return 'item'
 
-  // 休憩所
   threshold += probs.rest
   if (rand < threshold) return 'rest'
 
-  // ショップ
   threshold += probs.shop
   if (rand < threshold) return 'shop'
 
-  // エリート（残りの確率）
   return 'elite'
 }
 
 // 敵の種類を選択
-const selectEnemyType = (level: number): string => {
-  if (level <= 3) return randomChoice(enemyPool.early).type
-  else if (level <= 6) return randomChoice(enemyPool.mid).type
-  else if (level <= 9) return randomChoice(enemyPool.late).type
-  else return randomChoice(enemyPool.elite).type
+const selectEnemyType = (level: number, stageNumber: number): string => {
+  const stage = `stage${stageNumber}` as keyof typeof enemyPool
+  const pool = enemyPool[stage]
+  
+  if (level <= 2) return randomChoice(pool.early).type
+  return randomChoice(pool.elite).type
 }
 
-// マップのランダム生成
-export const generateMap = (): MapLevel => {
+// 指定されたステージのマップを生成
+export const generateMap = (stageNumber: number): MapLevel => {
   const nodes: MapNode[] = []
   const levels: MapNode[][] = []
 
   // スタートノードの生成（中央に配置）
   const startNode: MapNode = {
-    id: 'start',
+    id: `stage${stageNumber}_start`,
     type: 'empty',
     x: MAP_CONFIG.NODE_SPACING.X * 1.5,
     y: 0,
-    connections: []
+    connections: [],
+    level: 0
   }
   nodes.push(startNode)
   levels[0] = [startNode]
 
   // 中間レベルのノード生成
-  for (let level = 1; level < MAP_CONFIG.TOTAL_LEVELS - 1; level++) {
+  for (let level = 1; level < MAP_CONFIG.LEVELS_PER_STAGE - 1; level++) {
     const levelNodes: MapNode[] = []
     const nodesCount = Math.min(3, Math.max(2, Math.floor(Math.random() * 3) + 1))
 
     for (let i = 0; i < nodesCount; i++) {
-      const type = selectNodeType(level)
+      const type = selectNodeType(level, MAP_CONFIG.LEVELS_PER_STAGE)
       const node: MapNode = {
-        id: `node_${level}_${i}`,
+        id: `stage${stageNumber}_node_${level}_${i}`,
         type,
         x: MAP_CONFIG.NODE_SPACING.X * (i - (nodesCount - 1) / 2 + 1.5),
         y: level * MAP_CONFIG.NODE_SPACING.Y,
         connections: [],
         level,
-        enemyType: type === 'enemy' || type === 'elite' ? selectEnemyType(level) : undefined,
+        enemyType: type === 'enemy' || type === 'elite' ? selectEnemyType(level, stageNumber) : undefined,
         itemType: type === 'item' ? randomChoice(itemTypes) : undefined
       }
       nodes.push(node)
@@ -181,16 +186,18 @@ export const generateMap = (): MapLevel => {
   }
 
   // ボスノードの生成（中央に配置）
+  const stage = `stage${stageNumber}` as keyof typeof enemyPool
   const bossNode: MapNode = {
-    id: 'boss',
+    id: `stage${stageNumber}_boss`,
     type: 'boss',
     x: MAP_CONFIG.NODE_SPACING.X * 1.5,
-    y: (MAP_CONFIG.TOTAL_LEVELS - 1) * MAP_CONFIG.NODE_SPACING.Y,
+    y: (MAP_CONFIG.LEVELS_PER_STAGE - 1) * MAP_CONFIG.NODE_SPACING.Y,
     connections: [],
-    enemyType: randomChoice(enemyPool.boss).type
+    enemyType: randomChoice(enemyPool[stage].boss).type,
+    level: MAP_CONFIG.LEVELS_PER_STAGE - 1
   }
   nodes.push(bossNode)
-  levels[MAP_CONFIG.TOTAL_LEVELS - 1] = [bossNode]
+  levels[MAP_CONFIG.LEVELS_PER_STAGE - 1] = [bossNode]
 
   // ノード間の接続を生成
   for (let level = 0; level < levels.length - 1; level++) {
@@ -214,9 +221,10 @@ export const generateMap = (): MapLevel => {
   return {
     nodes,
     startNodeId: startNode.id,
-    bossNodeId: bossNode.id
+    bossNodeId: bossNode.id,
+    stageNumber
   }
 }
 
-// 初期マップの生成
-export const initialMap = generateMap()
+// 初期マップの生成（ステージ1から開始）
+export const initialMap = generateMap(1)

@@ -35,6 +35,27 @@
   @apply text-4xl font-bold text-yellow-500 mb-4;
 }
 
+.game-clear-stages {
+  @apply space-y-4 my-6 text-left mx-auto max-w-lg;
+}
+
+.stage-clear {
+  @apply text-lg text-gray-300 bg-gray-800/50 p-4 rounded-lg border border-yellow-900/20;
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+
+.stage-clear:nth-child(1) {
+  animation-delay: 0.2s;
+}
+
+.stage-clear:nth-child(2) {
+  animation-delay: 0.4s;
+}
+
+.stage-clear:nth-child(3) {
+  animation-delay: 0.6s;
+}
+
 .game-clear-message {
   @apply text-xl text-gray-300;
 }
@@ -81,6 +102,17 @@
   }
 }
 
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 /* レスポンシブ対応 */
 @media (max-width: 640px) {
   .overlay-content {
@@ -95,6 +127,10 @@
   .game-over-message,
   .game-clear-message {
     @apply text-lg;
+  }
+
+  .stage-clear {
+    @apply text-base p-3;
   }
 
   .restart-button {

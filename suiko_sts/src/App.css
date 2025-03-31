@@ -1,11 +1,12 @@
 /* ベースレイアウト */
 .app-container {
   @apply min-h-screen w-full bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 
-         bg-fixed p-4 relative overflow-hidden;
+         bg-fixed p-4 relative;
 }
 
 .app-content {
   @apply max-w-4xl mx-auto flex flex-col gap-4;
+  padding-top: 4rem; /* ステータスバー分の余白 */
 }
 
 /* マップ画面 */
@@ -120,6 +121,50 @@
   text-shadow: 0 0 10px rgba(234, 179, 8, 0.5);
 }
 
+/* ステージクリアメッセージ */
+.stage-clear-message {
+  @apply flex flex-col items-center gap-4 text-4xl font-bold;
+  animation: stageClear 2s ease-out;
+}
+
+.stage-clear-message span:first-child {
+  @apply text-6xl;
+  animation: trophyGlow 2s infinite;
+}
+
+.stage-clear-message span:nth-child(2) {
+  @apply text-yellow-300;
+  text-shadow: 0 0 15px rgba(234, 179, 8, 0.7);
+}
+
+.stage-clear-message span:last-child {
+  @apply text-2xl text-yellow-100/80;
+}
+
+@keyframes stageClear {
+  0% {
+    opacity: 0;
+    transform: scale(0.8) translateY(30px);
+  }
+  30% {
+    opacity: 1;
+    transform: scale(1.2) translateY(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes trophyGlow {
+  0%, 100% {
+    filter: drop-shadow(0 0 15px rgba(234, 179, 8, 0.7));
+  }
+  50% {
+    filter: drop-shadow(0 0 30px rgba(234, 179, 8, 0.9));
+  }
+}
+
 @keyframes victoryPop {
   0% {
     opacity: 0;
@@ -145,7 +190,9 @@
 
 /* ステータスバー */
 .status-bar {
-  @apply fixed top-4 left-4 flex gap-4;
+  @apply fixed top-4 left-4 right-4 flex gap-4 justify-between z-10;
+  background: linear-gradient(to bottom, rgba(17, 24, 39, 0.9), rgba(17, 24, 39, 0.8));
+  @apply rounded-lg p-2;
 }
 
 .hp-bar {
@@ -188,5 +235,21 @@
 
   .victory-message {
     @apply text-2xl px-4 text-center;
+  }
+
+  .stage-clear-message {
+    @apply text-3xl px-4;
+  }
+
+  .stage-clear-message span:first-child {
+    @apply text-5xl;
+  }
+
+  .stage-clear-message span:last-child {
+    @apply text-xl;
+  }
+
+  .status-bar {
+    @apply flex-col items-start gap-2;
   }
 }
