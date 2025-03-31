@@ -17,19 +17,20 @@ export interface MapLevel {
   nodes: MapNode[]
   startNodeId: string
   bossNodeId: string
-  stageNumber: number // 追加: ステージ番号
+  stageNumber: number
 }
 
 // 敵の種類とその出現階層
 const enemyPool = {
   stage1: {
     early: [
-      { type: '山賊', difficulty: 1 },
-      { type: '官兵', difficulty: 1 },
-      { type: '密偵', difficulty: 2 }
+      { type: '鎮関西 鄭屠', difficulty: 1 },
+      { type: '無毛虎 牛二', difficulty: 1 },
+      { type: '李鬼', difficulty: 2 }
     ],
     elite: [
-      { type: '山賊頭', difficulty: 3 }
+      { type: '蒋門神 蒋忠', difficulty: 3 },
+      { type: '西門慶', difficulty: 3 }
     ],
     boss: [
       { type: '王倫', difficulty: 4 }
@@ -37,26 +38,29 @@ const enemyPool = {
   },
   stage2: {
     early: [
-      { type: '賊将', difficulty: 2 },
-      { type: '武芸者', difficulty: 2 },
-      { type: '流れ者', difficulty: 3 }
+      { type: '鄧龍', difficulty: 2 },
+      { type: '崔道成', difficulty: 2 },
+      { type: '王江', difficulty: 3 }
     ],
     elite: [
-      { type: '高級官兵', difficulty: 4 },
-      { type: '辺境の将', difficulty: 5 }
+      { type: '祝彪', difficulty: 4 },
+      { type: '祝朝奉', difficulty: 4 },
+      { type: '曾塗', difficulty: 5 },
+      { type: '曾弄', difficulty: 5 }
     ],
     boss: [
-      { type: '林冲', difficulty: 6 }
+      { type: '史文恭', difficulty: 6 }
     ]
   },
   stage3: {
     early: [
-      { type: '軍師', difficulty: 4 },
-      { type: '将軍', difficulty: 5 },
-      { type: '侠客', difficulty: 5 }
+      { type: '劉夢竜', difficulty: 4 },
+      { type: '陸謙', difficulty: 4 },
+      { type: '高廉', difficulty: 5 }
     ],
     elite: [
-      { type: '朝廷の刺客', difficulty: 6 }
+      { type: '童貫', difficulty: 6 },
+      { type: '蔡京', difficulty: 6 }
     ],
     boss: [
       { type: '高俅', difficulty: 8 }
@@ -74,28 +78,28 @@ const itemTypes = [
 
 // マップ生成のための設定
 const MAP_CONFIG = {
-  LEVELS_PER_STAGE: 4, // 各ステージの階層数
+  LEVELS_PER_STAGE: 8, // ステージあたりの階層数を8に増やす
   NODES_PER_LEVEL: 3,
   NODE_SPACING: {
     X: 120,
-    Y: 100
+    Y: 80  // Y軸の間隔を少し縮めて全体を表示しやすくする
   },
   PROBABILITIES: {
-    early: {
+    early: { // 序盤（1-3層）
       enemy: 0.4,
       item: 0.2,
       rest: 0.15,
       shop: 0.25,
       elite: 0
     },
-    mid: {
+    mid: { // 中盤（4-6層）
       enemy: 0.35,
       item: 0.2,
       rest: 0.15,
       shop: 0.2,
       elite: 0.1
     },
-    late: {
+    late: { // 終盤（7-8層）
       enemy: 0.3,
       item: 0.15,
       rest: 0.15,

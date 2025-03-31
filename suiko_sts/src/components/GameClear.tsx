@@ -14,13 +14,13 @@ const GameClear = ({ onRestart }: GameClearProps) => {
         
         <div className="game-clear-stages">
           <p className="stage-clear">
-            第1章: 王倫との決戦を制す ✓
+            第1章: 梁山泊飛躍 ✓
           </p>
           <p className="stage-clear">
-            第2章: 林冲との激突を乗り越える ✓
+            第2章: 梁山泊進撃 ✓
           </p>
           <p className="stage-clear">
-            第3章: 高俅を討ち取り、梁山泊の誉れを勝ち取る ✓
+            第3章: 替天行道 ✓
           </p>
         </div>
 
