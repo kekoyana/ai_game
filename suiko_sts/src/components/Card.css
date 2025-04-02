@@ -39,6 +39,17 @@
   border: 2px solid rgba(59, 130, 246, 0.4);
 }
 
+/* trapタイプのカード */
+.game-card.card-bg-trap {
+  background-image: linear-gradient(
+    135deg,
+    #4b5563 0%,
+    #1f2937 100%
+  );
+  box-shadow: inset 0 0 15px rgba(156, 163, 175, 0.2);
+  border: 2px solid rgba(156, 163, 175, 0.4);
+}
+
 /* レアリティ装飾 */
 .card-ssr {
   animation: pulse-ssr 2s infinite;
@@ -139,6 +150,11 @@
 .card-name-power { 
   @apply text-blue-100;
   text-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
+}
+
+.card-name-trap {
+  @apply text-gray-100;
+  text-shadow: 0 0 8px rgba(156, 163, 175, 0.5);
 }
 
 /* キャラクター名 */

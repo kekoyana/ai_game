@@ -371,3 +371,73 @@ expect(state.gameGeneral.player.block).toBe(3)  // 再度重装備の効果で+3
     expect(state.gameGeneral.player.block).toBe(3)  // 再度重装備の効果で+3
   })
 })
+
+it('腐った肉カードの状態リセットテスト', () => {
+  const store = createTestStore()
+  
+  // テスト用の初期デッキを作成（既存のカードを使用）
+  const testDeck = [allCards.find(card => card.id === 'attack_bokutou_ryoudan')!]
+
+  // 1回目の戦闘開始: 腐った肉を追加する敵
+  store.dispatch(startBattle({
+    enemy: {
+      id: 'zhen_guansi',
+      name: '鎮関司',
+      maxHp: 100,
+      currentHp: 100,
+      block: 0,
+      strength: 0,
+      // 初期行動を乱暴な調理に設定
+      enemyAction: {
+        type: 'special',
+        value: 0,
+        specialAction: 'add_rotten_meat',
+        description: '乱暴な調理 (腐った肉×2)'
+      }
+    },
+    deck: testDeck,
+    player: store.getState().gameGeneral.player,
+    relics: []
+  }))
+
+  // 腐った肉が追加される特殊行動を実行
+  store.dispatch(endTurn())
+  
+  let state = store.getState()
+  
+  // 鎮関司の特殊行動（乱暴な調理）で腐った肉が2枚追加されていることを確認
+  const rottenMeatCards = state.battle.drawPile.filter(card => card.id === 'status_rotten_meat')
+  expect(rottenMeatCards).toHaveLength(2)
+  expect(rottenMeatCards[0].type).toBe('trap')
+
+  // 戦闘終了
+  store.dispatch({ type: 'battle/endBattle' })
+  state = store.getState()
+  expect(state.battle.drawPile).toHaveLength(0)
+  expect(state.battle.discardPile).toHaveLength(0)
+  expect(state.battle.hand).toHaveLength(0)
+
+  // 2回目の戦闘開始: 通常の敵
+  store.dispatch(startBattle({
+    enemy: {
+      id: 'normal_enemy',
+      name: 'テストエネミー2',
+      maxHp: 100,
+      currentHp: 100,
+      block: 0,
+      strength: 0,
+      enemyAction: {
+        type: 'attack',
+        value: 10,
+        description: '攻撃 10'
+      }
+    },
+    deck: testDeck,
+    player: store.getState().gameGeneral.player,
+    relics: []
+  }))
+
+  state = store.getState()
+  // 新しい戦闘開始時に腐った肉カードが含まれていないことを確認
+  expect(state.battle.drawPile.filter(card => card.id === 'status_rotten_meat')).toHaveLength(0)
+})

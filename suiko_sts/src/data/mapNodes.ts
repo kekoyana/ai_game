@@ -8,7 +8,7 @@ export interface MapNode {
   connections: string[]
   visited?: boolean
   cleared?: boolean
-  enemyType?: string
+  enemyType?: string  // Stores enemy display name
   itemType?: string
   level?: number
 }
@@ -21,49 +21,61 @@ export interface MapLevel {
 }
 
 // 敵の種類とその出現階層
-const enemyPool = {
+interface Enemy {
+  id: string
+  name: string
+  difficulty: number
+}
+
+interface StageEnemies {
+  early: Enemy[]
+  elite: Enemy[]
+  boss: Enemy[]
+}
+
+export const enemyPool: Record<string, StageEnemies> = {
   stage1: {
     early: [
-      { type: '鎮関西 鄭屠', difficulty: 1 },
-      { type: '無毛虎 牛二', difficulty: 1 },
-      { type: '李鬼', difficulty: 2 }
+      { id: 'zhen_guansi', name: '鎮関西 鄭屠', difficulty: 1 },
+      { id: 'wumaohu', name: '無毛虎 牛二', difficulty: 1 },
+      { id: 'ligui', name: '李鬼', difficulty: 2 }
     ],
     elite: [
-      { type: '蒋門神 蒋忠', difficulty: 3 },
-      { type: '西門慶', difficulty: 3 }
+      { id: 'jiang_menxin', name: '蒋門神 蒋忠', difficulty: 3 },
+      { id: 'ximen_qing', name: '西門慶', difficulty: 3 }
     ],
     boss: [
-      { type: '王倫', difficulty: 4 }
+      { id: 'wang_lun', name: '王倫', difficulty: 4 }
     ]
   },
   stage2: {
     early: [
-      { type: '鄧龍', difficulty: 2 },
-      { type: '崔道成', difficulty: 2 },
-      { type: '王江', difficulty: 3 }
+      { id: 'deng_long', name: '鄧龍', difficulty: 2 },
+      { id: 'cui_daocheng', name: '崔道成', difficulty: 2 },
+      { id: 'wang_jiang', name: '王江', difficulty: 3 }
     ],
     elite: [
-      { type: '祝彪', difficulty: 4 },
-      { type: '祝朝奉', difficulty: 4 },
-      { type: '曾塗', difficulty: 5 },
-      { type: '曾弄', difficulty: 5 }
+      { id: 'zhu_biao', name: '祝彪', difficulty: 4 },
+      { id: 'zhu_chaofeng', name: '祝朝奉', difficulty: 4 },
+      { id: 'zeng_tu', name: '曾塗', difficulty: 5 },
+      { id: 'zeng_nong', name: '曾弄', difficulty: 5 }
     ],
     boss: [
-      { type: '史文恭', difficulty: 6 }
+      { id: 'shi_wengong', name: '史文恭', difficulty: 6 }
     ]
   },
   stage3: {
     early: [
-      { type: '劉夢竜', difficulty: 4 },
-      { type: '陸謙', difficulty: 4 },
-      { type: '高廉', difficulty: 5 }
+      { id: 'liu_menglong', name: '劉夢竜', difficulty: 4 },
+      { id: 'lu_qian', name: '陸謙', difficulty: 4 },
+      { id: 'gao_lian', name: '高廉', difficulty: 5 }
     ],
     elite: [
-      { type: '童貫', difficulty: 6 },
-      { type: '蔡京', difficulty: 6 }
+      { id: 'tong_guan', name: '童貫', difficulty: 6 },
+      { id: 'cai_jing', name: '蔡京', difficulty: 6 }
     ],
     boss: [
-      { type: '高俅', difficulty: 8 }
+      { id: 'gao_qiu', name: '高俅', difficulty: 8 }
     ]
   }
 }
@@ -114,6 +126,14 @@ const randomChoice = <T>(arr: T[]): T => {
   return arr[Math.floor(Math.random() * arr.length)]
 }
 
+// 敵IDから名前を取得
+export const getEnemyNameById = (enemyId: string): string => {
+  const allEnemies = Object.values(enemyPool).flatMap(stage =>
+    [...stage.early, ...stage.elite, ...stage.boss]
+  );
+  return allEnemies.find(e => e.id === enemyId)?.name || '不明な敵';
+};
+
 // 指定された確率に基づいてノードタイプを選択
 const selectNodeType = (level: number, totalLevels: number): NodeType => {
   const rand = Math.random()
@@ -141,12 +161,14 @@ const selectNodeType = (level: number, totalLevels: number): NodeType => {
 }
 
 // 敵の種類を選択
-const selectEnemyType = (level: number, stageNumber: number): string => {
+const selectEnemy = (level: number, stageNumber: number): Enemy => {
   const stage = `stage${stageNumber}` as keyof typeof enemyPool
   const pool = enemyPool[stage]
-  
-  if (level <= 2) return randomChoice(pool.early).type
-  return randomChoice(pool.elite).type
+  return level <= 2 ? randomChoice(pool.early) : randomChoice(pool.elite)
+}
+
+const selectEnemyType = (level: number, stageNumber: number): string => {
+  return selectEnemy(level, stageNumber).name
 }
 
 // 指定されたステージのマップを生成
@@ -181,7 +203,6 @@ export const generateMap = (stageNumber: number): MapLevel => {
         connections: [],
         level,
         enemyType: type === 'enemy' || type === 'elite' ? selectEnemyType(level, stageNumber) : undefined,
-        itemType: type === 'item' ? randomChoice(itemTypes) : undefined
       }
       nodes.push(node)
       levelNodes.push(node)
@@ -197,7 +218,7 @@ export const generateMap = (stageNumber: number): MapLevel => {
     x: MAP_CONFIG.NODE_SPACING.X * 1.5,
     y: (MAP_CONFIG.LEVELS_PER_STAGE - 1) * MAP_CONFIG.NODE_SPACING.Y,
     connections: [],
-    enemyType: randomChoice(enemyPool[stage].boss).type,
+    enemyType: randomChoice(enemyPool[stage].boss).name,
     level: MAP_CONFIG.LEVELS_PER_STAGE - 1
   }
   nodes.push(bossNode)

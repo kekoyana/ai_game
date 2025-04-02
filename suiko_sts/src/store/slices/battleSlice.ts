@@ -1,8 +1,10 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { Card, shuffleDeck } from '../../data/cards'
+import { Card, shuffleDeck, rottenMeatCard } from '../../data/cards'
 import { Relic } from '../../data/relics'
 import { Character } from './gameGeneralSlice'
 import { getBehaviorForEnemy } from '../../data/enemyActions'
+import { enemyPool } from '../../data/mapNodes'
+import { nanoid } from 'nanoid'
 
 interface BattleState {
   enemy: Character | null
@@ -71,6 +73,15 @@ export const battleSlice = createSlice({
   reducers: {
     startBattle: (state, action: PayloadAction<{ enemy: Character, deck: Card[], player: Character, relics: Relic[] }>) => {
       const { enemy, deck, relics } = action.payload
+      const stage = `stage${enemy.id.split('_')[0].slice(-1)}` as keyof typeof enemyPool;
+      const selectedEnemy = enemyPool[stage]?.early.concat(
+        enemyPool[stage]?.elite,
+        enemyPool[stage]?.boss
+      ).find(e => e.id === enemy.id);
+      
+      if (selectedEnemy) {
+        enemy.name = selectedEnemy.name;
+      }
       enemy.goldReward = enemy.strength === 5 ? 100 :
                         enemy.strength === 3 ? 50 :
                         25
@@ -78,6 +89,15 @@ export const battleSlice = createSlice({
       state.enemy = enemy
       state.isInBattle = true
       state.incomingDamage = 0
+      state.energy.current = state.energy.max
+      state.turnNumber = 1
+      state.drawPile = shuffleDeck([...deck])
+      state.hand = []
+      state.discardPile = []
+      state.activePowers = []
+      state.activeSkills = []
+      state.tempUpgradedCards = []
+      state.isSelectingCardForUpgrade = false
 
       if (state.enemy) {
         if (!state.enemy.enemyAction) {
@@ -91,17 +111,15 @@ export const battleSlice = createSlice({
         } else if (action.type === 'attack') {
           state.enemy.block = 0
           state.incomingDamage = action.value
+        } else if (action.type === 'special' && action.specialAction === 'add_rotten_meat') {
+          // 腐った肉を2枚追加
+          state.drawPile.push(
+            { ...rottenMeatCard, id: nanoid() },
+            { ...rottenMeatCard, id: nanoid() }
+          )
+          state.drawPile = shuffleDeck(state.drawPile)
         }
       }
-      state.energy.current = state.energy.max
-      state.turnNumber = 1
-      state.drawPile = shuffleDeck([...deck])
-      state.hand = []
-      state.discardPile = []
-      state.activePowers = []
-      state.activeSkills = []
-      state.tempUpgradedCards = []
-      state.isSelectingCardForUpgrade = false
 
       const initialDraw = 5 + relics.reduce((bonus: number, relic: Relic) =>
         relic.effect.type === 'draw' ? bonus + relic.effect.value : bonus, 0
@@ -142,6 +160,14 @@ export const battleSlice = createSlice({
             blockValue -= reduction
           }
           state.enemy.block = blockValue
+        } else if (nextAction.type === 'special' && nextAction.specialAction === 'add_rotten_meat') {
+          // 腐った肉を2枚追加
+          // rottenMeatCardは既にファイル先頭でインポート済み
+          state.drawPile.push(
+            { ...rottenMeatCard, id: nanoid() },
+            { ...rottenMeatCard, id: nanoid() }
+          )
+          state.drawPile = shuffleDeck(state.drawPile)
         }
       }
 
