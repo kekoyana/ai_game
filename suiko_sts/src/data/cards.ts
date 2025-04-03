@@ -7,7 +7,7 @@ export interface Card {
   name: string
   cost: number
   description: string
-  type: 'attack' | 'skill' | 'power'
+  type: 'attack' | 'skill' | 'power' | 'trap'
   rarity: CardRarity
   effects: {
     damage?: number
@@ -28,6 +28,18 @@ export interface Card {
   }
   character: string
   flavorText?: string
+}
+
+export const rottenMeatCard: Card = {
+  id: 'status_rotten_meat',
+  name: '腐った肉',
+  cost: 1,
+  type: 'trap',
+  rarity: 'C',
+  description: '消費することで破棄',
+  effects: {},
+  character: '',
+  flavorText: '腐敗した肉の臭いが漂う'
 }
 
 export const allCards: Card[] = [

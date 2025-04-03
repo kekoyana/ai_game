@@ -20,7 +20,7 @@ import {
   playCard,
   endBattle
 } from './store/slices/battleSlice'
-import { clearNode, resetMap, selectIsNodeConsumed } from './store/slices/mapSlice'
+import { clearNode, resetMap, selectIsNodeConsumed, selectCurrentStage } from './store/slices/mapSlice'
 import BattleScreen from './components/BattleScreen'
 import { Shop } from './components/Shop'
 import CardReward from './components/CardReward'
@@ -44,6 +44,7 @@ function App() {
   const generalState = useSelector((state: RootState) => state.gameGeneral)
   const battleState = useSelector((state: RootState) => state.battle)
   const mapState = useSelector((state: RootState) => state.map)
+  const currentStage = useSelector(selectCurrentStage)
   
   const {
     player,
@@ -68,6 +69,7 @@ function App() {
   const [showHealEffect, setShowHealEffect] = useState(false)
   const [showGoldReward, setShowGoldReward] = useState(false)
   const [showVictoryMessage, setShowVictoryMessage] = useState(false)
+  const [showStageCleared, setShowStageCleared] = useState(false)
   const [isShowingVictorySequence, setIsShowingVictorySequence] = useState(false)
   const [showCardUpgrade, setShowCardUpgrade] = useState(false)
   const [showDeckView, setShowDeckView] = useState(false)
@@ -99,16 +101,21 @@ function App() {
         dispatch(endBattle())
         dispatch(clearNode(currentNodeId))
         
-        // 戦闘ノードを消費済みにする
-        if (currentNode && (currentNode.type === 'enemy' || currentNode.type === 'elite' || currentNode.type === 'boss')) {
-          dispatch(clearNode(currentNodeId))
-        }
-
-        // ボス以外の場合はカード報酬を表示
-        if (currentNode?.type !== 'boss') {
-          setShowCardReward(true)
+        // ボス戦の場合の特別処理
+        if (currentNode?.type === 'boss') {
+          if (currentStage === 3) {
+            // 最終ステージのボスを倒した場合はゲームクリア
+            dispatch(setGameCleared(true))
+          } else {
+            // それ以外のステージのボスを倒した場合はステージクリアメッセージを表示
+            setShowStageCleared(true)
+            await new Promise(resolve => setTimeout(resolve, 2000))
+            setShowStageCleared(false)
+            dispatch(clearNode(currentNodeId))
+          }
         } else {
-          dispatch(setGameCleared(true))
+          // 通常の戦闘ノードの場合はカード報酬を表示
+          setShowCardReward(true)
         }
 
         setIsShowingVictorySequence(false)
@@ -116,7 +123,7 @@ function App() {
 
       victorySequence()
     }
-  }, [isShowingVictorySequence, currentNode, dispatch, currentNodeId])
+  }, [isShowingVictorySequence, currentNode, currentStage, dispatch, currentNodeId])
 
   // プレイヤーのHPを監視
   useEffect(() => {
@@ -152,21 +159,15 @@ function App() {
   }
 
   const handleEndTurn = () => {
-    // ターンを終了して次の敵の行動を決定
     dispatch(endTurn())
-
-    // 現在の敵の攻撃を処理（現在のブロック値を考慮）
     if (battleState.incomingDamage > 0) {
       dispatch(takeDamage(battleState.incomingDamage))
     }
-
-    // 最後にブロックをリセット
     dispatch(resetBlock())
   }
 
   const handlePlayCard = (card: Card) => {
     if (energy.current >= card.cost) {
-      // カードの効果を適用
       if (card.effects.block) {
         dispatch(addBlock(card.effects.block))
       }
@@ -176,7 +177,6 @@ function App() {
       if (card.effects.heavyArmor) {
         dispatch(addHeavyArmor(card.effects.heavyArmor))
       }
-
       dispatch(playCard({ card }))
     }
   }
@@ -268,6 +268,16 @@ function App() {
           </div>
         )}
 
+        {showStageCleared && (
+          <div className="overlay">
+            <div className="stage-clear-message">
+              <span>🏆</span>
+              <span>ステージ {currentStage} クリア！</span>
+              <span>次のステージへ進みます</span>
+            </div>
+          </div>
+        )}
+
         {showCardReward && (
           <CardReward
             onSelectCard={handleSelectCard}
@@ -338,13 +348,12 @@ function App() {
             </button>
             <GoldDisplay amount={gold} />
             <RelicDisplay relics={relics} />
-            {/* heavy-armor-status removed as per user request */}
           </div>
 
           {/* デッキ一覧オーバーレイ */}
           {showDeckView && (
             <div className="game-overlay" onClick={() => setShowDeckView(false)}>
-              <DeckView />
+              <DeckView onClose={() => setShowDeckView(false)} />
             </div>
           )}
         </div>

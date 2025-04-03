@@ -1,23 +1,27 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { MapLevel, initialMap } from '../../data/mapNodes'
+import { MapLevel, initialMap, generateMap } from '../../data/mapNodes'
 import type { RootState } from '../index'
 
 interface MapState {
   currentMap: MapLevel
   currentNodeId: string
-  visitedNodes: string[] // 訪問済みノード
-  clearedNodes: string[] // クリア済みノード
-  availableNodes: string[] // 現在移動可能なノード
-  consumedNodes: string[] // 効果を使用済みのノード（休憩所やアイテムなど）
+  currentStage: number
+  visitedNodes: string[]
+  clearedNodes: string[]
+  availableNodes: string[]
+  consumedNodes: string[]
+  isGameCompleted: boolean
 }
 
 const initialState: MapState = {
   currentMap: initialMap,
   currentNodeId: initialMap.startNodeId,
+  currentStage: 1,
   visitedNodes: [initialMap.startNodeId],
   clearedNodes: [initialMap.startNodeId],
   availableNodes: initialMap.nodes.find(n => n.id === initialMap.startNodeId)?.connections || [],
-  consumedNodes: []
+  consumedNodes: [],
+  isGameCompleted: false
 }
 
 export const mapSlice = createSlice({
@@ -78,12 +82,41 @@ export const mapSlice = createSlice({
         }
       }
 
-      // クリア後の移動可能なノードを設定
-      state.availableNodes = node.connections
+      // ボスノードをクリアした場合の処理
+      if (node.type === 'boss') {
+        if (state.currentStage < 3) {
+          // 次のステージへ進む
+          const nextStage = state.currentStage + 1
+          const newMap = generateMap(nextStage)
+          state.currentMap = newMap
+          state.currentStage = nextStage
+          state.currentNodeId = newMap.startNodeId
+          state.visitedNodes = [newMap.startNodeId]
+          state.clearedNodes = [newMap.startNodeId]
+          state.availableNodes = newMap.nodes.find(n => n.id === newMap.startNodeId)?.connections || []
+          state.consumedNodes = []
+        } else {
+          // ゲームクリア
+          state.isGameCompleted = true
+          state.availableNodes = []
+        }
+      } else {
+        // 通常ノードのクリア後の移動可能なノードを設定
+        state.availableNodes = node.connections
+      }
     },
 
     resetMap: (state) => {
-      Object.assign(state, initialState)
+      // ゲームを最初から開始
+      const newMap = generateMap(1)
+      state.currentMap = newMap
+      state.currentStage = 1
+      state.currentNodeId = newMap.startNodeId
+      state.visitedNodes = [newMap.startNodeId]
+      state.clearedNodes = [newMap.startNodeId]
+      state.availableNodes = newMap.nodes.find(n => n.id === newMap.startNodeId)?.connections || []
+      state.consumedNodes = []
+      state.isGameCompleted = false
     }
   }
 })
@@ -91,6 +124,9 @@ export const mapSlice = createSlice({
 // セレクター
 export const selectIsNodeConsumed = (state: RootState, nodeId: string) => 
   state.map.consumedNodes.includes(nodeId)
+
+export const selectCurrentStage = (state: RootState) => state.map.currentStage
+export const selectIsGameCompleted = (state: RootState) => state.map.isGameCompleted
 
 export const { moveToNode, clearNode, resetMap } = mapSlice.actions
 

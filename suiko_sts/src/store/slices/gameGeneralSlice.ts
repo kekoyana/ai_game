@@ -15,9 +15,10 @@ export interface Character {
   heavyArmor?: number  // 重装備の値
   goldReward?: number
   enemyAction?: {
-    type: 'attack' | 'defend' | 'buff'
+    type: 'attack' | 'defend' | 'special'
     value: number
     description: string
+    specialAction?: string
   }
 }
 

@@ -1,9 +1,10 @@
 import { Character } from '../store/slices/gameGeneralSlice'
 
 export interface EnemyAction {
-  type: 'attack' | 'defend'
+  type: 'attack' | 'defend' | 'special'
   value: number
   description: string
+  specialAction?: string
 }
 
 export interface ActionPattern {
@@ -11,6 +12,12 @@ export interface ActionPattern {
 }
 
 export const actions: Record<string, EnemyAction> = {
+  messyCooking: {
+    type: 'special',
+    value: 0,
+    description: '乱暴な調理 (腐った肉×2)',
+    specialAction: 'add_rotten_meat'
+  },
   attack14: {
     type: 'attack',
     value: 14,
@@ -58,12 +65,24 @@ export const basicAttackBehavior: ActionPattern = {
   getNextAction: () => actions.attack14
 }
 
+export const messyCookingBehavior: ActionPattern = {
+  getNextAction: (enemy: Character, currentAction?: Character['enemyAction']) => {
+    if (!currentAction || currentAction.type === 'attack') {
+      return actions.messyCooking
+    } else {
+      return actions.attack14
+    }
+  }
+}
+
 export const getBehaviorForEnemy = (enemyId: string): ActionPattern => {
   switch (enemyId) {
     case 'pattern_test_enemy':
       return patternTestEnemyBehavior
     case 'test_enemy':
       return basicAttackBehavior
+    case 'zhen_guansi':
+      return messyCookingBehavior
     default:
       return randomBehavior
   }

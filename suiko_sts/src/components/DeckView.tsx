@@ -5,7 +5,11 @@ import { Card as CardType, CardRarity } from '../data/cards'
 import Card from './Card'
 import './DeckView.css'
 
-const DeckView = () => {
+interface DeckViewProps {
+  onClose: () => void
+}
+
+const DeckView: React.FC<DeckViewProps> = ({ onClose }) => {
   const deck = useSelector((state: RootState) => state.gameGeneral.deck)
   const [sortBy, setSortBy] = useState<'rarity' | 'cost'>('cost')
 
@@ -27,7 +31,12 @@ const DeckView = () => {
   return (
     <div className="deck-view" onClick={(e) => e.stopPropagation()}>
       <div className="deck-header">
-        <h2>所持カード一覧</h2>
+        <div className="header-left">
+          <h2>所持カード一覧</h2>
+          <button onClick={onClose} className="close-button">
+            ✕
+          </button>
+        </div>
         <div className="sort-controls">
           <button
             onClick={() => setSortBy('cost')}
