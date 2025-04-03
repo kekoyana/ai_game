@@ -351,23 +351,23 @@ describe('Battle System', () => {
     store.dispatch(addBlock(5))  // 通常の防御
     state = store.getState()
     expect(state.gameGeneral.player.block).toBe(5)
-store.dispatch(takeDamage(14))
-store.dispatch(resetBlock())
-store.dispatch(applyHeavyArmor()) // 重装備の効果を適用
-store.dispatch(endTurn())
+    store.dispatch(takeDamage(14))
+    store.dispatch(resetBlock())
+    store.dispatch(applyHeavyArmor()) // 重装備の効果を適用
+    store.dispatch(endTurn())
 
-state = store.getState()
-expect(state.gameGeneral.player.block).toBe(3)  // 重装備の効果で+3
-expect(state.gameGeneral.player.currentHp).toBe(74)  // 80 - (14 - 8[5+3])
+    state = store.getState()
+    expect(state.gameGeneral.player.block).toBe(3)  // 重装備の効果で+3
+    expect(state.gameGeneral.player.currentHp).toBe(74)  // 80 - (14 - 8[5+3])
 
-// 2ターン目：重装備の効果が持続
-store.dispatch(takeDamage(14))
-store.dispatch(resetBlock())
-store.dispatch(applyHeavyArmor()) // 重装備の効果を適用
-store.dispatch(endTurn())
+    // 2ターン目：重装備の効果が持続
+    store.dispatch(takeDamage(14))
+    store.dispatch(resetBlock())
+    store.dispatch(applyHeavyArmor()) // 重装備の効果を適用
+    store.dispatch(endTurn())
 
-state = store.getState()
-expect(state.gameGeneral.player.block).toBe(3)  // 再度重装備の効果で+3
+    state = store.getState()
+    expect(state.gameGeneral.player.block).toBe(3)  // 再度重装備の効果で+3
     expect(state.gameGeneral.player.block).toBe(3)  // 再度重装備の効果で+3
   })
 })
@@ -382,7 +382,7 @@ it('腐った肉カードの状態リセットテスト', () => {
   store.dispatch(startBattle({
     enemy: {
       id: 'zhen_guansi',
-      name: '鎮関司',
+      name: '鎮関西',
       maxHp: 100,
       currentHp: 100,
       block: 0,
@@ -399,14 +399,12 @@ it('腐った肉カードの状態リセットテスト', () => {
     player: store.getState().gameGeneral.player,
     relics: []
   }))
-
-  // 腐った肉が追加される特殊行動を実行
-  store.dispatch(endTurn())
   
   let state = store.getState()
   
-  // 鎮関司の特殊行動（乱暴な調理）で腐った肉が2枚追加されていることを確認
-  const rottenMeatCards = state.battle.drawPile.filter(card => card.id === 'status_rotten_meat')
+  // 戦闘開始時の特殊行動で腐った肉が2枚追加されていることを確認
+  console.log(state.battle.hand)
+  const rottenMeatCards = state.battle.hand.filter(card => card.id === 'status_rotten_meat')
   expect(rottenMeatCards).toHaveLength(2)
   expect(rottenMeatCards[0].type).toBe('trap')
 

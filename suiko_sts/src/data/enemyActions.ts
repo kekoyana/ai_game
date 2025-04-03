@@ -76,7 +76,6 @@ export const messyCookingBehavior: ActionPattern = {
 }
 
 export const getBehaviorForEnemy = (enemyId: string): ActionPattern => {
-  console.log(enemyId)
   switch (enemyId) {
     case 'pattern_test_enemy':
       return patternTestEnemyBehavior

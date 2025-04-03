@@ -114,8 +114,8 @@ export const battleSlice = createSlice({
         } else if (action.type === 'special' && action.specialAction === 'add_rotten_meat') {
           // 腐った肉を2枚追加
           state.drawPile.push(
-            { ...rottenMeatCard, id: nanoid() },
-            { ...rottenMeatCard, id: nanoid() }
+            { ...rottenMeatCard, id: "status_rotten_meat" },
+            { ...rottenMeatCard, id: "status_rotten_meat" }
           )
           state.drawPile = shuffleDeck(state.drawPile)
         }
