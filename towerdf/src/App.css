@@ -1,0 +1,159 @@
+.game-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  background-color: #1a1a1a;
+  min-height: 100vh;
+}
+
+.game-info {
+  display: flex;
+  justify-content: space-between;
+  width: 500px;
+  margin-bottom: 20px;
+  color: white;
+  font-size: 1.5em;
+}
+
+.game-grid {
+  background-color: #2a2a2a;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.grid-row {
+  display: flex;
+}
+
+.grid-cell {
+  position: relative; /* For absolute positioning of enemies/range within the cell */
+  width: 50px;
+  height: 50px;
+  border: 1px solid #3a3a3a;
+  display: flex;
+  justify-content: center;
+  overflow: visible; /* Ensure content like range circle isn't clipped by the cell */
+  align-items: center;
+  cursor: pointer;
+  font-size: 1.5em;
+  transition: background-color 0.3s;
+}
+
+.tower-range {
+  position: absolute;
+  /* width and height are set via inline style in App.tsx */
+  background: rgba(0, 150, 255, 0.15); /* Changed color slightly */
+  border: 1px solid rgba(0, 150, 255, 0.4); /* Changed color slightly */
+  border-radius: 50%;
+  /* Centering using top/left 50% and transform translate -50% */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none; /* Prevent range indicator from blocking clicks */
+  z-index: 10; /* Ensure range indicator is drawn above grid cells */
+}
+
+.tower {
+  font-size: 1.2em;
+}
+
+.tower.power {
+  color: gold;
+}
+
+.tower.area {
+  color: lightblue;
+}
+
+.enemy {
+  font-size: 1.2em;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.enemy.fast {
+  color: lightcoral;
+}
+
+.enemy.tank {
+  color: lightslategray;
+  font-size: 1.5em; /* Tank is bigger */
+}
+
+.health-bar {
+  position: absolute;
+  bottom: -8px;
+  width: 40px;
+  height: 4px;
+  background: rgba(255, 0, 0, 0.5);
+  border-radius: 2px;
+}
+
+.health-bar-fill {
+  height: 100%;
+  background: #00ff00;
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.tower-selection {
+  margin-bottom: 20px;
+  padding: 15px;
+  background-color: #2a2a2a;
+  border-radius: 8px;
+  color: white;
+}
+
+.tower-selection h3 {
+  margin-top: 0;
+  text-align: center;
+}
+
+.tower-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.tower-button {
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  background-color: #4a4a4a;
+  color: white;
+  transition: background-color 0.3s;
+}
+
+.tower-button:hover {
+  background-color: #5a5a5a;
+}
+
+.tower-button.selected {
+  background-color: #007bff;
+}
+
+.wave-info {
+  color: white;
+  font-size: 1.2em;
+  margin-bottom: 10px;
+}
+
+.grid-cell:hover {
+  background-color: #3a3a3a;
+}
+
+.grid-cell.empty {
+  background-color: #2a2a2a;
+}
+
+.grid-cell.tower {
+  background-color: #4a4a4a;
+}
+
+.grid-cell.path {
+  background-color: #5a3a2a;
+}
