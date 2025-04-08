@@ -36,12 +36,12 @@ function App() {
     area: { range: 3, damage: 15, cooldown: 2000 }
   };
   const ENEMY_STATS = {
-    normal: { health: 100, speed: 1, reward: 25 },
-    fast: { health: 50, speed: 2, reward: 35 },
-    tank: { health: 200, speed: 0.5, reward: 50 }
+    normal: { health: 100, speed: 0.5, reward: 25 },
+    fast: { health: 50, speed: 1, reward: 35 },
+    tank: { health: 200, speed: 0.25, reward: 50 }
   };
 
-  const [money, setMoney] = useState(150);
+  const [money, setMoney] = useState(300);
   const [wave, setWave] = useState(0); // Start at wave 0, click button for wave 1
   const [selectedTowerType, setSelectedTowerType] = useState<'basic' | 'power' | 'area'>('basic');
   const [score, setScore] = useState(0);
