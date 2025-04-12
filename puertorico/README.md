@@ -1,50 +1,102 @@
-# React + TypeScript + Vite
+# プエルトリコ（Puerto Rico）
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + TypeScript + Viteで実装したプエルトリコのボードゲーム
 
-Currently, two official plugins are available:
+## 機能
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- 役割選択とアクション実行
+- プランテーション管理と生産
+- 建物の建設と効果
+- 商品の取引と出荷
+- 商品の保管と廃棄
+- ゲーム終了条件判定
+- 最終得点計算
 
-## Expanding the ESLint configuration
+## 技術スタック
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+- React 18
+- TypeScript 5
+- Vite 4
+- Vitest
+- @testing-library/react
 
-- Configure the top-level `parserOptions` property like this:
+## 開発環境のセットアップ
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+```bash
+# リポジトリのクローン
+git clone [リポジトリURL]
+cd puertorico
+
+# 依存関係のインストール（推奨）
+npm install --legacy-peer-deps
+
+# 開発サーバーの起動
+npm run dev
+
+# テストの実行
+npm test
+
+# テストカバレッジの確認
+npm run test:coverage
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+## トラブルシューティング
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+依存関係のインストールでエラーが発生する場合、以下のいずれかの方法を試してください：
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
+```bash
+# 方法1: キャッシュをクリアして再インストール
+npm cache clean --force
+npm install --legacy-peer-deps
+
+# 方法2: package-lock.jsonを削除して再インストール
+rm -f package-lock.json
+npm install --legacy-peer-deps
+
+# 方法3: 厳密なピア依存関係チェックを無効化
+npm install --force
 ```
+
+## テスト
+
+```bash
+# すべてのテストを実行
+npm test
+
+# 特定のテストファイルを実行
+npm test src/hooks/__tests__/useGameFlow.test.ts
+
+# テストカバレッジレポートの生成
+npm run test:coverage
+```
+
+## ディレクトリ構造
+
+```
+src/
+  ├── components/     # Reactコンポーネント
+  ├── hooks/         # カスタムフック
+  ├── types/         # 型定義
+  ├── utils/         # ユーティリティ関数
+  └── test/          # テスト設定
+```
+
+## ゲームのルール
+
+基本的なルールは[rule.md](./rule.md)を参照してください。
+
+## ライセンス
+
+MIT
+
+## 貢献
+
+1. Forkする
+2. フィーチャーブランチを作成する (`git checkout -b feature/amazing-feature`)
+3. 変更をコミットする (`git commit -m 'Add some amazing feature'`)
+4. ブランチにプッシュする (`git push origin feature/amazing-feature`)
+5. Pull Requestを作成する
+
+## 作者
+
+[あなたの名前]
