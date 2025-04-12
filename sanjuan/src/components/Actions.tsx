@@ -1,19 +1,12 @@
 // src/components/Actions.tsx
-import React from 'react';
-import { GameState, Role } from '../store/gameStore';
-
-interface ActionsProps {
-  gameState: GameState;
-  // TODO: これらのコールバックは後で実装します
-  onSelectRole?: (role: Role) => void;
-  onExecuteAction?: (actionType: Role, params?: {
-    buildingId?: string;     // 建設する建物のID
-    targetBuildingId?: string; // 対象の建物のID（生産/売却時）
-    selectedCards?: string[];  // 選択されたカードのID（参事会議員）
-    discardCards?: string[];   // 捨てるカードのID
-  }) => void;
-  onPass?: () => void;
-}
+import React, { useState } from 'react';
+import { useGame, useGameActions } from '../store/GameContext';
+import { Role } from '../store/gameStore';
+import { BuildingCard } from '../data/cards';
+import BuildingActionDialog from './dialogs/BuildingActionDialog';
+import CouncilorActionDialog from './dialogs/CouncilorActionDialog';
+import ProducerActionDialog from './dialogs/ProducerActionDialog';
+import TraderActionDialog from './dialogs/TraderActionDialog';
 
 // 役割名を日本語に変換
 const roleNames: Record<Role, string> = {
@@ -33,21 +26,29 @@ const roleDescriptions: Record<Role, string> = {
   prospector: '山札から1枚引きます（特権のみ）'
 };
 
-const Actions: React.FC<ActionsProps> = ({ gameState, onSelectRole, onExecuteAction, onPass }) => {
-  const { gamePhase, currentPlayerId, selectedRole, currentRoundRoles } = gameState;
-  const humanPlayer = gameState.players.find(p => p.isHuman);
-
-  // 現在のプレイヤーが人間プレイヤーか？
+const Actions: React.FC = () => {
+  const { state } = useGame();
+  const actions = useGameActions();
+  
+  // ダイアログの表示状態
+  // ダイアログの表示状態
+  const [showBuildingDialog, setShowBuildingDialog] = useState(false);
+  const [showProducerDialog, setShowProducerDialog] = useState(false);
+  const [showTraderDialog, setShowTraderDialog] = useState(false);
+  const [drawnCouncilorCards, setDrawnCouncilorCards] = useState<BuildingCard[]>([]);
+  const {
+    gamePhase,
+    currentPlayerId,
+    selectedRole,
+    currentRoundRoles
+  } = state;
+  
+  const humanPlayer = state.players.find(p => p.isHuman);
   const isHumanTurn = currentPlayerId === humanPlayer?.id;
-
-  // 選択可能な役割を取得
+  
   const availableRoles: Role[] = ['builder', 'producer', 'trader', 'councilor', 'prospector'];
   const selectableRoles = availableRoles.filter(role => !currentRoundRoles.includes(role));
-
-  // 特権を持っているかどうか
-  const hasPrivilege = selectedRole && currentPlayerId === gameState.players.find(p => p.isHuman)?.id;
-
-  // 役割選択フェーズのUI
+  
   const renderRoleSelection = () => {
     if (!isHumanTurn || gamePhase !== 'role_selection') return null;
 
@@ -59,7 +60,7 @@ const Actions: React.FC<ActionsProps> = ({ gameState, onSelectRole, onExecuteAct
             <button
               key={role}
               className="role-button"
-              onClick={() => onSelectRole?.(role)}
+              onClick={() => actions.selectRole(role)}
             >
               <span className="role-name">{roleNames[role]}</span>
               <span className="role-description">{roleDescriptions[role]}</span>
@@ -70,42 +71,61 @@ const Actions: React.FC<ActionsProps> = ({ gameState, onSelectRole, onExecuteAct
     );
   };
 
-  // アクション実行フェーズのUI
   const renderActionExecution = () => {
-    if (gamePhase !== 'action' || !selectedRole) return null;
+    if (!isHumanTurn || gamePhase !== 'action' || !selectedRole) return null;
 
-    // プレイヤーの手番でない場合は、現在のアクションの情報のみ表示
-    if (!isHumanTurn) {
-      return (
-        <div className="action-info">
-          <p>{roleNames[selectedRole]}のアクションが実行中です</p>
-          <p>プレイヤー {currentPlayerId} の手番です</p>
-        </div>
-      );
-    }
+    // 特権を持っているかどうか
+    const hasPrivilege = currentPlayerId === humanPlayer?.id;
 
-    // アクション実行UI
     return (
       <div className="action-execution">
-        <h5>{roleNames[selectedRole]}のアクション {hasPrivilege && <span className="privilege">(特権あり)</span>}</h5>
+        <h5>
+          {roleNames[selectedRole]}のアクション
+          {hasPrivilege && <span className="privilege">特権あり</span>}
+        </h5>
         <p className="action-description">{roleDescriptions[selectedRole]}</p>
         
-        {/* アクション固有のUI（後で実装） */}
         <div className="action-controls">
-          <button 
-            className="action-button"
-            onClick={() => onExecuteAction?.(selectedRole)}
-          >
-            アクションを実行
-          </button>
-          {!hasPrivilege && (
-            <button 
+          {/* 特権がない場合はパス可能 */}
+          {!hasPrivilege && humanPlayer && (
+            <button
               className="pass-button"
-              onClick={onPass}
+              onClick={() => actions.pass(humanPlayer.id)}
             >
               パス
             </button>
           )}
+
+          <button
+            className="action-button"
+            onClick={() => {
+              if (!humanPlayer) return;
+
+              switch (selectedRole) {
+                case 'builder':
+                  setShowBuildingDialog(true);
+                  return;
+                case 'producer':
+                  setShowProducerDialog(true);
+                  return;
+                case 'trader':
+                  setShowTraderDialog(true);
+                  return;
+                case 'prospector':
+                  actions.prospectorDraw(humanPlayer.id);
+                  actions.endAction();
+                  break;
+                case 'councilor':
+                  actions.drawCouncilCards(humanPlayer.id);
+                  setDrawnCouncilorCards(humanPlayer.hand.slice(-5)); // 最後に引いた5枚
+                  break;
+                // 他のアクションは選択UIが必要なため、
+                // 別のコンポーネントで処理
+              }
+            }}
+          >
+            実行
+          </button>
         </div>
       </div>
     );
@@ -118,19 +138,63 @@ const Actions: React.FC<ActionsProps> = ({ gameState, onSelectRole, onExecuteAct
     return (
       <div className="end-round">
         <h5>ラウンド終了</h5>
-        <p>総督が次のプレイヤーに移動します</p>
-        {/* TODO: 手札制限チェックなどの処理UI */}
+        <button
+          className="action-button"
+          onClick={() => actions.endRound()}
+        >
+          次のラウンドへ
+        </button>
       </div>
     );
   };
 
   return (
-    <div className="actions-area">
-      <h4>アクション</h4>
-      {renderRoleSelection()}
-      {renderActionExecution()}
-      {renderEndRound()}
-    </div>
+    <>
+      <div className="actions-area">
+        <h4>アクション</h4>
+        {renderRoleSelection()}
+        {renderActionExecution()}
+        {renderEndRound()}
+      </div>
+
+      {/* 建物建設ダイアログ */}
+      {showBuildingDialog && (
+        <BuildingActionDialog
+          onClose={() => setShowBuildingDialog(false)}
+        />
+      )}
+
+      {/* 商品売却ダイアログ */}
+      {showTraderDialog && (
+        <TraderActionDialog
+          onClose={() => {
+            setShowTraderDialog(false);
+            actions.endAction();
+          }}
+        />
+      )}
+
+      {/* 参事会議員のカード選択ダイアログ */}
+      {drawnCouncilorCards.length > 0 && (
+        <CouncilorActionDialog
+          drawnCards={drawnCouncilorCards}
+          onClose={() => {
+            setDrawnCouncilorCards([]);
+            actions.endAction();
+          }}
+        />
+      )}
+
+      {/* 生産施設選択ダイアログ */}
+      {showProducerDialog && (
+        <ProducerActionDialog
+          onClose={() => {
+            setShowProducerDialog(false);
+            actions.endAction();
+          }}
+        />
+      )}
+    </>
   );
 };
 

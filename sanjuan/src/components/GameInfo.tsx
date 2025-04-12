@@ -1,11 +1,7 @@
 // src/components/GameInfo.tsx
 import React from 'react';
-import { GameState } from '../store/gameStore';
 import { Role } from '../store/gameStore';
-
-interface GameInfoProps {
-  gameState: GameState;
-}
+import { useGame } from '../store/GameContext';
 
 // 役割名を日本語に変換
 const roleNames: Record<Role, string> = {
@@ -17,14 +13,15 @@ const roleNames: Record<Role, string> = {
 };
 
 // ゲームフェーズを日本語に変換
-const phaseNames: Record<GameState['gamePhase'], string> = {
+const phaseNames: Record<string, string> = {
   role_selection: '役割選択',
   action: 'アクション実行',
   end_round: 'ラウンド終了',
   game_over: 'ゲーム終了'
 };
 
-const GameInfo: React.FC<GameInfoProps> = ({ gameState }) => {
+const GameInfo: React.FC = () => {
+  const { state } = useGame();
   const {
     deck,
     discardPile,
@@ -35,7 +32,7 @@ const GameInfo: React.FC<GameInfoProps> = ({ gameState }) => {
     selectedRole,
     gamePhase,
     currentRoundRoles,
-  } = gameState;
+  } = state;
 
   // 商品価格の表示用ヘルパー関数
   const renderTradingHousePrices = () => {

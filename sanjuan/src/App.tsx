@@ -1,13 +1,13 @@
-import { useState } from 'react';
 import './App.css';
-import { GameState, PlayerState, createInitialGameState } from './store/gameStore';
-import PlayerHand from './components/PlayerHand'; // 仮のコンポーネント
-import PlayerBuildings from './components/PlayerBuildings'; // 仮のコンポーネント
-import GameInfo from './components/GameInfo'; // 仮のコンポーネント
-import Actions from './components/Actions'; // 仮のコンポーネント
+import { PlayerState } from './store/gameStore';
+import PlayerHand from './components/PlayerHand';
+import PlayerBuildings from './components/PlayerBuildings';
+import GameInfo from './components/GameInfo';
+import Actions from './components/Actions';
+import { GameProvider, useGame } from './store/GameContext';
 
-function App() {
-  const [gameState, setGameState] = useState<GameState>(createInitialGameState());
+function GameContent() {
+  const { state: gameState } = useGame();
 
   // TODO: ゲームロジックと状態更新関数を実装
 
@@ -23,7 +23,7 @@ function App() {
       <h1>サンファン</h1>
 
       {/* ゲーム情報表示エリア */}
-      <GameInfo gameState={gameState} />
+      <GameInfo />
 
       {/* CPUプレイヤー表示エリア (簡易) */}
       <div className="cpu-players-area">
@@ -40,16 +40,24 @@ function App() {
       {/* プレイヤー操作エリア */}
       <div className="player-area">
         <h2>あなた ({humanPlayer.id})</h2>
-        <PlayerHand hand={humanPlayer.hand} />
-        <PlayerBuildings buildings={humanPlayer.buildings} goods={humanPlayer.goods} />
+        <PlayerHand />
+        <PlayerBuildings />
       </div>
 
       {/* アクション選択/実行エリア */}
-      <Actions gameState={gameState} />
+      <Actions />
 
       {/* デバッグ用: ゲーム状態表示 */}
       {/* <pre>{JSON.stringify(gameState, null, 2)}</pre> */}
     </div>
+  );
+}
+
+function App() {
+  return (
+    <GameProvider>
+      <GameContent />
+    </GameProvider>
   );
 }
 
