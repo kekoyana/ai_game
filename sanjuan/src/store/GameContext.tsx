@@ -12,7 +12,7 @@ interface GameContextType {
 }
 
 // コンテキストの作成
-const GameContext = createContext<GameContextType | undefined>(undefined);
+export const GameContext = createContext<GameContextType | undefined>(undefined);
 
 // プロバイダーコンポーネント
 interface GameProviderProps {
