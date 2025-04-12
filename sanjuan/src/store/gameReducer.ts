@@ -235,20 +235,34 @@ function handleProspectorDraw(state: GameState, playerId: string): GameState {
   return state;
 }
 
+function handleCpuProspectorAction(state: GameState): GameState {
+  // CPUプレイヤーが金鉱堀り（prospector）ロールの場合、カードを1枚引く処理を自動実行する
+  const currentPlayerId = state.currentPlayerId;
+  const afterDraw = handleProspectorDraw(state, currentPlayerId);
+  return handleEndAction(afterDraw);
+}
+
 function handleEndAction(state: GameState): GameState {
   // 次のプレイヤーを決定
   const currentPlayerIndex = state.players.findIndex(p => p.id === state.currentPlayerId);
   const nextPlayerIndex = (currentPlayerIndex + 1) % state.players.length;
   const nextPlayerId = state.players[nextPlayerIndex].id;
-
+  const nextPlayer = state.players.find(p => p.id === nextPlayerId)!;
+  
   // 全プレイヤーが行動を終えたらラウンド終了
   const isRoundEnd = nextPlayerId === state.governorPlayerId;
-
-  return {
+  let newState: GameState = {
     ...state,
     currentPlayerId: nextPlayerId,
     gamePhase: isRoundEnd ? 'end_round' : 'action'
   };
+  
+  // 自動処理：次のプレイヤーがCPUで、選択された役割がprospectorなら自動で処理を実行
+  if (!nextPlayer.isHuman && state.selectedRole === 'prospector') {
+    newState = handleCpuProspectorAction(newState);
+  }
+  
+  return newState;
 }
 
 function handleEndRound(state: GameState): GameState {
@@ -289,26 +303,21 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       const { role } = action.params;
       return handleSelectRole(state, role);
     }
-
-    case 'BUILD': {
-      const { playerId, buildingCard, paymentCardIds, targetBuildingId } = action.params;
-      return handleBuild(
-        state,
-        playerId,
-        buildingCard,
-        paymentCardIds,
-        targetBuildingId
-      );
-    }
-
-    case 'PRODUCE': {
-      const { playerId, productionBuildingIds } = action.params;
-      return handleProduce(
-        state,
-        playerId,
-        productionBuildingIds
-      );
-    }
+case 'BUILD': {
+  const { playerId, buildingCard, paymentCardIds, targetBuildingId } = action.params;
+  const buildUpdatedState = handleBuild(
+    state,
+    playerId,
+    buildingCard,
+    paymentCardIds,
+    targetBuildingId
+  );
+  return handleEndAction(buildUpdatedState);
+}
+case 'PRODUCE': {
+  const { playerId, productionBuildingIds } = action.params;
+  return handleProduce(state, playerId, productionBuildingIds);
+}
 
     case 'TRADE': {
       const { playerId, goodsBuildingIds } = action.params;
