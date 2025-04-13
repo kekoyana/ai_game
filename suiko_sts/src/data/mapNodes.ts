@@ -80,13 +80,6 @@ export const enemyPool: Record<string, StageEnemies> = {
   }
 }
 
-// アイテムの種類
-const itemTypes = [
-  '武器庫',
-  '秘伝書',
-  '宝物庫',
-  '道具箱'
-]
 
 // マップ生成のための設定
 const MAP_CONFIG = {

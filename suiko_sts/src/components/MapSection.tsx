@@ -19,8 +19,6 @@ interface MapSectionProps {
   setShowRelicReward: (value: boolean) => void;
   // カード強化表示のためのフラグ更新用ハンドラー
   setShowCardUpgrade: (value: boolean) => void;
-  // 現在のノードのID
-  currentNodeId: string;
 }
 
 const MapSection: React.FC<MapSectionProps> = ({
@@ -31,8 +29,7 @@ const MapSection: React.FC<MapSectionProps> = ({
   handleRest,
   setShowCardReward,
   setShowRelicReward,
-  setShowCardUpgrade,
-  currentNodeId
+  setShowCardUpgrade
 }) => {
   return (
     <div className="map-container">

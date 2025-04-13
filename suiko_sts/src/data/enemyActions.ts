@@ -1,7 +1,7 @@
 import { Character } from '../store/slices/gameGeneralSlice'
 
 export interface EnemyAction {
-  type: 'attack' | 'defend' | 'special'
+  type: 'attack' | 'defend' | 'buff'
   value: number
   description: string
   specialAction?: string
@@ -13,7 +13,7 @@ export interface ActionPattern {
 
 export const actions: Record<string, EnemyAction> = {
   messyCooking: {
-    type: 'special',
+    type: 'buff',
     value: 0,
     description: '乱暴な調理 (腐った肉×2)',
     specialAction: 'add_rotten_meat'
@@ -36,7 +36,7 @@ export const actions: Record<string, EnemyAction> = {
 }
 
 export const patternTestEnemyBehavior: ActionPattern = {
-  getNextAction: (enemy: Character, currentAction?: Character['enemyAction']) => {
+  getNextAction: (_enemy: Character, currentAction?: Character['enemyAction']) => {
     if (!currentAction) {
       return actions.attack14
     } else if (currentAction.type === 'attack' && currentAction.value === 14) {
@@ -49,7 +49,7 @@ export const patternTestEnemyBehavior: ActionPattern = {
 }
 
 export const randomBehavior: ActionPattern = {
-  getNextAction: (enemy: Character, currentAction?: Character['enemyAction']) => {
+  getNextAction: (_enemy: Character, currentAction?: Character['enemyAction']) => {
     const availableActions = Object.values(actions)
     if (currentAction) {
       const differentActions = availableActions.filter(action =>
@@ -66,7 +66,7 @@ export const basicAttackBehavior: ActionPattern = {
 }
 
 export const messyCookingBehavior: ActionPattern = {
-  getNextAction: (enemy: Character, currentAction?: Character['enemyAction']) => {
+  getNextAction: (_enemy: Character, currentAction?: Character['enemyAction']) => {
     if (!currentAction || currentAction.type === 'attack') {
       return actions.messyCooking
     } else {

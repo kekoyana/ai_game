@@ -1,5 +1,5 @@
 // src/store/gameStore.ts
-import { BuildingCard, GoodType, TradingHouseTile, createInitialDeck, shuffleTradingHouseTiles, indigoPlantDef } from '../data/cards';
+import { BuildingCard, TradingHouseTile, createInitialDeck, shuffleTradingHouseTiles, indigoPlantDef } from '../data/cards';
 import { v4 as uuidv4 } from 'uuid'; // UUID生成ライブラリが必要 npm install uuid @types/uuid
 
 // プレイヤーの状態

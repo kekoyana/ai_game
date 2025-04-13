@@ -13,7 +13,6 @@ import {
   addStrength,
   addHeavyArmor
 } from './store/slices/gameGeneralSlice'
-import * as gameGeneralActions from './store/slices/gameGeneralSlice'
 import {
   startBattle,
   endTurn,
@@ -31,7 +30,6 @@ import GameClear from './components/GameClear'
 import GameOver from './components/GameOver'
 import MapSection from './components/MapSection'
 import GoldDisplay from './components/GoldDisplay'
-import Map from './components/Map'
 import RelicDisplay from './components/RelicDisplay'
 import { nanoid } from 'nanoid'
 import { Card } from './data/cards'
@@ -244,7 +242,6 @@ function App() {
             setShowCardReward={setShowCardReward}
             setShowRelicReward={setShowRelicReward}
             setShowCardUpgrade={setShowCardUpgrade}
-            currentNodeId={currentNodeId}
           />
         ) : (
           <BattleScreen
