@@ -23,7 +23,7 @@
   top: 50px; /* トグルボタンの下に配置 */
   right: 10px;
   width: 250px;
-  background-color: rgba(255, 255, 255, 0.9); /* 半透明の白 */
+  background-color: var(--secondary-color); /* メインの背景色と同じ */
   border: 1px solid #ccc;
   border-radius: 5px;
   padding: 15px;
@@ -36,18 +36,21 @@
 .game-info h4 {
   margin-top: 0;
   margin-bottom: 10px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border-color);
   padding-bottom: 5px;
+  color: var(--text-color);
 }
 
 .game-info h5 {
     margin-top: 10px;
     margin-bottom: 5px;
+    color: var(--text-color);
 }
 
 .game-info p {
   margin: 5px 0;
   font-size: 0.9em;
+  color: var(--text-color);
 }
 
 .game-info ul {
@@ -58,11 +61,12 @@
 
 .game-info li {
     font-size: 0.9em;
+    color: var(--text-color);
 }
 
 .game-info .highlight {
   font-weight: bold;
-  color: #007bff; /* 強調色 */
+  color: #f1c40f; /* 強調色を黄色系に変更 */
 }
 
 .game-info > div {
