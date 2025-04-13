@@ -8,6 +8,7 @@ AIで作ったゲームをあげていく
 - `/gakuensai` - 学園祭シミュレーションゲーム（ https://kekoyana.github.io/ai_game/gakuensai/ ）
 - `/shiritori` - しりとりゲーム（ https://kekoyana.github.io/ai_game/shiritori/ ）
 - `/suiko_sts` - 水滸伝風カードゲーム（ https://kekoyana.github.io/ai_game/suiko_sts/ ）
+- `/sanjuan` - サンファンボードゲーム（ https://kekoyana.github.io/ai_game/sanjuan/ ）
 
 ## デプロイ方法
 
@@ -31,6 +32,7 @@ AIで作ったゲームをあげていく
   - 学園祭: https://kekoyana.github.io/ai_game/gakuensai/
   - しりとり: https://kekoyana.github.io/ai_game/shiritori/
   - 水滸伝のカードゲーム: https://kekoyana.github.io/ai_game/suiko_sts/
+  - サンファン: https://kekoyana.github.io/ai_game/sanjuan/
 
 ## 新しいゲームの追加方法
 
