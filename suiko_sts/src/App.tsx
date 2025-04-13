@@ -21,7 +21,6 @@ import {
 } from './store/slices/battleSlice'
 import { clearNode, resetMap, selectIsNodeConsumed, selectCurrentStage } from './store/slices/mapSlice'
 import BattleScreen from './components/BattleScreen'
-import { Shop } from './components/Shop'
 import CardReward from './components/CardReward'
 import RelicReward from './components/RelicReward'
 import CardUpgrade from './components/CardUpgrade'

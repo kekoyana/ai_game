@@ -389,7 +389,7 @@ it('腐った肉カードの状態リセットテスト', () => {
       strength: 0,
       // 初期行動を乱暴な調理に設定
       enemyAction: {
-        type: 'special',
+        type: 'buff', // 'special' を 'buff' に変更
         value: 0,
         specialAction: 'add_rotten_meat',
         description: '乱暴な調理 (腐った肉×2)'

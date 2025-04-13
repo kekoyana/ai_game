@@ -25,7 +25,7 @@ interface BattleState {
 }
 
 const getUpgradedEffect = (effects: Card['effects']): Card['effects'] => {
-  const upgraded: Card['effects'] = { ...effects }
+  const upgraded = { ...effects }
   if (effects.damage) upgraded.damage = effects.damage + 3
   if (effects.block) upgraded.block = effects.block + 3
   if (effects.draw) upgraded.draw = effects.draw + 1
@@ -43,6 +43,21 @@ const getUpgradedDescription = (card: Card): string => {
 
   return `[強化] ${desc}`
 }
+
+interface EnemyAction {
+  type: "attack" | "defend" | "buff";
+  value: number;
+  description: string;
+  specialAction?: string;
+}
+
+const generateEnemyMove = (enemy: Character, currentAction?: Character['enemyAction']): EnemyAction => {
+  const behavior = getBehaviorForEnemy(enemy.id);
+  // getNextAction は既に正しい EnemyAction 型を返すため、そのまま返す
+  return behavior.getNextAction(enemy, currentAction);
+}
+
+
 
 const initialState: BattleState = {
   enemy: null,
@@ -62,25 +77,20 @@ const initialState: BattleState = {
   isSelectingCardForUpgrade: false
 }
 
-const generateEnemyMove = (enemy: Character, currentAction?: Character['enemyAction']) => {
-  const behavior = getBehaviorForEnemy(enemy.id)
-  return behavior.getNextAction(enemy, currentAction)
-}
-
 export const battleSlice = createSlice({
   name: 'battle',
   initialState,
   reducers: {
-    startBattle: (state, action: PayloadAction<{ enemy: Character, deck: Card[], player: Character, relics: Relic[] }>) => {
+    startBattle(state, action: PayloadAction<{ enemy: Character; deck: Card[]; player: Character; relics: Relic[] }>) {
       const { enemy, deck, relics } = action.payload
-      const stage = `stage${enemy.id.split('_')[0].slice(-1)}` as keyof typeof enemyPool;
+      const stage = `stage${enemy.id.split('_')[0].slice(-1)}` as keyof typeof enemyPool
       const selectedEnemy = enemyPool[stage]?.early.concat(
         enemyPool[stage]?.elite,
         enemyPool[stage]?.boss
-      ).find(e => e.id === enemy.id);
+      ).find(e => e.id === enemy.id)
       
       if (selectedEnemy) {
-        enemy.name = selectedEnemy.name;
+        enemy.name = selectedEnemy.name
       }
       enemy.goldReward = enemy.strength === 5 ? 100 :
                         enemy.strength === 3 ? 50 :
@@ -101,23 +111,28 @@ export const battleSlice = createSlice({
 
       if (state.enemy) {
         if (!state.enemy.enemyAction) {
-          state.enemy.enemyAction = generateEnemyMove(state.enemy, undefined)
+          const actionGen = generateEnemyMove(state.enemy, undefined) as any;
+          if (actionGen.type === 'special') { actionGen.type = 'buff'; }
+          state.enemy.enemyAction = actionGen;
         }
         
-        const action = state.enemy.enemyAction
-        if (action.type === 'defend') {
-          state.enemy.block = action.value
-          state.incomingDamage = 0
-        } else if (action.type === 'attack') {
-          state.enemy.block = 0
-          state.incomingDamage = action.value
-        } else if (action.type === 'special' && action.specialAction === 'add_rotten_meat') {
-          // 腐った肉を2枚追加
-          state.drawPile.push(
-            { ...rottenMeatCard, id: "status_rotten_meat" },
-            { ...rottenMeatCard, id: "status_rotten_meat" }
-          )
-          state.drawPile = shuffleDeck(state.drawPile)
+        const enemyAction = state.enemy.enemyAction
+        if (enemyAction) {
+          const currType = (enemyAction.type as string) === 'special' ? 'buff' : enemyAction.type
+          if (currType === 'defend') {
+            state.enemy.block = enemyAction.value
+            state.incomingDamage = 0
+          } else if (currType === 'attack') {
+            state.enemy.block = 0
+            state.incomingDamage = enemyAction.value
+          } else if (currType === 'buff' && enemyAction.specialAction === 'add_rotten_meat') {
+            // 腐った肉を2枚追加
+            state.drawPile.push(
+              { ...rottenMeatCard, id: "status_rotten_meat" },
+              { ...rottenMeatCard, id: "status_rotten_meat" }
+            )
+            state.drawPile = shuffleDeck(state.drawPile)
+          }
         }
       }
 
@@ -132,8 +147,7 @@ export const battleSlice = createSlice({
         state.drawPile = state.drawPile.slice(1)
       }
     },
-
-    endTurn: (state) => {
+    endTurn(state) {
       if (!state.isInBattle) return
 
       if (state.enemy && state.enemy.enemyAction) {
@@ -142,32 +156,33 @@ export const battleSlice = createSlice({
           state.enemy.weaken -= 1
         }
 
-        const nextAction = generateEnemyMove(state.enemy, state.enemy.enemyAction)
-        state.enemy.enemyAction = nextAction
-
-        state.incomingDamage = 0
-        if (nextAction.type === 'attack') {
-          let attackValue = nextAction.value
-          if (state.enemy.weaken && state.enemy.weaken > 0) {
-            const reduction = Math.floor(attackValue * 0.25)
-            attackValue -= reduction
+        const nextAction = generateEnemyMove(state.enemy, state.enemy.enemyAction);
+        if (nextAction) {
+          state.enemy.enemyAction = nextAction;
+          
+          state.incomingDamage = 0;
+          if (nextAction.type === 'attack') {
+            let attackValue = nextAction.value;
+            if (state.enemy.weaken && state.enemy.weaken > 0) {
+              const reduction = Math.floor(attackValue * 0.25);
+              attackValue -= reduction;
+            }
+            state.incomingDamage = attackValue;
+          } else if (nextAction.type === 'defend') {
+            let blockValue = nextAction.value;
+            if (state.enemy.weaken && state.enemy.weaken > 0) {
+              const reduction = Math.floor(blockValue * 0.25);
+              blockValue -= reduction;
+            }
+            state.enemy.block = blockValue;
+          } else if (nextAction.type === 'buff' && nextAction.specialAction === 'add_rotten_meat') {
+            // 腐った肉を2枚追加
+            state.drawPile.push(
+              { ...rottenMeatCard, id: nanoid() },
+              { ...rottenMeatCard, id: nanoid() }
+            );
+            state.drawPile = shuffleDeck(state.drawPile);
           }
-          state.incomingDamage = attackValue
-        } else if (nextAction.type === 'defend') {
-          let blockValue = nextAction.value
-          if (state.enemy.weaken && state.enemy.weaken > 0) {
-            const reduction = Math.floor(blockValue * 0.25)
-            blockValue -= reduction
-          }
-          state.enemy.block = blockValue
-        } else if (nextAction.type === 'special' && nextAction.specialAction === 'add_rotten_meat') {
-          // 腐った肉を2枚追加
-          // rottenMeatCardは既にファイル先頭でインポート済み
-          state.drawPile.push(
-            { ...rottenMeatCard, id: nanoid() },
-            { ...rottenMeatCard, id: nanoid() }
-          )
-          state.drawPile = shuffleDeck(state.drawPile)
         }
       }
 
@@ -195,8 +210,7 @@ export const battleSlice = createSlice({
 
       state.activeSkills = []
     },
-
-    playCard: (state, action: PayloadAction<{ card: Card }>) => {
+    playCard(state, action: PayloadAction<{ card: Card }>) {
       const { card } = action.payload
       if (!state.isInBattle || state.energy.current < card.cost) return
 
@@ -268,8 +282,7 @@ export const battleSlice = createSlice({
         }
       }
     },
-
-    endBattle: (state) => {
+    endBattle(state) {
       state.enemy = null
       state.isInBattle = false
       state.hand = []
@@ -282,13 +295,11 @@ export const battleSlice = createSlice({
       state.tempUpgradedCards = []
       state.isSelectingCardForUpgrade = false
     },
-
-    setEnergyMax: (state, action: PayloadAction<number>) => {
+    setEnergyMax(state, action: PayloadAction<number>) {
       state.energy.max = action.payload
       state.energy.current = action.payload
     },
-
-    upgradeCardTemp: (state, action: PayloadAction<Card>) => {
+    upgradeCardTemp(state, action: PayloadAction<Card>) {
       if (!state.isInBattle) return
       
       const isAlreadyUpgraded = state.tempUpgradedCards.some(card => card.id === action.payload.id)
@@ -309,16 +320,13 @@ export const battleSlice = createSlice({
       }
       state.isSelectingCardForUpgrade = false
     },
-
-    cancelCardUpgradeSelection: (state) => {
+    cancelCardUpgradeSelection(state) {
       state.isSelectingCardForUpgrade = false
     },
-
-    setHand: (state, action: PayloadAction<Card[]>) => {
+    setHand(state, action: PayloadAction<Card[]>) {
       state.hand = action.payload
     },
-
-    setEnergyCurrent: (state, action: PayloadAction<number>) => {
+    setEnergyCurrent(state, action: PayloadAction<number>) {
       state.energy.current = action.payload
     }
   }
@@ -335,5 +343,4 @@ export const {
   setHand,
   setEnergyCurrent
 } = battleSlice.actions
-
 export default battleSlice.reducer
