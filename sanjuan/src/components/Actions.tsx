@@ -101,12 +101,12 @@ const Actions: React.FC = () => {
               onClick={() => {
                 actions.pass(humanPlayer.id);
                 addMessage({
-                  text: `あなたはアクションをパスしました`,
+                  text: `あなたは${roleNames[selectedRole!]}のアクションをスキップしました`,
                   type: 'action'
                 });
               }}
             >
-              パス
+              スキップ
             </button>
           )}
 
@@ -126,11 +126,18 @@ const Actions: React.FC = () => {
                   setShowTraderDialog(true);
                   return;
                 case 'prospector':
-                  actions.prospectorDraw(humanPlayer.id);
-                  addMessage({
-                    text: `あなたは金鉱掘りの特権で1枚カードを引きました`,
-                    type: 'action'
-                  });
+                  if (hasPrivilege) {
+                    actions.prospectorDraw(humanPlayer.id);
+                    addMessage({
+                      text: `あなたは金鉱掘りで1枚カードを引きました`,
+                      type: 'action'
+                    });
+                  } else {
+                    addMessage({
+                      text: `特権を持っていないため、金鉱掘りのアクションは実行できません`,
+                      type: 'action'
+                    });
+                  }
                   actions.endAction();
                   break;
                 case 'councilor':

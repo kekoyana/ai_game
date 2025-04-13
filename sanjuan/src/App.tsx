@@ -17,6 +17,9 @@ function GameContent() {
   const humanPlayer = gameState.players.find((p: PlayerState) => p.isHuman);
   const cpuPlayers = gameState.players.filter((p: PlayerState) => !p.isHuman);
 
+  // 前回のゲーム状態を保持
+  const [prevGameState, setPrevGameState] = useState(gameState);
+  
   // ゲーム状態の変更を監視してメッセージを追加
   useEffect(() => {
     if (!humanPlayer) return;
@@ -29,18 +32,22 @@ function GameContent() {
       prospector: '金鉱掘り'
     };
 
-    // フェーズ変更時のメッセージ
-    if (gameState.selectedRole) {
+    // 役割選択時のメッセージ（selectedRoleが変更されたときのみ）
+    if (gameState.selectedRole && gameState.selectedRole !== prevGameState.selectedRole) {
       const isHumanPlayer = gameState.currentPlayerId === humanPlayer.id;
-      const playerType = isHumanPlayer ? 'action' : 'cpu';
-      const player = isHumanPlayer ? 'あなた' : `プレイヤー${gameState.currentPlayerId}`;
+      const playerName = isHumanPlayer ? 'あなた' : `プレイヤー${gameState.currentPlayerId}`;
       
       addMessage({
-        text: `${player}は${roleNames[gameState.selectedRole]}を選択しました`,
-        type: playerType
+        text: `${playerName}は${roleNames[gameState.selectedRole]}を選択しました`,
+        type: isHumanPlayer ? 'action' : 'cpu'
       });
     }
-  }, [gameState.selectedRole, gameState.currentPlayerId, humanPlayer, addMessage]);
+
+    // 金鉱掘りのアクションメッセージは Actions.tsx で処理
+
+    // 現在のゲーム状態を保存
+    setPrevGameState(gameState);
+  }, [gameState, prevGameState, humanPlayer, addMessage]);
 
   // TODO: ゲームロジックと状態更新関数を実装
 
