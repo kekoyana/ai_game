@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useGame, useGameActions } from '../../store/GameContext';
 import { BuildingCard } from '../../data/cards';
+import { useMessage } from '../../store/messageContext';
 
 interface CouncilorActionDialogProps {
   drawnCards: BuildingCard[];
@@ -14,6 +15,7 @@ const CouncilorActionDialog: React.FC<CouncilorActionDialogProps> = ({
 }) => {
   const { state } = useGame();
   const actions = useGameActions();
+  const { addMessage } = useMessage();
   const humanPlayer = state.players.find(p => p.isHuman);
 
   // 選択状態の管理
@@ -48,11 +50,33 @@ const CouncilorActionDialog: React.FC<CouncilorActionDialogProps> = ({
       .map(card => card.id)
       .filter(id => !selectedCardIds.includes(id));
 
+    // 選択したカードの情報を収集
+    const selectedCards = drawnCards
+      .filter(card => selectedCardIds.includes(card.id))
+      .map(card => card.name);
+    
     actions.keepCouncilCards(
       humanPlayer.id,
       selectedCardIds,
       discardCardIds
     );
+
+    // メッセージを生成
+    const messageLines = [
+      `あなたは参事会議員のアクションで以下のカードを獲得しました：`,
+      ...selectedCards.map(name => `・${name}`)
+    ];
+
+    // 知事官舎による追加選択の場合はメッセージに追加
+    if (hasPrefecture) {
+      messageLines.push('（知事官舎による追加選択を含む）');
+    }
+
+    addMessage({
+      text: messageLines.join('\n'),
+      type: 'action'
+    });
+
     onClose();
   };
 

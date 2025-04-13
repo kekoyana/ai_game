@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useGame, useGameActions } from '../store/GameContext';
 import { Role } from '../store/gameStore';
+import { useMessage } from '../store/messageContext';
 import { BuildingCard } from '../data/cards';
 import BuildingActionDialog from './dialogs/BuildingActionDialog';
 import CouncilorActionDialog from './dialogs/CouncilorActionDialog';
@@ -29,6 +30,7 @@ const roleDescriptions: Record<Role, string> = {
 const Actions: React.FC = () => {
   const { state } = useGame();
   const actions = useGameActions();
+  const { addMessage } = useMessage();
   
   // ダイアログの表示状態
   // ダイアログの表示状態
@@ -60,7 +62,13 @@ const Actions: React.FC = () => {
             <button
               key={role}
               className="role-button"
-              onClick={() => actions.selectRole(role)}
+              onClick={() => {
+                actions.selectRole(role);
+                addMessage({
+                  text: `あなたは${roleNames[role]}を選択しました`,
+                  type: 'action'
+                });
+              }}
             >
               <span className="role-name">{roleNames[role]}</span>
               <span className="role-description">{roleDescriptions[role]}</span>
@@ -90,7 +98,13 @@ const Actions: React.FC = () => {
           {!hasPrivilege && humanPlayer && (
             <button
               className="pass-button"
-              onClick={() => actions.pass(humanPlayer.id)}
+              onClick={() => {
+                actions.pass(humanPlayer.id);
+                addMessage({
+                  text: `あなたはアクションをパスしました`,
+                  type: 'action'
+                });
+              }}
             >
               パス
             </button>
@@ -113,6 +127,10 @@ const Actions: React.FC = () => {
                   return;
                 case 'prospector':
                   actions.prospectorDraw(humanPlayer.id);
+                  addMessage({
+                    text: `あなたは金鉱掘りの特権で1枚カードを引きました`,
+                    type: 'action'
+                  });
                   actions.endAction();
                   break;
                 case 'councilor':
@@ -140,7 +158,13 @@ const Actions: React.FC = () => {
         <h5>ラウンド終了</h5>
         <button
           className="action-button"
-          onClick={() => actions.endRound()}
+          onClick={() => {
+            actions.endRound();
+            addMessage({
+              text: `ラウンドが終了し、次のラウンドが開始されました`,
+              type: 'system'
+            });
+          }}
         >
           次のラウンドへ
         </button>

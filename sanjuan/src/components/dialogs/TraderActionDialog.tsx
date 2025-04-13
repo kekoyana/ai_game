@@ -1,6 +1,7 @@
 // src/components/dialogs/TraderActionDialog.tsx
 import React, { useState } from 'react';
 import { useGame, useGameActions } from '../../store/GameContext';
+import { useMessage } from '../../store/messageContext';
 
 interface TraderActionDialogProps {
   onClose: () => void;
@@ -18,6 +19,7 @@ const productNames: Record<string, string> = {
 const TraderActionDialog: React.FC<TraderActionDialogProps> = ({ onClose }) => {
   const { state } = useGame();
   const actions = useGameActions();
+  const { addMessage } = useMessage();
   const humanPlayer = state.players.find(p => p.isHuman);
 
   // 選択された建物のID（商品を売却する建物）
@@ -61,10 +63,37 @@ const TraderActionDialog: React.FC<TraderActionDialogProps> = ({ onClose }) => {
   const handleTrade = () => {
     if (!humanPlayer) return;
 
+    // 売却する商品の情報を収集
+    const soldGoods = selectedBuildingIds.map(buildingId => {
+      const building = availableBuildings.find(b => b.id === buildingId);
+      if (building?.type === 'production') {
+        return {
+          name: productNames[building.produces],
+          price: state.currentTradingHouseTile!.prices[building.produces]
+        };
+      }
+      return null;
+    }).filter(Boolean);
+
     actions.tradeGoods(
       humanPlayer.id,
       selectedBuildingIds
     );
+
+    // メッセージを生成
+    const messageLines = [
+      `あなたは以下の商品を売却しました：`,
+      ...soldGoods.map(good =>
+        `・${good!.name}（${good!.price}枚）`
+      ),
+      `合計${totalCards}枚のカードを獲得しました`
+    ];
+
+    addMessage({
+      text: messageLines.join('\n'),
+      type: 'action'
+    });
+
     onClose();
   };
 

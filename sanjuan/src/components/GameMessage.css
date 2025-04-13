@@ -1,0 +1,68 @@
+/* src/components/GameMessage.css */
+.game-messages {
+  padding: 10px;
+  overflow-y: auto;
+  max-height: calc(100vh - 500px); /* 適切な高さに調整 */
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.message {
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  line-height: 1.4;
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* メッセージタイプごとのスタイル */
+.message.info {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-left: 3px solid var(--text-color);
+}
+
+.message.action {
+  background-color: rgba(41, 128, 185, 0.2); /* 青系 */
+  border-left: 3px solid #3498db;
+}
+
+.message.system {
+  background-color: rgba(241, 196, 15, 0.2); /* 黄系 */
+  border-left: 3px solid #f1c40f;
+}
+
+.message.cpu {
+  background-color: rgba(231, 76, 60, 0.2); /* 赤系 */
+  border-left: 3px solid #e74c3c;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* スクロールバーのスタイル */
+.game-messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.game-messages::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.game-messages::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.game-messages::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}

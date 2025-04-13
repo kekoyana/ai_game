@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useGame, useGameActions } from '../../store/GameContext';
 import { BuildingCard } from '../../data/cards';
+import { useMessage } from '../../store/messageContext';
 
 interface BuildingActionDialogProps {
   onClose: () => void;
@@ -10,6 +11,7 @@ interface BuildingActionDialogProps {
 const BuildingActionDialog: React.FC<BuildingActionDialogProps> = ({ onClose }) => {
   const { state } = useGame();
   const actions = useGameActions();
+  const { addMessage } = useMessage();
   const humanPlayer = state.players.find(p => p.isHuman);
 
   // 選択状態の管理
@@ -43,12 +45,37 @@ const BuildingActionDialog: React.FC<BuildingActionDialogProps> = ({ onClose }) 
   const handleBuild = () => {
     if (!selectedBuildingCard || !humanPlayer) return;
 
+    // 建設コストの計算（特権などを考慮）
+    const cost = calculateBuildingCost(selectedBuildingCard);
+
     actions.buildBuilding(
       humanPlayer.id,
       selectedBuildingCard,
       selectedPaymentCards,
       selectedReplaceTarget || undefined
     );
+
+    // メッセージを生成
+    let messageText = `あなたは${selectedBuildingCard.name}を建設しました`;
+    if (cost === 0) {
+      messageText += '（コスト: 0）';
+    } else {
+      messageText += `（コスト: ${cost}）`;
+    }
+
+    // 建て替えの場合は追加メッセージ
+    if (selectedReplaceTarget) {
+      const replacedBuilding = humanPlayer.buildings.find(b => b.id === selectedReplaceTarget);
+      if (replacedBuilding) {
+        messageText += `\n→ ${replacedBuilding.name}を建て替えました`;
+      }
+    }
+
+    addMessage({
+      text: messageText,
+      type: 'action'
+    });
+
     onClose();
   };
 

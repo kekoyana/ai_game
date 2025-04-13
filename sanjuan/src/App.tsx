@@ -1,20 +1,48 @@
-import React, { useState, useEffect } from 'react'; // useState, useEffect をインポート
+import React, { useState, useEffect } from 'react';
 import './App.css';
-import { PlayerState } from './store/gameStore';
+import { PlayerState, Role } from './store/gameStore';
 import PlayerHand from './components/PlayerHand';
 import PlayerBuildings from './components/PlayerBuildings';
 import GameInfo from './components/GameInfo';
-import Actions from './components/Actions'; // Actions を再度使用する
+import Actions from './components/Actions';
+import GameMessage from './components/GameMessage';
 import { GameProvider, useGame } from './store/GameContext';
+import { MessageProvider, useMessage } from './store/messageContext';
 
 function GameContent() {
   const { state: gameState } = useGame();
-  const [isActionModalOpen, setIsActionModalOpen] = useState(false); // モーダル表示状態
-
-  // TODO: ゲームロジックと状態更新関数を実装
+  const { state: messageState, addMessage } = useMessage();
+  const [isActionModalOpen, setIsActionModalOpen] = useState(false);
 
   const humanPlayer = gameState.players.find((p: PlayerState) => p.isHuman);
   const cpuPlayers = gameState.players.filter((p: PlayerState) => !p.isHuman);
+
+  // ゲーム状態の変更を監視してメッセージを追加
+  useEffect(() => {
+    if (!humanPlayer) return;
+
+    const roleNames: Record<Role, string> = {
+      builder: '建築士',
+      producer: '監督',
+      trader: '商人',
+      councilor: '参事会議員',
+      prospector: '金鉱掘り'
+    };
+
+    // フェーズ変更時のメッセージ
+    if (gameState.selectedRole) {
+      const isHumanPlayer = gameState.currentPlayerId === humanPlayer.id;
+      const playerType = isHumanPlayer ? 'action' : 'cpu';
+      const player = isHumanPlayer ? 'あなた' : `プレイヤー${gameState.currentPlayerId}`;
+      
+      addMessage({
+        text: `${player}は${roleNames[gameState.selectedRole]}を選択しました`,
+        type: playerType
+      });
+    }
+  }, [gameState.selectedRole, gameState.currentPlayerId, humanPlayer, addMessage]);
+
+  // TODO: ゲームロジックと状態更新関数を実装
 
   // ゲーム状態に基づいてアクションモーダルを開閉するロジック (Hooksはトップレベルで呼び出す)
   useEffect(() => {
@@ -66,8 +94,8 @@ function GameContent() {
 
       {/* メッセージエリア (中央) */}
       <div className="message-area">
-        <h2>メッセージ</h2>
-        {/* TODO: ゲームメッセージ表示 */}
+        <h2>ゲームログ</h2>
+        <GameMessage messages={messageState.messages} />
         {/* Actionsコンポーネントは削除し、モーダルで表示するように変更 */}
       </div>
 
@@ -98,7 +126,9 @@ function GameContent() {
 function App() {
   return (
     <GameProvider>
-      <GameContent />
+      <MessageProvider>
+        <GameContent />
+      </MessageProvider>
     </GameProvider>
   );
 }
