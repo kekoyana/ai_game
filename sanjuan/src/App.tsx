@@ -79,13 +79,11 @@ function GameContent() {
 
       {/* プレイヤー施設エリア (左上) */}
       <div className="player-buildings-area">
-        <h2>あなた ({humanPlayer.id}) の施設</h2>
         <PlayerBuildings />
       </div>
 
       {/* 相手プレイヤーエリア (右上) */}
       <div className="opponent-area">
-        <h2>相手プレイヤー</h2>
         <div className="cpu-players-container">
           {cpuPlayers.map((cpu: PlayerState) => (
             <div key={cpu.id} className="cpu-player-summary">
@@ -100,14 +98,12 @@ function GameContent() {
 
       {/* メッセージエリア (中央) */}
       <div className="message-area">
-        <h2>ゲームログ</h2>
         <GameMessage messages={messageState.messages} />
         {/* Actionsコンポーネントは削除し、モーダルで表示するように変更 */}
       </div>
 
       {/* 手札エリア (下) */}
       <div className="player-hand-area">
-        <h2>あなたの手札</h2>
         <PlayerHand />
       </div>
 

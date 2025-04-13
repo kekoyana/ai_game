@@ -132,7 +132,6 @@ const Actions: React.FC = () => {
   return (
     <>
       <div className="actions-area">
-        <h4>アクション</h4>
         {renderRoleSelection()}
         {renderEndRound()}
       </div>
