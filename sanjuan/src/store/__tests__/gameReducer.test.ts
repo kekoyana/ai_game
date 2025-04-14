@@ -368,15 +368,16 @@ describe('PROSPECTOR_DRAW action', () => {
         params: { role: 'builder' as const }
       });
 
+      // CPUが役割を選択すると、関連する全CPUのアクションが実行され、ラウンド終了フェーズになる
       expect(state.selectedRole).toBe('builder');
-      expect(state.gamePhase).toBe('action');
+      expect(state.gamePhase).toBe('end_round');
 
       // CPU1の行動が自動実行されていることを確認
       const cpu1After = state.players.find(p => p.id === 'cpu1')!;
       expect(cpu1After.buildings.length).toBe(2); // 建物が1つ増えている
       
-      // 次のプレイヤーに移っていることを確認
-      expect(state.currentPlayerId).toBe('cpu2');
+      // ラウンド終了なので、次のプレイヤーは総督（'player'）になっているはず
+      expect(state.currentPlayerId).toBe('player');
 
       // CPU2の行動も自動実行されていることを確認
       const cpu2After = state.players.find(p => p.id === 'cpu2')!;

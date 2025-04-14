@@ -21,8 +21,11 @@ export type CpuActionType =
   | 'build_success'
   | 'build_fail'
   | 'produce'
+  | 'produce_fail'
   | 'trade'
+  | 'trade_fail'
   | 'council'
+  | 'council_fail'
   | 'prospect'
   | 'prospect_fail';
 
@@ -47,6 +50,7 @@ export interface GameState {
   gamePhase: 'role_selection' | 'action' | 'end_round' | 'game_over';
   winnerPlayerId: string | null;
   lastCpuAction: CpuAction | null;
+  skipAutoAction?: boolean; // CPUの自動アクションをスキップするフラグ
 }
 
 // 初期プレイヤー状態を生成する関数
@@ -108,5 +112,6 @@ export function createInitialGameState(): GameState {
     gamePhase: 'role_selection', // ゲーム開始時は役割選択フェーズ
     winnerPlayerId: null,
     lastCpuAction: null,
+    skipAutoAction: false,
   };
 }
