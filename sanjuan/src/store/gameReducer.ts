@@ -21,8 +21,20 @@ function updatePlayerInList(players: PlayerState[], updatedPlayer: PlayerState):
 // アクション処理関数
 function handleSelectRole(state: GameState, role: Role): GameState {
   const player = state.players.find(p => p.id === state.currentPlayerId);
+  // CPUがアクションを実行する場合は、MessageContextを使ってメッセージを表示する
   if (player && !player.isHuman) {
-    console.log(`CPU ${player.id} が役割「${getRoleName(role)}」を選択しました`);
+    // 注：この位置ではMessageContextにアクセスできないため、stateに情報を保存
+    return {
+      ...state,
+      selectedRole: role,
+      currentRoundRoles: [...state.currentRoundRoles, role],
+      gamePhase: 'action',
+      lastCpuAction: {
+        playerId: player.id,
+        role,
+        type: 'select_role'
+      }
+    };
   }
   return {
     ...state,
@@ -30,17 +42,6 @@ function handleSelectRole(state: GameState, role: Role): GameState {
     currentRoundRoles: [...state.currentRoundRoles, role],
     gamePhase: 'action'
   };
-}
-
-function getRoleName(role: Role): string {
-  const roleNames: Record<Role, string> = {
-    builder: '建設家',
-    producer: '生産者',
-    trader: '商人',
-    councilor: '参事会員',
-    prospector: '金鉱掘り'
-  };
-  return roleNames[role];
 }
 
 function handleBuild(
@@ -236,7 +237,6 @@ function handleProspectorDraw(state: GameState, playerId: string): GameState {
   const hasPrivilege = playerId === state.currentPlayerId && state.selectedRole === 'prospector';
   
   if (hasPrivilege) {
-    console.log(`${player.isHuman ? 'プレイヤー' : 'CPU'} ${player.id} が金鉱掘りのカードを1枚引きます`);
     const [drawnCards, newDeck] = drawCards(state.deck, 1);
     const updatedPlayer: PlayerState = {
       ...player,
@@ -249,8 +249,14 @@ function handleProspectorDraw(state: GameState, playerId: string): GameState {
       deck: newDeck
     };
   } else {
-    console.log(`${player.isHuman ? 'プレイヤー' : 'CPU'} ${player.id} は特権がないためカードを引けません`);
-    return state;
+    return {
+      ...state,
+      lastCpuAction: {
+        playerId: player.id,
+        role: 'prospector',
+        type: 'prospect_fail'  // 特権がないため失敗
+      }
+    };
   }
 }
 
@@ -258,13 +264,17 @@ function handleProspectorDraw(state: GameState, playerId: string): GameState {
 function handleCpuProspectorAction(state: GameState): GameState {
   const currentPlayerId = state.currentPlayerId;
   const afterDraw = handleProspectorDraw(state, currentPlayerId);
+  afterDraw.lastCpuAction = {
+    playerId: currentPlayerId,
+    role: 'prospector',
+    type: 'prospect'
+  };
   return handleEndAction(afterDraw);
 }
 function handleCpuBuilderAction(state: GameState): GameState {
   const player = state.players.find(p => p.id === state.currentPlayerId);
   if (!player) return handleEndAction(state);
 
-  console.log(`CPU ${player.id} が建設家のアクションを実行します（手札: ${player.hand.length}枚）`);
 
   // 手札から建設可能な建物を探す（建設家の場合はコスト-1）
   const buildableCards = player.hand.map(card => {
@@ -280,7 +290,6 @@ function handleCpuBuilderAction(state: GameState): GameState {
   }).filter(item => item.canBuild);
 
   if (buildableCards.length === 0) {
-    console.log(`CPU ${player.id} は建設可能な建物がありません`);
     return handleEndAction(state);
   }
 
@@ -295,20 +304,26 @@ function handleCpuBuilderAction(state: GameState): GameState {
     .slice(0, actualCost)
     .map(card => card.id);
 
-  console.log(`CPU ${player.id} が建物「${buildingCard.name}」を建設します（コスト: ${buildingCard.cost}、実際のコスト: ${actualCost}、支払い: ${paymentCards.length}枚）`);
-
   // 建設を実行
   const newState = handleBuild(state, player.id, buildingCard, paymentCards);
   
   // 建設結果を確認
   const afterPlayer = newState.players.find(p => p.id === player.id)!;
-  if (afterPlayer.buildings.length > player.buildings.length) {
-    console.log(`CPU ${player.id} の建設成功: ${player.buildings.length} -> ${afterPlayer.buildings.length}棟`);
+  const didBuild = afterPlayer.buildings.length > player.buildings.length;
+  if (didBuild) {
+    newState.lastCpuAction = {
+      playerId: player.id,
+      role: 'builder',
+      type: 'build_success'
+    };
   } else {
-    console.log(`CPU ${player.id} の建設失敗`);
+    newState.lastCpuAction = {
+      playerId: player.id,
+      role: 'builder',
+      type: 'build_fail'
+    };
   }
 
-  return handleEndAction(newState);
   return handleEndAction(newState);
 }
 
@@ -316,29 +331,27 @@ function handleCpuProducerAction(state: GameState): GameState {
   const player = state.players.find(p => p.id === state.currentPlayerId);
   if (!player) return handleEndAction(state);
 
-  console.log(`CPU ${player.id} が生産者のアクションを実行します`);
-
   // 空の生産施設を選択
   const emptyProductionBuildings = player.buildings
     .filter(building => building.type === 'production' && !player.goods[building.id]);
 
   if (emptyProductionBuildings.length === 0) {
-    console.log(`CPU ${player.id} には生産可能な建物がありません`);
     return handleEndAction(state);
   }
 
-  console.log(`CPU ${player.id} が${emptyProductionBuildings.length}個の建物で生産を行います`);
-
   // 生産を実行し、その後次のプレイヤーへ
   const producedState = handleProduce(state, player.id, emptyProductionBuildings.map(b => b.id));
+  producedState.lastCpuAction = {
+    playerId: player.id,
+    role: 'producer',
+    type: 'produce'
+  };
   return handleEndAction(producedState);
 }
 
 function handleCpuTraderAction(state: GameState): GameState {
   const player = state.players.find(p => p.id === state.currentPlayerId);
   if (!player || !state.currentTradingHouseTile) return handleEndAction(state);
-
-  console.log(`CPU ${player.id} が商人のアクションを実行します`);
 
   // 商品がある生産施設を選択
   const buildingsWithGoods = player.buildings
@@ -352,14 +365,16 @@ function handleCpuTraderAction(state: GameState): GameState {
     });
 
   if (buildingsWithGoods.length === 0) {
-    console.log(`CPU ${player.id} には売却可能な商品がありません`);
     return handleEndAction(state);
   }
 
-  console.log(`CPU ${player.id} が${buildingsWithGoods.length}個の商品を売却します`);
-
   // 売却を実行し、その後次のプレイヤーへ
   const tradedState = handleTrade(state, player.id, buildingsWithGoods.map(b => b.id));
+  tradedState.lastCpuAction = {
+    playerId: player.id,
+    role: 'trader',
+    type: 'trade'
+  };
   return handleEndAction(tradedState);
 }
 
@@ -367,23 +382,16 @@ function handleCpuCouncilorAction(state: GameState): GameState {
   const player = state.players.find(p => p.id === state.currentPlayerId);
   if (!player) return handleEndAction(state);
 
-  console.log(`CPU ${player.id} が参事会員のアクションを実行します（手札: ${player.hand.length}枚）`);
-
   // まずカードを引く
   const afterDraw = handleCouncilDraw(state, player.id);
   const updatedPlayer = afterDraw.players.find(p => p.id === player.id);
   if (!updatedPlayer) return handleEndAction(afterDraw);
-
-  const drawnCount = updatedPlayer.hand.length - player.hand.length;
-  console.log(`CPU ${player.id} がカードを${drawnCount}枚引きました（手札: ${updatedPlayer.hand.length}枚）`);
 
   // 手札から最もコストの高いカードを保持
   const sortedHand = [...updatedPlayer.hand].sort((a, b) => b.cost - a.cost);
   const keepCount = state.currentPlayerId === player.id ? 2 : 1; // 議員の特権で+1
   const keepCards = sortedHand.slice(0, keepCount);
   const discardCards = sortedHand.slice(keepCount);
-
-  console.log(`CPU ${player.id} が${keepCards.length}枚のカードを保持（コスト: ${keepCards.map(c => c.cost).join(', ')}）し、${discardCards.length}枚を捨てます`);
 
   const finalState = handleCouncilKeep(
     afterDraw,
@@ -392,10 +400,11 @@ function handleCpuCouncilorAction(state: GameState): GameState {
     discardCards.map(c => c.id)
   );
 
-  // カード選択結果を確認
-  const afterPlayer = finalState.players.find(p => p.id === player.id)!;
-  console.log(`CPU ${player.id} の最終手札: ${afterPlayer.hand.length}枚`);
-
+  finalState.lastCpuAction = {
+    playerId: player.id,
+    role: 'councilor',
+    type: 'council'
+  };
   return handleEndAction(finalState);
 }
 
@@ -412,7 +421,6 @@ function handleEndAction(state: GameState): GameState {
   
   // ラウンド終了時はそのままラウンド終了処理へ
   if (isRoundEnd) {
-    console.log('ラウンド終了：総督のターンが来ました');
     return {
       ...state,
       currentPlayerId: nextPlayerId,
@@ -429,40 +437,23 @@ function handleEndAction(state: GameState): GameState {
   
   // 自動処理：次のプレイヤーがCPUの場合、役割に応じて自動で処理を実行
   if (!nextPlayer.isHuman && state.selectedRole) {
-    console.log(`次のプレイヤー CPU ${nextPlayer.id} の手番です`);
-
-    // 現在の建物数を記録
-    const beforeBuildings = nextPlayer.buildings.length;
-    
-    // 役割に応じたアクションを実行
-    let updatedState = newState;
     switch (state.selectedRole) {
       case 'builder':
-        updatedState = handleCpuBuilderAction(newState);
+        newState = handleCpuBuilderAction(newState);
         break;
       case 'producer':
-        updatedState = handleCpuProducerAction(newState);
+        newState = handleCpuProducerAction(newState);
         break;
       case 'trader':
-        updatedState = handleCpuTraderAction(newState);
+        newState = handleCpuTraderAction(newState);
         break;
       case 'councilor':
-        updatedState = handleCpuCouncilorAction(newState);
+        newState = handleCpuCouncilorAction(newState);
         break;
       case 'prospector':
-        updatedState = handleCpuProspectorAction(newState);
+        newState = handleCpuProspectorAction(newState);
         break;
     }
-
-    // アクション実行後の建物数を確認
-    const afterPlayer = updatedState.players.find(p => p.id === nextPlayer.id)!;
-    const afterBuildings = afterPlayer.buildings.length;
-    
-    if (afterBuildings > beforeBuildings) {
-      console.log(`CPU ${nextPlayer.id} の建物が増えました: ${beforeBuildings} -> ${afterBuildings}`);
-    }
-
-    newState = updatedState;
   }
   
   return newState;
@@ -506,33 +497,28 @@ function handleEndRound(state: GameState): GameState {
     if (hasBuildableCards && !newState.currentRoundRoles.includes('builder')) {
       // 建設可能な建物がある場合は建設家を優先
       selectedRole = 'builder';
-      console.log(`CPU ${nextGovernor.id} は建設可能な建物があるため建設家を選択します`);
     } else if (nextGovernor.hand.length < 3 && !newState.currentRoundRoles.includes('councilor')) {
-      // 手札が少ない場合は議員を優先
       selectedRole = 'councilor';
-      console.log(`CPU ${nextGovernor.id} は手札が少ないため議員を選択します`);
     } else if (nextGovernor.buildings.filter(b => b.type === 'production').length > 0) {
-      // 生産施設がある場合は生産者か商人を優先
       if (!newState.currentRoundRoles.includes('producer')) {
         selectedRole = 'producer';
-        console.log(`CPU ${nextGovernor.id} は生産施設があるため生産者を選択します`);
       } else if (!newState.currentRoundRoles.includes('trader')) {
         selectedRole = 'trader';
-        console.log(`CPU ${nextGovernor.id} は生産施設があるため商人を選択します`);
       }
     } else {
       // 他の役割がすべて使用済みの場合は金鉱掘りを選択
       const role = availableRoles.find(r => !newState.currentRoundRoles.includes(r));
       if (role) {
         selectedRole = role;
-        console.log(`CPU ${nextGovernor.id} は${getRoleName(role)}を選択します`);
       }
     }
 
     // 役割を選択して行動を実行
     newState = handleSelectRole(newState, selectedRole);
     
-    // 選択した役割に応じてアクションを実行
+    // 選んだ役割でアクションを実行
+    newState = handleSelectRole(newState, selectedRole);
+
     switch (selectedRole) {
       case 'builder':
         newState = handleCpuBuilderAction(newState);

@@ -20,31 +20,75 @@ function GameContent() {
   // 前回のゲーム状態を保持
   const [prevGameState, setPrevGameState] = useState(gameState);
   
-  // ゲーム状態の変更を監視してメッセージを追加
+  // 役割名の定義
+  const roleNames: Record<Role, string> = {
+    builder: '建築士',
+    producer: '監督',
+    trader: '商人',
+    councilor: '参事会議員',
+    prospector: '金鉱掘り'
+  };
+
+  // CPUの行動を監視してメッセージを追加
   useEffect(() => {
     if (!humanPlayer) return;
 
-    const roleNames: Record<Role, string> = {
-      builder: '建築士',
-      producer: '監督',
-      trader: '商人',
-      councilor: '参事会議員',
-      prospector: '金鉱掘り'
-    };
+    const lastCpuAction = gameState.lastCpuAction;
+    if (lastCpuAction && (!prevGameState.lastCpuAction || lastCpuAction !== prevGameState.lastCpuAction)) {
+      const roleName = roleNames[lastCpuAction.role];
 
-    // CPU プレイヤーの役割選択時のメッセージ
-    if (gameState.selectedRole && gameState.selectedRole !== prevGameState.selectedRole) {
-      const isHumanPlayer = gameState.currentPlayerId === humanPlayer.id;
-      // 人間プレイヤーの場合はActionsコンポーネントで処理するためスキップ
-      if (!isHumanPlayer) {
-        addMessage({
-          text: `プレイヤー${gameState.currentPlayerId}は${roleNames[gameState.selectedRole]}を選択しました`,
-          type: 'cpu'
-        });
+      switch (lastCpuAction.type) {
+        case 'select_role':
+          addMessage({
+            text: `CPU ${lastCpuAction.playerId}は${roleName}を選択しました`,
+            type: 'cpu'
+          });
+          break;
+        case 'build_success':
+          addMessage({
+            text: `CPU ${lastCpuAction.playerId}が建物を建設しました`,
+            type: 'cpu'
+          });
+          break;
+        case 'build_fail':
+          addMessage({
+            text: `CPU ${lastCpuAction.playerId}は建物を建設できませんでした`,
+            type: 'cpu'
+          });
+          break;
+        case 'produce':
+          addMessage({
+            text: `CPU ${lastCpuAction.playerId}が生産を行いました`,
+            type: 'cpu'
+          });
+          break;
+        case 'trade':
+          addMessage({
+            text: `CPU ${lastCpuAction.playerId}が商品を売却しました`,
+            type: 'cpu'
+          });
+          break;
+        case 'council':
+          addMessage({
+            text: `CPU ${lastCpuAction.playerId}がカードを引いて選択しました`,
+            type: 'cpu'
+          });
+          break;
+        case 'prospect':
+          addMessage({
+            text: `CPU ${lastCpuAction.playerId}が金鉱掘りでカードを1枚引きました`,
+            type: 'cpu'
+          });
+          break;
+        case 'prospect_fail':
+          addMessage({
+            text: `CPU ${lastCpuAction.playerId}は金鉱掘りの特権がないためカードを引けません`,
+            type: 'cpu'
+          });
+          break;
       }
     }
 
-    // 現在のゲーム状態を保存
     setPrevGameState(gameState);
   }, [gameState, prevGameState, humanPlayer, addMessage]);
 

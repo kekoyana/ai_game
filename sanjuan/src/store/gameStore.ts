@@ -15,6 +15,24 @@ export interface PlayerState {
 // 役割の種類
 export type Role = 'builder' | 'producer' | 'trader' | 'councilor' | 'prospector';
 
+// CPUの行動タイプ
+export type CpuActionType =
+  | 'select_role'
+  | 'build_success'
+  | 'build_fail'
+  | 'produce'
+  | 'trade'
+  | 'council'
+  | 'prospect'
+  | 'prospect_fail';
+
+// CPU行動の記録
+export interface CpuAction {
+  playerId: string;
+  role: Role;
+  type: CpuActionType;
+}
+
 // ゲーム全体の状態
 export interface GameState {
   players: PlayerState[];
@@ -28,6 +46,7 @@ export interface GameState {
   selectedRole: Role | null; // 現在選択されている役割
   gamePhase: 'role_selection' | 'action' | 'end_round' | 'game_over';
   winnerPlayerId: string | null;
+  lastCpuAction: CpuAction | null;
 }
 
 // 初期プレイヤー状態を生成する関数
@@ -88,5 +107,6 @@ export function createInitialGameState(): GameState {
     selectedRole: null,
     gamePhase: 'role_selection', // ゲーム開始時は役割選択フェーズ
     winnerPlayerId: null,
+    lastCpuAction: null,
   };
 }

@@ -74,21 +74,37 @@ const Actions: React.FC = () => {
                 switch (role) {
                   case 'builder':
                     setShowBuildingDialog(true);
+                    addMessage({
+                      text: `建築士を選択: 建物を建設できます`,
+                      type: 'action'
+                    });
                     break;
                   case 'producer':
                     setShowProducerDialog(true);
+                    addMessage({
+                      text: `監督を選択: 商品を生産できます`,
+                      type: 'action'
+                    });
                     break;
                   case 'trader':
                     setShowTraderDialog(true);
+                    addMessage({
+                      text: `商人を選択: 商品を売却できます`,
+                      type: 'action'
+                    });
                     break;
                   case 'councilor':
                     actions.drawCouncilCards(humanPlayer.id);
                     setDrawnCouncilorCards(humanPlayer.hand.slice(-5));
+                    addMessage({
+                      text: `参事会議員を選択: カードを引きます`,
+                      type: 'action'
+                    });
                     break;
                   case 'prospector':
                     actions.prospectorDraw(humanPlayer.id);
                     addMessage({
-                      text: `あなたは金鉱掘りで1枚カードを引きました`,
+                      text: `金鉱掘りを選択: カードを1枚引きました`,
                       type: 'action'
                     });
                     actions.endAction();
@@ -139,7 +155,13 @@ const Actions: React.FC = () => {
       {/* 建物建設ダイアログ */}
       {showBuildingDialog && (
         <BuildingActionDialog
-          onClose={() => setShowBuildingDialog(false)}
+          onClose={() => {
+            setShowBuildingDialog(false);
+            addMessage({
+              text: `建築士の行動を終了しました`,
+              type: 'action'
+            });
+          }}
         />
       )}
 
@@ -148,6 +170,10 @@ const Actions: React.FC = () => {
         <TraderActionDialog
           onClose={() => {
             setShowTraderDialog(false);
+            addMessage({
+              text: `商人の行動を終了しました`,
+              type: 'action'
+            });
             actions.endAction();
           }}
         />
@@ -159,6 +185,10 @@ const Actions: React.FC = () => {
           drawnCards={drawnCouncilorCards}
           onClose={() => {
             setDrawnCouncilorCards([]);
+            addMessage({
+              text: `参事会議員の行動を終了しました`,
+              type: 'action'
+            });
             actions.endAction();
           }}
         />
@@ -169,6 +199,10 @@ const Actions: React.FC = () => {
         <ProducerActionDialog
           onClose={() => {
             setShowProducerDialog(false);
+            addMessage({
+              text: `監督の行動を終了しました`,
+              type: 'action'
+            });
             actions.endAction();
           }}
         />
