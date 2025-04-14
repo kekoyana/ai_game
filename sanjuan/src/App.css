@@ -293,19 +293,6 @@ h1 {
   line-height: 1.4;
 }
 
-/* Action execution */
-.action-execution {
-  background-color: rgba(0, 0, 0, 0.2);
-  padding: 1.5rem;
-  border-radius: 8px;
-}
-
-.action-description {
-  color: #bdc3c7;
-  margin-bottom: 1.5rem;
-  font-size: 0.9rem;
-}
-
 /* Trader action dialog specific styles */
 .trader-action-dialog .price-list {
   display: grid;

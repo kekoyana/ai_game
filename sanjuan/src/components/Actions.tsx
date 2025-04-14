@@ -41,7 +41,6 @@ const Actions: React.FC = () => {
   const {
     gamePhase,
     currentPlayerId,
-    selectedRole,
     currentRoundRoles
   } = state;
   
@@ -68,89 +67,40 @@ const Actions: React.FC = () => {
                   text: `あなたは${roleNames[role]}を選択しました`,
                   type: 'action'
                 });
+
+                if (!humanPlayer) return;
+
+                // 各役割のアクションを即座に実行
+                switch (role) {
+                  case 'builder':
+                    setShowBuildingDialog(true);
+                    break;
+                  case 'producer':
+                    setShowProducerDialog(true);
+                    break;
+                  case 'trader':
+                    setShowTraderDialog(true);
+                    break;
+                  case 'councilor':
+                    actions.drawCouncilCards(humanPlayer.id);
+                    setDrawnCouncilorCards(humanPlayer.hand.slice(-5));
+                    break;
+                  case 'prospector':
+                    actions.prospectorDraw(humanPlayer.id);
+                    addMessage({
+                      text: `あなたは金鉱掘りで1枚カードを引きました`,
+                      type: 'action'
+                    });
+                    actions.endAction();
+                    break;
+                }
+
               }}
             >
               <span className="role-name">{roleNames[role]}</span>
               <span className="role-description">{roleDescriptions[role]}</span>
             </button>
           ))}
-        </div>
-      </div>
-    );
-  };
-
-  const renderActionExecution = () => {
-    if (!isHumanTurn || gamePhase !== 'action' || !selectedRole) return null;
-
-    // 特権を持っているかどうか
-    const hasPrivilege = currentPlayerId === humanPlayer?.id;
-
-    return (
-      <div className="action-execution">
-        <h5>
-          {roleNames[selectedRole]}のアクション
-          {hasPrivilege && <span className="privilege">特権あり</span>}
-        </h5>
-        <p className="action-description">{roleDescriptions[selectedRole]}</p>
-        
-        <div className="action-controls">
-          {/* 特権がない場合はパス可能 */}
-          {!hasPrivilege && humanPlayer && (
-            <button
-              className="pass-button"
-              onClick={() => {
-                actions.pass(humanPlayer.id);
-                addMessage({
-                  text: `あなたは${roleNames[selectedRole!]}のアクションをスキップしました`,
-                  type: 'action'
-                });
-              }}
-            >
-              スキップ
-            </button>
-          )}
-
-          <button
-            className="action-button"
-            onClick={() => {
-              if (!humanPlayer) return;
-
-              switch (selectedRole) {
-                case 'builder':
-                  setShowBuildingDialog(true);
-                  return;
-                case 'producer':
-                  setShowProducerDialog(true);
-                  return;
-                case 'trader':
-                  setShowTraderDialog(true);
-                  return;
-                case 'prospector':
-                  if (hasPrivilege) {
-                    actions.prospectorDraw(humanPlayer.id);
-                    addMessage({
-                      text: `あなたは金鉱掘りで1枚カードを引きました`,
-                      type: 'action'
-                    });
-                  } else {
-                    addMessage({
-                      text: `特権を持っていないため、金鉱掘りのアクションは実行できません`,
-                      type: 'action'
-                    });
-                  }
-                  actions.endAction();
-                  break;
-                case 'councilor':
-                  actions.drawCouncilCards(humanPlayer.id);
-                  setDrawnCouncilorCards(humanPlayer.hand.slice(-5)); // 最後に引いた5枚
-                  break;
-                // 他のアクションは選択UIが必要なため、
-                // 別のコンポーネントで処理
-              }
-            }}
-          >
-            実行
-          </button>
         </div>
       </div>
     );
@@ -184,7 +134,6 @@ const Actions: React.FC = () => {
       <div className="actions-area">
         <h4>アクション</h4>
         {renderRoleSelection()}
-        {renderActionExecution()}
         {renderEndRound()}
       </div>
 

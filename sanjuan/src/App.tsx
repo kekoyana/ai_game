@@ -44,8 +44,6 @@ function GameContent() {
       }
     }
 
-    // 金鉱掘りのアクションメッセージは Actions.tsx で処理
-
     // 現在のゲーム状態を保存
     setPrevGameState(gameState);
   }, [gameState, prevGameState, humanPlayer, addMessage]);
