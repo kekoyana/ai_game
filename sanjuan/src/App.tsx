@@ -32,15 +32,16 @@ function GameContent() {
       prospector: '金鉱掘り'
     };
 
-    // 役割選択時のメッセージ（selectedRoleが変更されたときのみ）
+    // CPU プレイヤーの役割選択時のメッセージ
     if (gameState.selectedRole && gameState.selectedRole !== prevGameState.selectedRole) {
       const isHumanPlayer = gameState.currentPlayerId === humanPlayer.id;
-      const playerName = isHumanPlayer ? 'あなた' : `プレイヤー${gameState.currentPlayerId}`;
-      
-      addMessage({
-        text: `${playerName}は${roleNames[gameState.selectedRole]}を選択しました`,
-        type: isHumanPlayer ? 'action' : 'cpu'
-      });
+      // 人間プレイヤーの場合はActionsコンポーネントで処理するためスキップ
+      if (!isHumanPlayer) {
+        addMessage({
+          text: `プレイヤー${gameState.currentPlayerId}は${roleNames[gameState.selectedRole]}を選択しました`,
+          type: 'cpu'
+        });
+      }
     }
 
     // 金鉱掘りのアクションメッセージは Actions.tsx で処理
