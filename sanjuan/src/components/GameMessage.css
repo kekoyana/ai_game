@@ -2,7 +2,7 @@
 .game-messages {
   padding: 10px;
   overflow-y: auto;
-  max-height: calc(100vh - 500px); /* 適切な高さに調整 */
+  /* max-height は親要素(.message-area)の高さと overflow: auto に依存するため削除 */
   display: flex;
   flex-direction: column;
   gap: 8px;

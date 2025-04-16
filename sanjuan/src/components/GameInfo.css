@@ -80,3 +80,25 @@
 .trading-house-prices ul {
     padding-left: 15px; /* 少しインデント */
 }
+
+@media (max-width: 768px) {
+  .game-info {
+    width: calc(100% - 20px); /* 画面幅に合わせて調整 (左右に10pxの余白) */
+    max-width: 300px; /* 最大幅は維持 */
+    right: 10px; /* 右端に配置 */
+    top: 50px; /* トグルボタンの下 */
+  }
+
+  .game-info-toggle {
+    /* 必要であればトグルボタンの位置も調整 */
+    right: 10px;
+    top: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .game-info {
+    /* さらに小さい画面での調整 */
+    max-width: calc(100% - 20px); /* 画面幅いっぱいに近く */
+  }
+}
