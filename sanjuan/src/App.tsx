@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import './App.css';
 import { PlayerState, Role } from './store/gameStore';
 import PlayerHand from './components/PlayerHand';
