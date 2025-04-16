@@ -6,6 +6,7 @@ import PlayerBuildings from './components/PlayerBuildings';
 import GameInfo from './components/GameInfo';
 import Actions from './components/Actions';
 import GameMessage from './components/GameMessage';
+import CpuInfoDialog from './components/dialogs/CpuInfoDialog';
 import { GameProvider, useGame } from './store/GameContext';
 import { MessageProvider, useMessage } from './store/messageContext';
 
@@ -13,6 +14,7 @@ function GameContent() {
   const { state: gameState } = useGame();
   const { state: messageState, addMessage } = useMessage();
   const [isActionModalOpen, setIsActionModalOpen] = useState(false);
+  const [selectedCpu, setSelectedCpu] = useState<PlayerState | null>(null);
 
   const humanPlayer = gameState.players.find((p: PlayerState) => p.isHuman);
   const cpuPlayers = gameState.players.filter((p: PlayerState) => !p.isHuman);
@@ -130,11 +132,15 @@ function GameContent() {
       <div className="opponent-area">
         <div className="cpu-players-container">
           {cpuPlayers.map((cpu: PlayerState) => (
-            <div key={cpu.id} className="cpu-player-summary">
+            <div
+              key={cpu.id}
+              className="cpu-player-summary"
+              onClick={() => setSelectedCpu(cpu)}
+              style={{ cursor: 'pointer' }}
+            >
               <h3>{cpu.id}</h3>
               <p>手札: {cpu.hand.length}枚</p>
               <p>建物: {cpu.buildings.length}個</p>
-              {/* TODO: 商品数なども表示 */}
             </div>
           ))}
         </div>
@@ -165,6 +171,15 @@ function GameContent() {
           </div>
         </div>
       )}
+
+      {/* CPU情報モーダル */}
+      {selectedCpu && (
+        <CpuInfoDialog
+          cpu={selectedCpu}
+          onClose={() => setSelectedCpu(null)}
+        />
+      )}
+
     </div>
   );
 }

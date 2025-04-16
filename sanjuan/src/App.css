@@ -501,6 +501,55 @@ h1 {
   }
 }
 
+/* CPU情報モーダルのスタイル */
+.cpu-info-content {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+  margin: 1rem 0;
+}
+
+.cpu-hand, .cpu-buildings {
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.cpu-info-content h3 {
+  color: #f1c40f;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+.cpu-info-content ul {
+  list-style: none;
+  padding: 0;
+}
+
+.cpu-info-content li {
+  padding: 0.5rem;
+  background-color: rgba(255, 255, 255, 0.1);
+  margin-bottom: 0.5rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.dialog button {
+  background-color: var(--primary-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: all 0.2s;
+}
+
+.dialog button:hover {
+  background-color: var(--secondary-color);
+  transform: translateY(-2px);
+}
+
 /* スマホ向けレイアウト調整 */
 @media (max-width: 768px) {
   .app-grid {
