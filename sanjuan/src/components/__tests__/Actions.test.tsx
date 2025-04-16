@@ -3,6 +3,7 @@ import * as React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { GameContext } from '../../store/GameContext';
+import { MessageProvider } from '../../store/messageContext';
 import Actions from '../Actions';
 import { jest } from '@jest/globals';
 import { createInitialGameState } from '../../store/gameStore';
@@ -17,7 +18,9 @@ const mockDispatch = jest.fn();
 const renderWithProvider = (ui: React.ReactElement) => {
   return render(
     <GameContext.Provider value={{ state: mockGameState, dispatch: mockDispatch }}>
-      {ui}
+      <MessageProvider>
+        {ui}
+      </MessageProvider>
     </GameContext.Provider>
   );
 };

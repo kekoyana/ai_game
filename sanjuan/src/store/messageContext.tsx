@@ -1,6 +1,15 @@
 import React, { createContext, useContext, useReducer, useCallback } from 'react';
 import { GameMessageData } from '../components/GameMessage';
 
+// UUIDを生成する関数
+function generateUUID(): string {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
 interface MessageState {
   messages: GameMessageData[];
 }
@@ -28,7 +37,7 @@ function messageReducer(state: MessageState, action: MessageAction): MessageStat
           ...state.messages,
           {
             ...action.payload,
-            id: crypto.randomUUID(),
+            id: generateUUID(),
             timestamp: Date.now()
           }
         ].slice(-50) // 最新の50件のみを保持
