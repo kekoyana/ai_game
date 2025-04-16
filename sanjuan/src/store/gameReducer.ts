@@ -305,12 +305,10 @@ function handleCpuBuilderAction(state: GameState): GameState {
 
 
   // 手札から建設可能な建物を探す（建設家の場合はコスト-1）
-  console.log('Building with role:', state.selectedRole);
   const buildableCards = player.hand.map(card => {
     const baseCost = card.cost;
     const privilegeDiscount = state.selectedRole === 'builder' ? 1 : 0;
     const actualCost = Math.max(0, baseCost - privilegeDiscount);
-    console.log(`Checking ${card.name}: base cost ${baseCost}, discount ${privilegeDiscount}, actual cost ${actualCost}`);
     
     // 建設対象のカード以外で支払いに使えるカードを計算（コストの低い順にソート）
     const otherCards = player.hand
@@ -318,10 +316,8 @@ function handleCpuBuilderAction(state: GameState): GameState {
       .sort((a, b) => a.cost - b.cost);
     
     const availablePayment = otherCards.length;
-    console.log(`Available payment cards: ${otherCards.map(c => c.name).join(', ')}`);
     
     const canBuild = actualCost <= availablePayment;
-    console.log(`Can build ${card.name}? ${canBuild} (needs ${actualCost} cards, has ${availablePayment} cards)`);
     
     return {
       card,
@@ -330,11 +326,8 @@ function handleCpuBuilderAction(state: GameState): GameState {
       paymentCards: otherCards.slice(0, actualCost).map(c => c.id)
     };
   }).filter(item => item.canBuild);
-console.log('buildableCards:', buildableCards);
-console.log('player hand:', player.hand);
 
 if (buildableCards.length === 0) {
-  console.log('No buildable cards found for player:', player.id);
   // アクション不可の場合も状態を返し、lastCpuActionを記録
   return {
     ...state,
@@ -351,9 +344,6 @@ if (buildableCards.length === 0) {
   const selected = buildableCards
     .reduce((a, b) => a.card.cost > b.card.cost ? a : b);
 
-  console.log('Selected building:', selected.card.name, 'cost:', selected.card.cost);
-  console.log('Actual cost after discount:', selected.actualCost);
-  console.log('Payment cards:', selected.paymentCards);
 
   const buildingCard = selected.card;
   const paymentCards = selected.paymentCards;
@@ -425,7 +415,6 @@ function handleCpuTraderAction(state: GameState): GameState {
     });
 
   if (buildingsWithGoods.length === 0) {
-    console.log('No goods to trade for player:', player.id);
     return {
       ...state,
       lastCpuAction: {
@@ -465,7 +454,6 @@ function handleCpuCouncilorAction(state: GameState): GameState {
   const afterDraw = handleCouncilDraw(state, player.id);
   const updatedPlayer = afterDraw.players.find(p => p.id === player.id);
   if (!updatedPlayer) {
-    console.log('Councilor draw failed for player:', player.id);
     return {
       ...afterDraw,
       lastCpuAction: {
@@ -502,7 +490,6 @@ function handleCpuCouncilorAction(state: GameState): GameState {
 
 
 function handleEndAction(state: GameState): GameState {
-  console.log('Starting handleEndAction for player:', state.currentPlayerId);
   
   // 次のプレイヤーを決定
   const currentPlayerIndex = state.players.findIndex(p => p.id === state.currentPlayerId);
@@ -510,14 +497,12 @@ function handleEndAction(state: GameState): GameState {
   const nextPlayerId = state.players[nextPlayerIndex].id;
   const nextPlayer = state.players.find(p => p.id === nextPlayerId)!;
   
-  console.log('Next player:', nextPlayerId, 'isHuman:', nextPlayer.isHuman);
   
   // 全プレイヤーが行動を終えたらラウンド終了
   const isRoundEnd = nextPlayerId === state.governorPlayerId;
   
   // ラウンド終了時はそのままラウンド終了処理へ
   if (isRoundEnd) {
-    console.log('Round ending, returning to governor');
     return {
       ...state,
       currentPlayerId: nextPlayerId,
@@ -526,14 +511,13 @@ function handleEndAction(state: GameState): GameState {
   }
 
   // 次のプレイヤーのターンへ
-  let newState: GameState = {
+  const newState: GameState = {
     ...state,
     currentPlayerId: nextPlayerId,
     gamePhase: 'action',
     skipAutoAction: false  // 自動アクションのスキップフラグをリセット
   };
   
-  console.log('skipAutoAction:', newState.skipAutoAction);
   
   // skipAutoActionがtrueの場合は自動処理をスキップ
   if (state.skipAutoAction) {
@@ -549,12 +533,10 @@ function handleEndAction(state: GameState): GameState {
 
   // 次のプレイヤーがCPUで、ラウンド終了でない場合にアクションを実行
   if (!nextPlayer.isHuman && state.selectedRole && !isRoundEnd) {
-    console.log('Executing CPU action for role:', state.selectedRole, 'player:', nextPlayerId);
 
     // CPUアクションを実行
     switch (state.selectedRole) {
       case 'builder':
-        console.log('CPU executing builder action');
         nextState = handleCpuBuilderAction(nextState);
         break;
       case 'producer':
@@ -572,7 +554,6 @@ function handleEndAction(state: GameState): GameState {
     }
 
     // アクションの結果を確認
-    console.log('After CPU action:', nextState.players.find(p => p.id === nextPlayerId)?.buildings.length);
 
     // 次のプレイヤーに移動
     return handleEndAction(nextState);
