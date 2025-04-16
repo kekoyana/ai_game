@@ -1,7 +1,8 @@
 // src/components/GameInfo.tsx
-import React from 'react';
+import React, { useState } from 'react';
 import { Role } from '../store/gameStore';
 import { useGame } from '../store/GameContext';
+import './GameInfo.css'; // スタイルシートをインポート
 
 // 役割名を日本語に変換
 const roleNames: Record<Role, string> = {
@@ -21,6 +22,7 @@ const phaseNames: Record<string, string> = {
 };
 
 const GameInfo: React.FC = () => {
+  const [isVisible, setIsVisible] = useState(false); // 表示状態を管理するstate
   const { state } = useGame();
   const {
     deck,
@@ -60,8 +62,17 @@ const GameInfo: React.FC = () => {
     );
   };
 
+  const toggleVisibility = () => {
+    setIsVisible(!isVisible);
+  };
+
   return (
-    <div className="game-info">
+    <>
+      <button className="game-info-toggle" onClick={toggleVisibility}>
+        !
+      </button>
+      {isVisible && (
+        <div className="game-info">
       <div className="game-status">
         <h4>ゲーム状況</h4>
         <p>フェーズ: <span className="highlight">{phaseNames[gamePhase]}</span></p>
@@ -94,7 +105,9 @@ const GameInfo: React.FC = () => {
           {renderTradingHousePrices()}
         </div>
       )}
-    </div>
+        </div>
+      )}
+    </>
   );
 };
 

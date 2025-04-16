@@ -38,11 +38,10 @@ const PlayerBuildings: React.FC = () => {
 
   return (
     <div className="player-buildings">
-      <h4>建設済み建物 ({humanPlayer.buildings.length}個)</h4>
+      <h4>建設済み建物 ({humanPlayer.buildings.length})</h4>
       
       {/* 生産施設 */}
       <div className="buildings-section">
-        <h5>生産施設 ({productionBuildings.length}個)</h5>
         <ul className="card-list">
           {productionBuildings.map(building => (
             <li key={building.id} className="card production-building">
@@ -68,7 +67,6 @@ const PlayerBuildings: React.FC = () => {
 
       {/* 都市施設 */}
       <div className="buildings-section">
-        <h5>都市施設 ({cityBuildings.length}個)</h5>
         <ul className="card-list">
           {cityBuildings.map(building => (
             <li key={building.id} className="card city-building">

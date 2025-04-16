@@ -25,6 +25,8 @@ body {
   line-height: 1.6;
 }
 
+/* .app スタイルは削除またはコメントアウト */
+/*
 .app {
   max-width: 100%;
   min-height: 100vh;
@@ -33,6 +35,51 @@ body {
   flex-direction: column;
   gap: 1rem;
 }
+*/
+
+/* 新しいグリッドレイアウト */
+.app-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* 左右2カラム */
+  grid-template-rows: auto 1fr auto; /* 上、中央、下 */
+  grid-template-areas:
+    "player-buildings opponent"
+    "message message"
+    "player-hand player-hand";
+  min-height: 100vh;
+  gap: 1rem; /* エリア間の隙間 */
+  padding: 1rem;
+  background-color: var(--primary-color);
+  color: var(--text-color);
+}
+
+/* 各エリアの配置 */
+.player-buildings-area { grid-area: player-buildings; }
+.opponent-area { grid-area: opponent; }
+.message-area { grid-area: message; }
+.player-hand-area { grid-area: player-hand; }
+
+/* 各エリアの共通スタイル */
+.player-buildings-area,
+.opponent-area,
+.message-area,
+.player-hand-area {
+  background-color: var(--secondary-color);
+  padding: 1rem;
+  border-radius: 8px;
+  overflow: auto; /* 内容が多い場合にスクロール */
+}
+
+/* エリアごとのタイトル */
+.player-buildings-area h2,
+.opponent-area h2,
+.message-area h2,
+.player-hand-area h2 {
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.5rem;
+}
 
 h1 {
   text-align: center;
@@ -40,122 +87,45 @@ h1 {
   font-size: 1.5rem;
 }
 
-/* Game information area */
-.game-info {
-  background-color: var(--secondary-color);
-  padding: 1.5rem;
-  border-radius: 8px;
-  margin-bottom: 1rem;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
-}
-
-.game-info h4 {
-  color: var(--text-color);
-  margin-bottom: 1rem;
-  font-size: 1.1rem;
-  border-bottom: 1px solid var(--border-color);
-  padding-bottom: 0.5rem;
-}
-
-.game-info p {
-  margin: 0.5rem 0;
-  font-size: 0.9rem;
-  line-height: 1.4;
-}
-
-.game-status, .deck-info, .role-info, .trading-house {
-  background-color: rgba(0, 0, 0, 0.2);
-  padding: 1rem;
-  border-radius: 4px;
-}
-
+/* GameInfoコンポーネントのスタイルは GameInfo.css に移動済み */
+/* .highlight スタイルは汎用的なので残す */
 .highlight {
   color: #f1c40f;
   font-weight: bold;
 }
+/* GameInfo関連のスタイルは GameInfo.css に移動済み */
 
-.used-roles {
-  margin-top: 1rem;
-}
-
-.used-roles ul {
-  list-style: none;
-  padding-left: 1rem;
-}
-
-.used-roles li {
-  margin: 0.3rem 0;
-  color: #bdc3c7;
-}
-
-.trading-house-prices {
-  margin-top: 1rem;
-}
-
-.trading-house-prices h5 {
-  color: var(--text-color);
-  margin-bottom: 0.5rem;
-  font-size: 0.9rem;
-}
-
-.trading-house-prices ul {
-  list-style: none;
-  padding-left: 1rem;
-}
-
-.trading-house-prices li {
-  margin: 0.3rem 0;
-  font-size: 0.9rem;
-  display: flex;
-  justify-content: space-between;
-  color: #f1c40f;
-}
-
-@media (max-width: 768px) {
-  .game-info {
-    grid-template-columns: 1fr;
-    gap: 1rem;
-    padding: 1rem;
-  }
-
-  .game-info h4 {
-    font-size: 1rem;
-  }
-}
-
-/* CPU players area */
-.cpu-players-area {
+/* Opponent area styles */
+.opponent-area .cpu-players-container {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 1rem;
-  margin-bottom: 1rem;
 }
 
-.cpu-player-summary {
-  background-color: var(--secondary-color);
+.opponent-area .cpu-player-summary {
+  background-color: rgba(0, 0, 0, 0.2); /* 少し暗く */
   padding: 0.8rem;
-  border-radius: 8px;
+  border-radius: 4px;
   font-size: 0.9rem;
 }
 
-.cpu-player-summary h3 {
+.opponent-area .cpu-player-summary h3 {
   margin-bottom: 0.5rem;
   font-size: 1rem;
+  color: #f1c40f; /* CPU名を強調 */
 }
 
-/* Player area */
-.player-area {
-  background-color: var(--secondary-color);
-  padding: 1rem;
-  border-radius: 8px;
-  margin-bottom: 1rem;
+/* Player buildings and hand area specific styles */
+.player-buildings-area .card-list,
+.player-hand-area .card-list {
+  /* 必要に応じて調整 */
 }
 
-.player-area h2 {
-  margin-bottom: 1rem;
-  font-size: 1.2rem;
+/* Message area specific styles */
+.message-area {
+  /* Actionsコンポーネントが中央に来るように */
+  display: flex;
+  flex-direction: column;
 }
 
 /* Hand and buildings */
@@ -202,12 +172,13 @@ h1 {
   color: var(--secondary-color);
 }
 
-/* Actions area */
-.actions-area {
-  background-color: var(--secondary-color);
-  padding: 1rem;
-  border-radius: 8px;
-  margin-top: auto;
+/* Actionsコンポーネントのスタイルは Actions.css またはここで調整 */
+/* .actions-area クラスは App.tsx から削除されたため、関連スタイルを調整 */
+.message-area .actions-component { /* Actionsコンポーネントに適用するクラス名を仮定 */
+  /* background-color: var(--secondary-color); */ /* 親要素と同じ背景 */
+  padding: 1rem 0; /* 上下のパディングのみ */
+  /* border-radius: 8px; */ /* 親要素で角丸 */
+  /* margin-top: auto; */ /* 不要 */
 }
 
 /* Building cards specific styles */
@@ -276,12 +247,7 @@ h1 {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-/* Actions area styles */
-.actions-area h4, .actions-area h5 {
-  margin-bottom: 1rem;
-  font-size: 1rem;
-  color: var(--text-color);
-}
+/* .actions-area スタイルは不要なため削除 (コメントアウト済み) */
 
 /* Role selection */
 .role-selection {
@@ -325,19 +291,6 @@ h1 {
   font-size: 0.85rem;
   color: #bdc3c7;
   line-height: 1.4;
-}
-
-/* Action execution */
-.action-execution {
-  background-color: rgba(0, 0, 0, 0.2);
-  padding: 1.5rem;
-  border-radius: 8px;
-}
-
-.action-description {
-  color: #bdc3c7;
-  margin-bottom: 1.5rem;
-  font-size: 0.9rem;
 }
 
 /* Trader action dialog specific styles */
@@ -505,13 +458,14 @@ h1 {
 }
 
 /* Dialog styles */
+/* Dialog styles */
 .dialog-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.7);
+  background-color: rgba(0, 0, 0, 0.85); /* より暗く */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -528,186 +482,119 @@ h1 {
   overflow-y: auto;
 }
 
-.dialog h3 {
-  color: var(--text-color);
-  margin-bottom: 1rem;
-  font-size: 1.2rem;
+/* アクションモーダル専用スタイル */
+.action-modal {
+  position: relative;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  animation: modalFadeIn 0.3s ease-out;
 }
 
-.dialog h4 {
-  color: var(--text-color);
-  margin: 1rem 0;
-  font-size: 1rem;
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
-/* Building action dialog specific styles */
-.building-action-dialog .card-list {
+/* CPU情報モーダルのスタイル */
+.cpu-info-content {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 0.8rem;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
   margin: 1rem 0;
 }
 
-.building-action-dialog .card {
-  border: 2px solid transparent;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.building-action-dialog .card.selected {
-  border-color: var(--accent-color);
-  transform: translateY(-2px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.dialog-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 1rem;
-  margin-top: 1.5rem;
-}
-
-.cancel-button {
-  background-color: transparent;
-  color: var(--text-color);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 0.8rem 1.5rem;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: all 0.2s;
-}
-
-.cancel-button:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-/* Responsive dialog */
-@media (max-width: 480px) {
-  .dialog {
-    width: 95%;
-    padding: 1rem;
-  }
-
-  .building-action-dialog .card-list {
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  }
-
-  .dialog-actions {
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .cancel-button,
-  .dialog-actions .action-button {
-    width: 100%;
-  }
-}
-
-.privilege {
-  display: inline-block;
-  background-color: #f1c40f;
-  color: #2c3e50;
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  margin-left: 0.5rem;
-}
-
-.action-controls {
-  display: flex;
-  gap: 1rem;
-  margin-top: 1.5rem;
-}
-
-/* Action buttons */
-.action-button {
-  background-color: var(--accent-color);
-  color: var(--text-color);
-  border: none;
-  border-radius: 8px;
-  padding: 1rem 2rem;
-  margin: 0;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: bold;
-  transition: all 0.2s;
-}
-
-.action-button:hover {
-  background-color: #c0392b;
-  transform: translateY(-2px);
-}
-
-.pass-button {
-  background-color: transparent;
-  color: var(--text-color);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 1rem 2rem;
-  margin: 0;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: all 0.2s;
-}
-
-.pass-button:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  transform: translateY(-2px);
-}
-
-.action-button:disabled,
-.pass-button:disabled {
-  background-color: var(--border-color);
-  border-color: var(--border-color);
-  color: rgba(255, 255, 255, 0.5);
-  cursor: not-allowed;
-  transform: none;
-}
-
-/* Action info for non-active players */
-.action-info {
+.cpu-hand, .cpu-buildings {
   background-color: rgba(0, 0, 0, 0.2);
   padding: 1rem;
   border-radius: 8px;
-  text-align: center;
-  color: #bdc3c7;
 }
 
-/* Responsive design */
+.cpu-info-content h3 {
+  color: #f1c40f;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+.cpu-info-content ul {
+  list-style: none;
+  padding: 0;
+}
+
+.cpu-info-content li {
+  padding: 0.5rem;
+  background-color: rgba(255, 255, 255, 0.1);
+  margin-bottom: 0.5rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.dialog button {
+  background-color: var(--primary-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: all 0.2s;
+}
+
+.dialog button:hover {
+  background-color: var(--secondary-color);
+  transform: translateY(-2px);
+}
+
+/* スマホ向けレイアウト調整 */
 @media (max-width: 768px) {
-  .app {
-    padding: 0.5rem;
+  .app-grid {
+    grid-template-columns: 1fr; /* 1カラム */
+    grid-template-rows: auto auto auto auto; /* 各エリアを縦に並べる */
+    grid-template-areas:
+      "player-buildings"
+      "opponent"
+      "message"
+      "player-hand";
+    padding: 0.5rem; /* パディングを小さく */
+    gap: 0.5rem; /* 隙間を小さく */
   }
 
-  .cpu-players-area {
-    grid-template-columns: repeat(2, 1fr);
+  /* スマホでは各エリアの高さを自動調整 */
+  .player-buildings-area,
+  .opponent-area,
+  .message-area,
+  .player-hand-area {
+    min-height: 150px; /* 最低限の高さを確保 */
+    padding: 0.8rem;
   }
 
-  .card-list {
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  }
-
-  .actions-area button {
-    padding: 0.6rem 1rem;
-    font-size: 0.85rem;
-  }
-}
-
-@media (max-width: 480px) {
-  h1 {
-    font-size: 1.2rem;
-  }
-
-  .cpu-players-area {
-    grid-template-columns: 1fr;
-  }
-
-  .player-area h2 {
+  .player-buildings-area h2,
+  .opponent-area h2,
+  .message-area h2,
+  .player-hand-area h2 {
     font-size: 1.1rem;
   }
 
+  /* カードリストの列数を調整 */
   .card-list {
-    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.5rem;
+  }
+
+  .card {
+    padding: 0.6rem;
+  }
+
+  .card h5 {
+    font-size: 0.8rem;
+  }
+
+  .card p {
+    font-size: 0.7rem;
   }
 }

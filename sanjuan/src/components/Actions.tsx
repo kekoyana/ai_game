@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useGame, useGameActions } from '../store/GameContext';
 import { Role } from '../store/gameStore';
+import { useMessage } from '../store/messageContext';
 import { BuildingCard } from '../data/cards';
 import BuildingActionDialog from './dialogs/BuildingActionDialog';
 import CouncilorActionDialog from './dialogs/CouncilorActionDialog';
@@ -29,6 +30,7 @@ const roleDescriptions: Record<Role, string> = {
 const Actions: React.FC = () => {
   const { state } = useGame();
   const actions = useGameActions();
+  const { addMessage } = useMessage();
   
   // ダイアログの表示状態
   // ダイアログの表示状態
@@ -39,7 +41,6 @@ const Actions: React.FC = () => {
   const {
     gamePhase,
     currentPlayerId,
-    selectedRole,
     currentRoundRoles
   } = state;
   
@@ -60,72 +61,62 @@ const Actions: React.FC = () => {
             <button
               key={role}
               className="role-button"
-              onClick={() => actions.selectRole(role)}
+              onClick={() => {
+                actions.selectRole(role);
+                addMessage({
+                  text: `あなたは${roleNames[role]}を選択しました`,
+                  type: 'action'
+                });
+
+                if (!humanPlayer) return;
+
+                // 各役割のアクションを即座に実行
+                switch (role) {
+                  case 'builder':
+                    setShowBuildingDialog(true);
+                    addMessage({
+                      text: `建築士を選択: 建物を建設できます`,
+                      type: 'action'
+                    });
+                    break;
+                  case 'producer':
+                    setShowProducerDialog(true);
+                    addMessage({
+                      text: `監督を選択: 商品を生産できます`,
+                      type: 'action'
+                    });
+                    break;
+                  case 'trader':
+                    setShowTraderDialog(true);
+                    addMessage({
+                      text: `商人を選択: 商品を売却できます`,
+                      type: 'action'
+                    });
+                    break;
+                  case 'councilor':
+                    actions.drawCouncilCards(humanPlayer.id);
+                    setDrawnCouncilorCards(humanPlayer.hand.slice(-5));
+                    addMessage({
+                      text: `参事会議員を選択: カードを引きます`,
+                      type: 'action'
+                    });
+                    break;
+                  case 'prospector':
+                    actions.prospectorDraw(humanPlayer.id);
+                    addMessage({
+                      text: `金鉱掘りを選択: カードを1枚引きました`,
+                      type: 'action'
+                    });
+                    actions.endAction();
+                    break;
+                }
+
+              }}
             >
               <span className="role-name">{roleNames[role]}</span>
               <span className="role-description">{roleDescriptions[role]}</span>
             </button>
           ))}
-        </div>
-      </div>
-    );
-  };
-
-  const renderActionExecution = () => {
-    if (!isHumanTurn || gamePhase !== 'action' || !selectedRole) return null;
-
-    // 特権を持っているかどうか
-    const hasPrivilege = currentPlayerId === humanPlayer?.id;
-
-    return (
-      <div className="action-execution">
-        <h5>
-          {roleNames[selectedRole]}のアクション
-          {hasPrivilege && <span className="privilege">特権あり</span>}
-        </h5>
-        <p className="action-description">{roleDescriptions[selectedRole]}</p>
-        
-        <div className="action-controls">
-          {/* 特権がない場合はパス可能 */}
-          {!hasPrivilege && humanPlayer && (
-            <button
-              className="pass-button"
-              onClick={() => actions.pass(humanPlayer.id)}
-            >
-              パス
-            </button>
-          )}
-
-          <button
-            className="action-button"
-            onClick={() => {
-              if (!humanPlayer) return;
-
-              switch (selectedRole) {
-                case 'builder':
-                  setShowBuildingDialog(true);
-                  return;
-                case 'producer':
-                  setShowProducerDialog(true);
-                  return;
-                case 'trader':
-                  setShowTraderDialog(true);
-                  return;
-                case 'prospector':
-                  actions.prospectorDraw(humanPlayer.id);
-                  actions.endAction();
-                  break;
-                case 'councilor':
-                  actions.drawCouncilCards(humanPlayer.id);
-                  setDrawnCouncilorCards(humanPlayer.hand.slice(-5)); // 最後に引いた5枚
-                  break;
-                // 他のアクションは選択UIが必要なため、
-                // 別のコンポーネントで処理
-              }
-            }}
-          >
-            実行
-          </button>
         </div>
       </div>
     );
@@ -140,7 +131,13 @@ const Actions: React.FC = () => {
         <h5>ラウンド終了</h5>
         <button
           className="action-button"
-          onClick={() => actions.endRound()}
+          onClick={() => {
+            actions.endRound();
+            addMessage({
+              text: `ラウンドが終了し、次のラウンドが開始されました`,
+              type: 'system'
+            });
+          }}
         >
           次のラウンドへ
         </button>
@@ -151,16 +148,20 @@ const Actions: React.FC = () => {
   return (
     <>
       <div className="actions-area">
-        <h4>アクション</h4>
         {renderRoleSelection()}
-        {renderActionExecution()}
         {renderEndRound()}
       </div>
 
       {/* 建物建設ダイアログ */}
       {showBuildingDialog && (
         <BuildingActionDialog
-          onClose={() => setShowBuildingDialog(false)}
+          onClose={() => {
+            setShowBuildingDialog(false);
+            addMessage({
+              text: `建築士の行動を終了しました`,
+              type: 'action'
+            });
+          }}
         />
       )}
 
@@ -169,6 +170,10 @@ const Actions: React.FC = () => {
         <TraderActionDialog
           onClose={() => {
             setShowTraderDialog(false);
+            addMessage({
+              text: `商人の行動を終了しました`,
+              type: 'action'
+            });
             actions.endAction();
           }}
         />
@@ -180,6 +185,10 @@ const Actions: React.FC = () => {
           drawnCards={drawnCouncilorCards}
           onClose={() => {
             setDrawnCouncilorCards([]);
+            addMessage({
+              text: `参事会議員の行動を終了しました`,
+              type: 'action'
+            });
             actions.endAction();
           }}
         />
@@ -190,6 +199,10 @@ const Actions: React.FC = () => {
         <ProducerActionDialog
           onClose={() => {
             setShowProducerDialog(false);
+            addMessage({
+              text: `監督の行動を終了しました`,
+              type: 'action'
+            });
             actions.endAction();
           }}
         />

@@ -1,6 +1,7 @@
 // src/components/dialogs/ProducerActionDialog.tsx
 import React, { useState } from 'react';
 import { useGame, useGameActions } from '../../store/GameContext';
+import { useMessage } from '../../store/messageContext';
 
 interface ProducerActionDialogProps {
   onClose: () => void;
@@ -18,6 +19,7 @@ const productNames: Record<string, string> = {
 const ProducerActionDialog: React.FC<ProducerActionDialogProps> = ({ onClose }) => {
   const { state } = useGame();
   const actions = useGameActions();
+  const { addMessage } = useMessage();
   const humanPlayer = state.players.find(p => p.isHuman);
 
   // 選択された生産施設のID
@@ -52,10 +54,41 @@ const ProducerActionDialog: React.FC<ProducerActionDialogProps> = ({ onClose }) 
   const handleProduce = () => {
     if (!humanPlayer) return;
 
+    // 生産する施設の情報を収集
+    const producedGoods = selectedBuildingIds.map(buildingId => {
+      const building = availableBuildings.find(b => b.id === buildingId);
+      if (building?.type === 'production') {
+        return {
+          buildingName: building.name,
+          productName: productNames[building.produces]
+        };
+      }
+      return null;
+    }).filter(Boolean);
+
     actions.produceGoods(
       humanPlayer.id,
       selectedBuildingIds
     );
+
+    // メッセージを生成
+    const messageLines = [
+      `あなたは以下の施設で生産を行いました：`,
+      ...producedGoods.map(good =>
+        `・${good!.buildingName}で${good!.productName}を生産`
+      )
+    ];
+
+    // 水道による追加生産の場合はメッセージに追加
+    if (hasAqueduct) {
+      messageLines.push('（水道による追加生産を含む）');
+    }
+
+    addMessage({
+      text: messageLines.join('\n'),
+      type: 'action'
+    });
+
     onClose();
   };
 
