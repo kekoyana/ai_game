@@ -57,6 +57,15 @@ export enum RoleType {
   MAYOR = "mayor"            // 市長
 }
 
+/**
+ * 役割カードの状態情報
+ */
+export interface RoleCard {
+  role: RoleType;         // 役割の種類
+  isAvailable: boolean;   // 利用可能かどうか
+  bonusCoins: number;     // ボーナスコインの数
+}
+
 // カードの基本インターフェース
 export interface Card {
   id: string;                // カードID
@@ -110,8 +119,10 @@ export interface PlayerState {
     [key in GoodType]?: number;
   };
   money: number;              // 所持金
+  coins: number;              // コイン数（役割ボーナスなど）
   isGovernor: boolean;        // 総督かどうか
   currentRole: RoleType | null; // 選択した役割
+  hasPassed: boolean;         // 役割選択でパスしたかどうか
 }
 
 // ゲーム全体の状態
@@ -125,9 +136,12 @@ export interface GameState {
   };
   currentGovernor: number;    // 現在の総督（プレイヤーインデックス）
   currentPlayerIndex: number; // 現在のプレイヤーインデックス
+  currentTurnPlayerIndex: number; // 現在の手番プレイヤーインデックス
   currentPhase: string;       // 現在のゲームフェーズ
   availableRoles: RoleType[]; // 残っている役割カード
+  roleCards: RoleCard[];      // 役割カードとその状態
   selectedRole: RoleType | null; // 選ばれた役割
+  currentRolePlayerIndex: number; // 現在の役割を選んだプレイヤーインデックス
   round: number;              // 現在のラウンド
   isGameOver: boolean;        // ゲーム終了フラグ
 } 

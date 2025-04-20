@@ -1,0 +1,247 @@
+/* GameController.css */
+.game-controller {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  font-family: "Helvetica Neue", Arial, sans-serif;
+}
+
+.game-controller h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.control-buttons {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.init-button {
+  padding: 10px 20px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s;
+}
+
+.init-button:hover {
+  background-color: #45a049;
+}
+
+.game-state-info {
+  padding: 15px;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  border: 1px solid #dee2e6;
+}
+
+.game-state-info h3 {
+  margin-top: 0;
+  color: #495057;
+}
+
+.game-state-info p {
+  margin: 8px 0;
+}
+
+.role-cards-info {
+  margin-bottom: 25px;
+}
+
+.role-cards-info h3 {
+  color: #495057;
+}
+
+.current-player-info {
+  margin-bottom: 15px;
+}
+
+.current-player-info p {
+  font-weight: bold;
+  color: #0056b3;
+}
+
+.pass-button {
+  padding: 5px 10px;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-bottom: 15px;
+  transition: background-color 0.2s;
+}
+
+.pass-button:hover {
+  background-color: #e3e3e3;
+}
+
+.role-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.role-card {
+  padding: 15px;
+  border-radius: 5px;
+  min-width: 120px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.role-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.role-card.available {
+  border: 2px solid #28a745;
+  background-color: #e8f5e9;
+  cursor: pointer;
+}
+
+.role-card.used {
+  border: 2px solid #6c757d;
+  background-color: #f5f5f5;
+  opacity: 0.6;
+}
+
+.role-name {
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.bonus-coins {
+  color: #ffc107;
+  font-weight: bold;
+  margin-top: 8px;
+}
+
+.used-indicator {
+  font-size: 0.8rem;
+  color: #dc3545;
+  margin-top: 8px;
+}
+
+.players-section-title {
+  margin-top: 20px;
+  margin-bottom: 15px;
+  color: #495057;
+}
+
+.players-info {
+  margin-bottom: 25px;
+}
+
+.player-hand-info {
+  padding: 15px;
+  margin: 12px 0;
+  border-radius: 5px;
+  transition: box-shadow 0.2s;
+}
+
+.player-hand-info:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.player-hand-info.current-turn {
+  border: 2px solid #007bff;
+  background-color: #e6f7ff;
+}
+
+.player-hand-info.role-player {
+  border-left: 5px solid #ffc107;
+}
+
+.player-hand-info h3 {
+  margin-top: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hand-cards, .buildings {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 10px 0;
+}
+
+.card-info {
+  border: 1px solid #ddd;
+  padding: 6px;
+  border-radius: 3px;
+  font-size: 0.85rem;
+  background-color: #f9f9f9;
+}
+
+.building-info {
+  border: 1px solid #bbb;
+  padding: 6px;
+  border-radius: 3px;
+  background-color: #e8e8e8;
+}
+
+.game-logs {
+  margin-top: 25px;
+  padding: 15px;
+  background-color: #f9f9f9;
+  border-radius: 5px;
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #eaeaea;
+}
+
+.game-logs h3 {
+  margin-top: 0;
+  color: #495057;
+}
+
+.logs-container {
+  font-family: monospace;
+}
+
+.log-entry {
+  border-bottom: 1px solid #eee;
+  padding: 8px 0;
+  font-size: 0.9rem;
+}
+
+.debug-details {
+  margin-top: 25px;
+}
+
+.debug-summary {
+  cursor: pointer;
+  padding: 10px;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+  user-select: none;
+}
+
+.debug-content {
+  background-color: #f8f8f8;
+  padding: 15px;
+  border-radius: 4px;
+  overflow-x: auto;
+  font-size: 0.8rem;
+  margin-top: 5px;
+}
+
+.not-initialized {
+  text-align: center;
+  margin-top: 50px;
+  color: #6c757d;
+}
+
+/* プレイヤーの状態を示すアイコン */
+.governor-icon, .turn-icon, .role-icon, .pass-icon {
+  display: inline-block;
+  margin-left: 5px;
+} 
