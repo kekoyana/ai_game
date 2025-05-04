@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import './App.css'
+import { buildings } from './buildings'
 
 function App() {
   // 仮のプレイヤー・CPUデータ
@@ -42,16 +43,41 @@ function App() {
 
       {/* プレイヤーの建物 */}
       <div className="player-buildings">
-        <div>あなたの建物: {players[0].buildings.join(", ")}</div>
+        <div>あなたの建物:</div>
+        <div className="hand-cards">
+          {players[0].buildings.map((b, idx) => {
+            const info = buildings.find(card => card.name === b);
+            return (
+              <span className="card" key={idx}>
+                {b}
+                {info && (
+                  <span style={{ fontSize: "0.8em", color: "#666", display: "block" }}>
+                    コスト:{info.cost} 点:{info.basePoint}
+                  </span>
+                )}
+              </span>
+            );
+          })}
+        </div>
       </div>
 
       {/* プレイヤーの手札 */}
       <div className="player-hand">
         <div>あなたの手札:</div>
         <div className="hand-cards">
-          {players[0].hand.map((card, idx) => (
-            <span className="card" key={idx}>{card}</span>
-          ))}
+          {players[0].hand.map((card, idx) => {
+            const info = buildings.find(b => b.name === card);
+            return (
+              <span className="card" key={idx}>
+                {card}
+                {info && (
+                  <span style={{ fontSize: "0.8em", color: "#666", display: "block" }}>
+                    コスト:{info.cost} 点:{info.basePoint}
+                  </span>
+                )}
+              </span>
+            );
+          })}
         </div>
       </div>
     </div>
