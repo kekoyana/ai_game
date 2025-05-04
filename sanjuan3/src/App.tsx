@@ -46,12 +46,130 @@ function App() {
   const [role, setRole] = useState<string | null>(null);
   const [message, setMessage] = useState("ゲーム開始！役割を選んでください。");
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
+  const [councilChoices, setCouncilChoices] = useState<string[] | null>(null);
+  const [buildChoices, setBuildChoices] = useState<string[] | null>(null);
+  // const [buildCost, setBuildCost] = useState<number>(0);
+
+  // 参事会議員アクション
+  function handleCouncil() {
+    // 山札から2枚引く
+    if (deck.length < 2) return; // 山札不足時は未対応
+    const choices = deck.slice(0, 2);
+    setCouncilChoices(choices);
+    setMessage("1枚選んで手札に加えてください。");
+  }
+
+  // 参事会議員でカードを選択
+  function selectCouncilCard(card: string) {
+    setPlayers(ps => {
+      const newPlayers = [...ps];
+      newPlayers[0] = {
+        ...newPlayers[0],
+        hand: [...newPlayers[0].hand, card],
+      };
+      return newPlayers;
+    });
+    setDeck(d => d.filter((c, i) => i >= 2)); // 2枚分山札から除去
+    setCouncilChoices(null);
+    setMessage(`「${card}」を手札に加えました。`);
+
+    // CPUの役割選択を順に実行
+    setTimeout(() => {
+      const roles = ["参事会議員"];
+      const cpuMsgs = [];
+      const allRoles = ["建築士", "監督", "商人", "参事会議員", "金鉱掘り"];
+      for (let i = 1; i < 4; i++) {
+        const remain = allRoles.filter(x => !roles.includes(x));
+        const cpuRole = remain[Math.floor(Math.random() * remain.length)];
+        roles.push(cpuRole);
+        cpuMsgs.push(`CPU${i}は「${cpuRole}」を選択しました。`);
+      }
+      setSelectedRoles(roles);
+      setMessage(`「${card}」を手札に加えました。\n${cpuMsgs.join("\n")}`);
+
+      // 1ラウンド終了後、次のターンへ
+      setTimeout(() => {
+        setRole(null);
+        setSelectedRoles([]);
+        setMessage("次のラウンドです。役割を選んでください。");
+        setTurn(t => (t + 1) % 4);
+      }, 1200);
+    }, 800);
+  }
 
   // 役割選択後にCPUが順に役割を選ぶ
   function handleRoleSelect(r: string) {
     setRole(r);
     setMessage(`あなたは「${r}」を選択しました。`);
     setSelectedRoles([r]);
+
+    // 建築士なら手札から建設カード選択UIへ
+    if (r === "建築士") {
+      setTimeout(() => {
+        // 既に建てている建物（都市施設）は重複不可
+        const built = players[0].buildings;
+        const hand = players[0].hand;
+        const buildable = hand.filter(cardName => {
+          const info = buildings.find(b => b.name === cardName);
+          if (!info) return false;
+          if (info.type === "都市施設" && built.includes(cardName)) return false;
+          return true;
+        });
+        setBuildChoices(buildable);
+        setMessage("建設するカードを選んでください。");
+      }, 500);
+      return;
+    }
+
+    // 参事会議員ならカード選択UIへ
+    if (r === "参事会議員") {
+      setTimeout(() => {
+        handleCouncil();
+      }, 500);
+      // CPU処理はカード選択後に進める
+      return;
+    }
+
+    // 金鉱掘りなら山札から1枚引いて手札に加える
+    if (r === "金鉱掘り") {
+      setTimeout(() => {
+        if (deck.length > 0) {
+          setPlayers(ps => {
+            const newPlayers = [...ps];
+            newPlayers[0] = {
+              ...newPlayers[0],
+              hand: [...newPlayers[0].hand, deck[0]],
+            };
+            return newPlayers;
+          });
+          setDeck(d => d.slice(1));
+          setMessage(`あなたは「金鉱掘り」でカードを1枚引きました。`);
+        } else {
+          setMessage(`山札がありません。`);
+        }
+        // CPUの役割選択を順に実行
+        setTimeout(() => {
+          const roles = [r];
+          const cpuMsgs = [];
+          const allRoles = ["建築士", "監督", "商人", "参事会議員", "金鉱掘り"];
+          for (let i = 1; i < 4; i++) {
+            const remain = allRoles.filter(x => !roles.includes(x));
+            const cpuRole = remain[Math.floor(Math.random() * remain.length)];
+            roles.push(cpuRole);
+            cpuMsgs.push(`CPU${i}は「${cpuRole}」を選択しました。`);
+          }
+          setSelectedRoles(roles);
+          setMessage(`あなたは「金鉱掘り」でカードを1枚引きました。\n${cpuMsgs.join("\n")}`);
+          setTimeout(() => {
+            setRole(null);
+            setSelectedRoles([]);
+            setMessage("次のラウンドです。役割を選んでください。");
+            setTurn(t => (t + 1) % 4);
+          }, 1200);
+        }, 800);
+      }, 500);
+      return;
+    }
 
     // CPUの役割選択を順に実行
     setTimeout(() => {
@@ -151,6 +269,89 @@ function App() {
             );
           })}
         </div>
+        {/* 参事会議員のカード選択UI */}
+        {councilChoices && (
+          <div style={{ marginTop: "1em" }}>
+            <div>カードを1枚選んでください:</div>
+            <div className="hand-cards">
+              {councilChoices.map((card, idx) => {
+                const info = buildings.find(b => b.name === card);
+                return (
+                  <button className="card" key={idx} onClick={() => selectCouncilCard(card)}>
+                    {card}
+                    {info && (
+                      <span style={{ fontSize: "0.8em", color: "#666", display: "block" }}>
+                        コスト:{info.cost} 点:{info.basePoint}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+        {/* 建築士のカード選択UI */}
+        {buildChoices && (
+          <div style={{ marginTop: "1em" }}>
+            <div>建設するカードを1枚選んでください:</div>
+            <div className="hand-cards">
+              {buildChoices.map((card, idx) => {
+                const info = buildings.find(b => b.name === card);
+                return (
+                  <button
+                    className="card"
+                    key={idx}
+                    onClick={() => {
+                      if (!info) return;
+                      setBuildChoices(null);
+                      // コスト分捨て札選択UI（簡易化のため自動で手札先頭から捨てる）
+                      setPlayers(ps => {
+                        const newPlayers = [...ps];
+                        const hand = newPlayers[0].hand.filter(c => c !== card);
+                        // const discard = hand.slice(0, info.cost - 1); // 建築士特権で-1
+                        const remain = hand.slice(info.cost - 1);
+                        newPlayers[0] = {
+                          ...newPlayers[0],
+                          hand: remain,
+                          buildings: [...newPlayers[0].buildings, card],
+                        };
+                        return newPlayers;
+                      });
+                      setMessage(`「${card}」を建設しました。`);
+                      // CPUの役割選択・ターン進行
+                      setTimeout(() => {
+                        const roles = ["建築士"];
+                        const cpuMsgs = [];
+                        const allRoles = ["建築士", "監督", "商人", "参事会議員", "金鉱掘り"];
+                        for (let i = 1; i < 4; i++) {
+                          const remain = allRoles.filter(x => !roles.includes(x));
+                          const cpuRole = remain[Math.floor(Math.random() * remain.length)];
+                          roles.push(cpuRole);
+                          cpuMsgs.push(`CPU${i}は「${cpuRole}」を選択しました。`);
+                        }
+                        setSelectedRoles(roles);
+                        setMessage(`「${card}」を建設しました。\n${cpuMsgs.join("\n")}`);
+                        setTimeout(() => {
+                          setRole(null);
+                          setSelectedRoles([]);
+                          setMessage("次のラウンドです。役割を選んでください。");
+                          setTurn(t => (t + 1) % 4);
+                        }, 1200);
+                      }, 800);
+                    }}
+                  >
+                    {card}
+                    {info && (
+                      <span style={{ fontSize: "0.8em", color: "#666", display: "block" }}>
+                        コスト:{info.cost} 点:{info.basePoint}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
