@@ -26,7 +26,13 @@ function App() {
 
   // 初期化
   const [deck, setDeck] = useState<string[]>(() => shuffle(createDeck()));
-  const [players, setPlayers] = useState(() => {
+  type Player = {
+    name: string;
+    buildings: string[];
+    hand: string[];
+    products: Record<string, string>;
+  };
+  const [players, setPlayers] = useState<Player[]>(() => {
     // 各プレイヤーにインディゴ1枚＋手札4枚配布
     const names = ["あなた", "CPU1", "CPU2", "CPU3"];
     let d = shuffle(createDeck());
@@ -37,6 +43,7 @@ function App() {
         name,
         buildings: ["インディゴ染料工場"],
         hand,
+        products: {},
       };
     });
     setDeck(d);
@@ -49,6 +56,29 @@ function App() {
   const [councilChoices, setCouncilChoices] = useState<string[] | null>(null);
   const [buildChoices, setBuildChoices] = useState<string[] | null>(null);
   // const [buildCost, setBuildCost] = useState<number>(0);
+  const [sellChoices, setSellChoices] = useState<string[] | null>(null);
+
+  // 監督アクション
+  function handleOverseer() {
+    setPlayers(ps => {
+      const newPlayers = [...ps];
+      const player = { ...newPlayers[0] };
+      const products = { ...player.products };
+      let d = [...deck];
+      player.buildings.forEach(b => {
+        const info = buildings.find(card => card.name === b);
+        if (info && info.type === "生産施設" && !products[b] && d.length > 0) {
+          products[b] = d[0];
+          d = d.slice(1);
+        }
+      });
+      player.products = products;
+      newPlayers[0] = player;
+      setDeck(d);
+      setMessage("生産施設に商品を生産しました。");
+      return newPlayers;
+    });
+  }
 
   // 参事会議員アクション
   function handleCouncil() {
@@ -121,6 +151,34 @@ function App() {
       return;
     }
 
+    // 監督なら生産処理
+    if (r === "監督") {
+      setTimeout(() => {
+        handleOverseer();
+        // CPUの役割選択を順に実行
+        setTimeout(() => {
+          const roles = [r];
+          const cpuMsgs = [];
+          const allRoles = ["建築士", "監督", "商人", "参事会議員", "金鉱掘り"];
+          for (let i = 1; i < 4; i++) {
+            const remain = allRoles.filter(x => !roles.includes(x));
+            const cpuRole = remain[Math.floor(Math.random() * remain.length)];
+            roles.push(cpuRole);
+            cpuMsgs.push(`CPU${i}は「${cpuRole}」を選択しました。`);
+          }
+          setSelectedRoles(roles);
+          setMessage(`生産施設に商品を生産しました。\n${cpuMsgs.join("\n")}`);
+          setTimeout(() => {
+            setRole(null);
+            setSelectedRoles([]);
+            setMessage("次のラウンドです。役割を選んでください。");
+            setTurn(t => (t + 1) % 4);
+          }, 1200);
+        }, 800);
+      }, 500);
+      return;
+    }
+
     // 参事会議員ならカード選択UIへ
     if (r === "参事会議員") {
       setTimeout(() => {
@@ -161,6 +219,27 @@ function App() {
           setSelectedRoles(roles);
           setMessage(`あなたは「金鉱掘り」でカードを1枚引きました。\n${cpuMsgs.join("\n")}`);
           setTimeout(() => {
+            // ゲーム終了判定
+            const winner = players.find(p => p.buildings.length >= 12);
+            if (winner) {
+              // 得点計算
+              const scores = players.map(p => {
+                let score = 0;
+                p.buildings.forEach(b => {
+                  const info = buildings.find(card => card.name === b);
+                  if (info) score += info.basePoint;
+                });
+                return { name: p.name, score };
+              });
+              const maxScore = Math.max(...scores.map(s => s.score));
+              const winners = scores.filter(s => s.score === maxScore).map(s => s.name);
+              setMessage(
+                `ゲーム終了！\n` +
+                scores.map(s => `${s.name}: ${s.score}点`).join("\n") +
+                `\n勝者: ${winners.join(", ")}`
+              );
+              return;
+            }
             setRole(null);
             setSelectedRoles([]);
             setMessage("次のラウンドです。役割を選んでください。");
@@ -198,6 +277,9 @@ function App() {
 
   return (
     <div className="game-container">
+      <button style={{position: "absolute", right: 10, top: 10, zIndex: 10}} onClick={() => window.location.reload()}>
+        リセット
+      </button>
       {/* CPUプレイヤー表示 */}
       <div className="cpu-area">
         {players.slice(1).map((cpu) => (
@@ -237,12 +319,18 @@ function App() {
         <div className="hand-cards">
           {players[0].buildings.map((b, idx) => {
             const info = buildings.find(card => card.name === b);
+            const product = players[0].products?.[b];
             return (
               <span className="card" key={idx}>
                 {b}
                 {info && (
                   <span style={{ fontSize: "0.8em", color: "#666", display: "block" }}>
                     コスト:{info.cost} 点:{info.basePoint}
+                  </span>
+                )}
+                {info?.type === "生産施設" && product && (
+                  <span style={{ fontSize: "0.8em", color: "#2a7", display: "block" }}>
+                    商品: {product}
                   </span>
                 )}
               </span>
@@ -346,6 +434,61 @@ function App() {
                         コスト:{info.cost} 点:{info.basePoint}
                       </span>
                     )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+        {/* 商人の売却選択UI */}
+        {sellChoices && (
+          <div style={{ marginTop: "1em" }}>
+            <div>売却する商品（生産施設）を選んでください:</div>
+            <div className="hand-cards">
+              {sellChoices.map((b, idx) => {
+                const product = players[0].products[b];
+                return (
+                  <button
+                    className="card"
+                    key={idx}
+                    onClick={() => {
+                      // 売却処理：商品を消し、山札からカードを得る（簡易で常に1枚）
+                      setPlayers(ps => {
+                        const newPlayers = [...ps];
+                        const player = { ...newPlayers[0] };
+                        const products = { ...player.products };
+                        delete products[b];
+                        player.products = products;
+                        player.hand = [...player.hand, ...(deck.length > 0 ? [deck[0]] : [])];
+                        newPlayers[0] = player;
+                        return newPlayers;
+                      });
+                      setDeck(d => d.slice(1));
+                      setSellChoices(null);
+                      setMessage(`「${product}」を売却し、カードを1枚獲得しました。`);
+                      // CPUの役割選択・ターン進行
+                      setTimeout(() => {
+                        const roles = ["商人"];
+                        const cpuMsgs = [];
+                        const allRoles = ["建築士", "監督", "商人", "参事会議員", "金鉱掘り"];
+                        for (let i = 1; i < 4; i++) {
+                          const remain = allRoles.filter(x => !roles.includes(x));
+                          const cpuRole = remain[Math.floor(Math.random() * remain.length)];
+                          roles.push(cpuRole);
+                          cpuMsgs.push(`CPU${i}は「${cpuRole}」を選択しました。`);
+                        }
+                        setSelectedRoles(roles);
+                        setMessage(`「${product}」を売却し、カードを1枚獲得しました。\n${cpuMsgs.join("\n")}`);
+                        setTimeout(() => {
+                          setRole(null);
+                          setSelectedRoles([]);
+                          setMessage("次のラウンドです。役割を選んでください。");
+                          setTurn(t => (t + 1) % 4);
+                        }, 1200);
+                      }, 800);
+                    }}
+                  >
+                    {b}の商品（{players[0].products[b]}）
                   </button>
                 );
               })}
