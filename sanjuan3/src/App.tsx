@@ -57,6 +57,8 @@ function App() {
   const [buildChoices, setBuildChoices] = useState<string[] | null>(null);
   // const [buildCost, setBuildCost] = useState<number>(0);
   const [sellChoices, setSellChoices] = useState<string[] | null>(null);
+// 総督（ラウンド開始プレイヤー）のインデックス
+  const [governor, setGovernor] = useState(0);
 
   // 監督アクション
   // 監督アクション（全員分）
@@ -132,7 +134,7 @@ function App() {
         setRole(null);
         setSelectedRoles([]);
         setMessage("次のラウンドです。役割を選んでください。");
-        setTurn(0);
+        setTurn(governor);
       }, 1200);
     }, 800);
   }
@@ -182,7 +184,8 @@ function App() {
             setRole(null);
             setSelectedRoles([]);
             setMessage("次のラウンドです。役割を選んでください。");
-            setTurn(0);
+            setGovernor(g => (g + 1) % players.length);
+            setTurn(governor);
           }, 1200);
         }, 800);
       }, 500);
@@ -254,7 +257,8 @@ function App() {
             setRole(null);
             setSelectedRoles([]);
             setMessage("次のラウンドです。役割を選んでください。");
-            setTurn(0);
+            setGovernor(g => (g + 1) % players.length);
+            setTurn(governor);
           }, 1200);
         }, 800);
       }, 500);
@@ -267,12 +271,13 @@ function App() {
       const cpuMsgs = [];
       const allRoles = ["建築士", "監督", "商人", "参事会議員", "金鉱掘り"];
       let overseerTriggered = false;
-      for (let i = 1; i < 4; i++) {
+      for (let i = 1; i < players.length; i++) {
+        const idx = (governor + i) % players.length;
         // 未選択の役割からランダム選択
         const remain = allRoles.filter(x => !roles.includes(x));
         const cpuRole = remain[Math.floor(Math.random() * remain.length)];
         roles.push(cpuRole);
-        cpuMsgs.push(`CPU${i}は「${cpuRole}」を選択しました。`);
+        cpuMsgs.push(`${players[idx].name}は「${cpuRole}」を選択しました。`);
         // CPUが監督を選んだ場合も全員生産
         if (cpuRole === "監督" && !overseerTriggered) {
           handleOverseer(false);
@@ -287,7 +292,8 @@ function App() {
         setRole(null);
         setSelectedRoles([]);
         setMessage("次のラウンドです。役割を選んでください。");
-        setTurn(0);
+        setGovernor(g => (g + 1) % players.length);
+        setTurn(governor);
       }, 1200);
     }, 800);
   }
@@ -297,11 +303,23 @@ function App() {
       <button style={{position: "absolute", right: 10, top: 10, zIndex: 10}} onClick={() => window.location.reload()}>
         リセット
       </button>
+{/* あなたの情報表示 */}
+      <div className="player-area">
+        <div>
+          {players[0].name}
+          {governor === 0 && <span style={{ color: "orange", marginLeft: "4px" }}>（総督）</span>}
+        </div>
+        <div>建物: {players[0].buildings.join(", ")}</div>
+        <div>手札: {players[0].hand.length}枚</div>
+      </div>
       {/* CPUプレイヤー表示 */}
       <div className="cpu-area">
         {players.slice(1).map((cpu) => (
           <div className="cpu" key={cpu.name}>
-            <div>{cpu.name}</div>
+            <div>
+              {cpu.name}
+              {players.findIndex(p => p.name === cpu.name) === governor && <span style={{ color: "orange", marginLeft: "4px" }}>（総督）</span>}
+            </div>
             <div>建物: {cpu.buildings.join(", ")}</div>
             <div>手札: {cpu.hand.length}枚</div>
           </div>
@@ -317,7 +335,7 @@ function App() {
             <button
               key={r}
               onClick={() => handleRoleSelect(r)}
-              disabled={turn !== 0 || !!role || selectedRoles.includes(r)}
+              disabled={turn !== governor || !!role || selectedRoles.includes(r)}
             >
               {r}
             </button>
@@ -460,7 +478,7 @@ function App() {
                           setRole(null);
                           setSelectedRoles([]);
                           setMessage("次のラウンドです。役割を選んでください。");
-                          setTurn(0);
+                          setTurn(governor);
                         }, 1200);
                       }, 800);
                     }}
@@ -542,7 +560,7 @@ function App() {
                           setRole(null);
                           setSelectedRoles([]);
                           setMessage("次のラウンドです。役割を選んでください。");
-                          setTurn(0);
+                          setTurn(governor);
                         }, 1200);
                       }, 800);
                     }}
