@@ -5,6 +5,11 @@ import PlayerArea from './components/PlayerArea'
 import CpuArea from './components/CpuArea'
 import PlayerBuildings from './components/PlayerBuildings'
 import PlayerHand from './components/PlayerHand'
+import RoleButtons from './components/RoleButtons'
+import MessageArea from './components/MessageArea'
+import CouncilChoice from './components/CouncilChoice'
+import BuildChoice from './components/BuildChoice'
+import SellChoice from './components/SellChoice'
 
 function App() {
   // 建物カードから山札を生成（インディゴ初期配布分を除く）
@@ -338,23 +343,19 @@ function App() {
         <div>現在の役割: {role ?? "未選択"}</div>
         <div>ターン: {players[turn].name}</div>
         <div className="role-buttons">
-          {["建築士", "監督", "商人", "参事会議員", "金鉱掘り"].map(r => (
-            <button
-              key={r}
-              onClick={() => handleRoleSelect(r)}
-              disabled={turn !== governor || !!role || selectedRoles.includes(r)}
-            >
-              {r}
-            </button>
-          ))}
+          <RoleButtons
+            roles={["建築士", "監督", "商人", "参事会議員", "金鉱掘り"]}
+            selectedRoles={selectedRoles}
+            currentRole={role}
+            turn={turn}
+            governor={governor}
+            onSelect={handleRoleSelect}
+          />
         </div>
       </div>
 
       {/* メッセージ欄 */}
-      <div className="message-area">
-        {message}
-      </div>
-      <div data-testid="message-log" style={{display:"none"}}>{messageLog.join("\n")}</div>
+      <MessageArea message={message} messageLog={messageLog} />
 
       {/* プレイヤーの建物 */}
       <PlayerBuildings
@@ -370,160 +371,136 @@ function App() {
       />
       {/* 参事会議員のカード選択UI */}
       {councilChoices && (
-        <div style={{ marginTop: "1em" }}>
-          <div>カードを1枚選んでください:</div>
-          <div className="hand-cards">
-            {councilChoices.map((card, idx) => {
-              const info = buildings.find(b => b.name === card);
-              return (
-                <button className="card" key={idx} onClick={() => selectCouncilCard(card)}>
-                  {card}
-                  {info && (
-                    <span style={{ fontSize: "0.8em", color: "#666", display: "block" }}>
-                      コスト:{info.cost} 点:{info.basePoint}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        <CouncilChoice choices={councilChoices} onSelect={selectCouncilCard} />
       )}
       {/* 建築士のカード選択UI */}
       {buildChoices && (
-        <div style={{ marginTop: "1em" }}>
-          <div>建設するカードを1枚選んでください:</div>
-          <div className="hand-cards">
-            {buildChoices.map((card, idx) => {
-              const info = buildings.find(b => b.name === card);
-              return (
-                <button
-                  className="card"
-                  key={idx}
-                  onClick={() => {
-                    if (!info) return;
-                    setBuildChoices(null);
-                    // あなた＋CPU全員が建設処理
-                    setPlayers(ps => {
-                      const newPlayers = [...ps];
-                      // あなたの建設
-                      const hand = newPlayers[0].hand.filter(c => c !== card);
-                      const remain = hand.slice(info.cost - 1); // 特権で-1
-                      newPlayers[0] = {
-                        ...newPlayers[0],
-                        hand: remain,
-                        buildings: [...newPlayers[0].buildings, card],
-                      };
-                      // CPUの建設
-                      for (let i = 1; i < 4; i++) {
-                        const cpu = { ...newPlayers[i] };
-                        const built = cpu.buildings;
-                        const buildable = cpu.hand.filter(cardName => {
-                          const binfo = buildings.find(b => b.name === cardName);
-                          if (!binfo) return false;
-                          if (binfo.type === "都市施設" && built.includes(cardName)) return false;
-                          return cpu.hand.length >= (binfo.cost); // CPUは特権なし
-                        });
-                        if (buildable.length > 0) {
-                          const buildCard = buildable[0];
-                          const binfo = buildings.find(b => b.name === buildCard)!;
-                          const hand2 = cpu.hand.filter(c => c !== buildCard);
-                          const remain2 = hand2.slice(binfo.cost);
-                          cpu.hand = remain2;
-                          cpu.buildings = [...cpu.buildings, buildCard];
-                          newPlayers[i] = cpu;
-                        }
-                      }
-                      return newPlayers;
-                    });
-                    setMessage(`「${card}」を建設しました。\nCPUも建設を試みました。`);
-                    // CPUの役割選択・ターン進行
-                    setTimeout(() => {
-                      const roles = ["建築士"];
-                      const cpuMsgs = [];
-                      const allRoles = ["建築士", "監督", "商人", "参事会議員", "金鉱掘り"];
-                      for (let i = 1; i < 4; i++) {
-                        const remain = allRoles.filter(x => !roles.includes(x));
-                        const cpuRole = remain[Math.floor(Math.random() * remain.length)];
-                        roles.push(cpuRole);
-                        cpuMsgs.push(`CPU${i}は「${cpuRole}」を選択しました。`);
-                      }
-                      setSelectedRoles(roles);
-                      setMessageWithLog(`「${card}」を建設しました。\nCPUも建設を試みました。\n${cpuMsgs.join("\n")}`);
-                      setTimeout(() => {
-                        setRole(null);
-                        setSelectedRoles([]);
-                        setMessageWithLog("次のラウンドです。役割を選んでください。");
-                        setTurn(governor);
-                      }, 1200);
-                    }, 800);
-                  }}
-                >
-                  {card}
-                  {info && (
-                    <span style={{ fontSize: "0.8em", color: "#666", display: "block" }}>
-                      コスト:{info.cost} 点:{info.basePoint}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        <BuildChoice
+          choices={buildChoices}
+          onSelect={(card) => {
+            const info = buildings.find(b => b.name === card);
+            if (!info) return;
+            setBuildChoices(null);
+            // あなた＋CPU全員が建設処理
+            setPlayers(ps => {
+              const newPlayers = [...ps];
+              // あなたの建設
+              const hand = newPlayers[0].hand.filter(c => c !== card);
+              const remain = hand.slice(info.cost - 1); // 特権で-1
+              newPlayers[0] = {
+                ...newPlayers[0],
+                hand: remain,
+                buildings: [...newPlayers[0].buildings, card],
+              };
+              // CPUの建設
+              for (let i = 1; i < 4; i++) {
+                const cpu = { ...newPlayers[i] };
+                const built = cpu.buildings;
+                const buildable = cpu.hand.filter(cardName => {
+                  const binfo = buildings.find(b => b.name === cardName);
+                  if (!binfo) return false;
+                  if (binfo.type === "都市施設" && built.includes(cardName)) return false;
+                  return cpu.hand.length >= (binfo.cost); // CPUは特権なし
+                });
+                if (buildable.length > 0) {
+                  const buildCard = buildable[0];
+                  const binfo = buildings.find(b => b.name === buildCard)!;
+                  const hand2 = cpu.hand.filter(c => c !== buildCard);
+                  const remain2 = hand2.slice(binfo.cost);
+                  cpu.hand = remain2;
+                  cpu.buildings = [...cpu.buildings, buildCard];
+                  newPlayers[i] = cpu;
+                }
+              }
+              return newPlayers;
+            });
+            setMessage(`「${card}」を建設しました。\nCPUも建設を試みました。`);
+            // CPUの役割選択・ターン進行
+            setTimeout(() => {
+              const roles = ["建築士"];
+              const cpuMsgs = [];
+              const allRoles = ["建築士", "監督", "商人", "参事会議員", "金鉱掘り"];
+              for (let i = 1; i < 4; i++) {
+                const remain = allRoles.filter(x => !roles.includes(x));
+                const cpuRole = remain[Math.floor(Math.random() * remain.length)];
+                roles.push(cpuRole);
+                cpuMsgs.push(`CPU${i}は「${cpuRole}」を選択しました。`);
+              }
+              setSelectedRoles(roles);
+              setMessageWithLog(`「${card}」を建設しました。\nCPUも建設を試みました。\n${cpuMsgs.join("\n")}`);
+              setTimeout(() => {
+                setRole(null);
+                setSelectedRoles([]);
+                setMessageWithLog("次のラウンドです。役割を選んでください。");
+                setTurn(governor);
+              }, 1200);
+            }, 800);
+          }}
+        />
       )}
       {/* 商人の売却選択UI */}
       {sellChoices && (
-        <div style={{ marginTop: "1em" }}>
-          <div>売却する商品（生産施設）を選んでください:</div>
-          <div className="hand-cards">
-            {sellChoices.map((b, idx) => {
-              const product = players[0].products[b];
-              return (
-                <button
-                  className="card"
-                  key={idx}
-                  onClick={() => {
-                    // あなた＋CPU全員が売却処理
-                    setPlayers(ps => {
-                      const newPlayers = [...ps];
-                      let d = [...deck];
-                      // あなたの売却
-                      const player = { ...newPlayers[0] };
-                      const products = { ...player.products };
-                      delete products[b];
-                      player.products = products;
-                      if (d.length > 0) {
-                        player.hand = [...player.hand, d[0]];
-                        d = d.slice(1);
-                      }
-                      newPlayers[0] = player;
-                      // CPUの売却
-                      for (let i = 1; i < 4; i++) {
-                        const cpu = { ...newPlayers[i] };
-                        // 売却できる商品を探す
-                        const prodKeys = Object.keys(cpu.products).filter(k =>
-                          cpu.buildings.includes(k) && cpu.products[k]
-                        );
-                        if (prodKeys.length > 0 && d.length > 0) {
-                          const sellB = prodKeys[0];
-                          delete cpu.products[sellB];
-                          cpu.hand = [...cpu.hand, d[0]];
-                          d = d.slice(1);
-                          newPlayers[i] = cpu;
-                        }
-                      }
-                      setDeck(d);
-                      setMessage("商品を売却しました。");
-                      return newPlayers;
-                    });
-                  }}
-                >
-                  {b}（{product}）
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        <SellChoice
+          choices={sellChoices}
+          products={players[0].products}
+          onSelect={(b) => {
+            setPlayers(ps => {
+              const newPlayers = [...ps];
+              let d = [...deck];
+              // あなたの売却
+              const player = { ...newPlayers[0] };
+              const products = { ...player.products };
+              delete products[b];
+              player.products = products;
+              if (d.length > 0) {
+                player.hand = [...player.hand, d[0]];
+                d = d.slice(1);
+              }
+              newPlayers[0] = player;
+              // CPUの売却
+              for (let i = 1; i < 4; i++) {
+                const cpu = { ...newPlayers[i] };
+                // 売却できる商品を探す
+                const prodKeys = Object.keys(cpu.products).filter(k =>
+                  cpu.buildings.includes(k) && cpu.products[k]
+                );
+                if (prodKeys.length > 0 && d.length > 0) {
+                  const sellB = prodKeys[0];
+                  const cproducts = { ...cpu.products };
+                  delete cproducts[sellB];
+                  cpu.products = cproducts;
+                  cpu.hand = [...cpu.hand, d[0]];
+                  d = d.slice(1);
+                  newPlayers[i] = cpu;
+                }
+              }
+              setDeck(d);
+              return newPlayers;
+            });
+            setSellChoices(null);
+            setMessageWithLog(`全員が商品を売却し、カードを1枚獲得しました。`);
+            // CPUの役割選択・ターン進行
+            setTimeout(() => {
+              const roles = ["商人"];
+              const cpuMsgs = [];
+              const allRoles = ["建築士", "監督", "商人", "参事会議員", "金鉱掘り"];
+              for (let i = 1; i < 4; i++) {
+                const remain = allRoles.filter(x => !roles.includes(x));
+                const cpuRole = remain[Math.floor(Math.random() * remain.length)];
+                roles.push(cpuRole);
+                cpuMsgs.push(`CPU${i}は「${cpuRole}」を選択しました。`);
+              }
+              setSelectedRoles(roles);
+              setMessageWithLog(`全員が商品を売却し、カードを1枚獲得しました。\n${cpuMsgs.join("\n")}`);
+              setTimeout(() => {
+                setRole(null);
+                setSelectedRoles([]);
+                setMessageWithLog("次のラウンドです。役割を選んでください。");
+                setTurn(0);
+              }, 1200);
+            }, 800);
+          }}
+        />
       )}
       {/* ここでreturnの閉じタグと関数・export defaultの閉じ括弧を追加 */}
     </div>

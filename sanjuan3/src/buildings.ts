@@ -15,6 +15,11 @@ export const buildings: Building[] = [
   { name: "コーヒー焙煎場", type: "生産施設", cost: 4, basePoint: 2, effect: "コーヒーを生産", count: 8 },
   { name: "シルバー精錬所", type: "生産施設", cost: 5, basePoint: 3, effect: "シルバーを生産", count: 8 },
 
+  // テスト用追加
+  { name: "製糖所", type: "生産施設", cost: 2, basePoint: 1, effect: "サトウを生産", count: 8 },
+  { name: "製材所", type: "生産施設", cost: 2, basePoint: 1, effect: "木材を生産", count: 8 },
+  { name: "市場", type: "都市施設", cost: 2, basePoint: 1, effect: "売却時に追加で1枚引く", count: 3 },
+  { name: "市役所", type: "都市施設", cost: 4, basePoint: 2, effect: "建設時に追加点", count: 3 },
   // 都市施設（一部抜粋、続きは必要に応じて追加）
   { name: "鍛冶屋", type: "都市施設", cost: 1, basePoint: 1, effect: "生産施設建設コスト-1", count: 3 },
   { name: "金鉱", type: "都市施設", cost: 1, basePoint: 1, effect: "金鉱掘り時に4枚めくり重複なければ1枚入手", count: 3 },
