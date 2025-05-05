@@ -56,6 +56,12 @@ function App() {
   const [turn, setTurn] = useState(0); // 0:あなた, 1:CPU1...
   const [role, setRole] = useState<string | null>(null);
   const [message, setMessage] = useState("ゲーム開始！役割を選んでください。");
+  const [messageLog, setMessageLog] = useState<string[]>(["ゲーム開始！役割を選んでください。"]);
+  // メッセージをセットし履歴も残す
+  function setMessageWithLog(msg: string) {
+    setMessage(msg);
+    setMessageLog(log => [...log, msg]);
+  }
   const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
   const [councilChoices, setCouncilChoices] = useState<string[] | null>(null);
   const [buildChoices, setBuildChoices] = useState<string[] | null>(null);
@@ -91,7 +97,7 @@ function App() {
         newPlayers[i] = player;
       }
       setDeck(d);
-      setMessage("全員の生産施設に商品を生産しました。");
+      setMessageWithLog("全員の生産施設に商品を生産しました。");
       return newPlayers;
     });
   }
@@ -102,7 +108,7 @@ function App() {
     if (deck.length < 2) return; // 山札不足時は未対応
     const choices = deck.slice(0, 2);
     setCouncilChoices(choices);
-    setMessage("1枚選んで手札に加えてください。");
+    setMessageWithLog("1枚選んで手札に加えてください。");
   }
 
   // 参事会議員でカードを選択
@@ -117,7 +123,7 @@ function App() {
     });
     setDeck(d => d.filter((c, i) => i >= 2)); // 2枚分山札から除去
     setCouncilChoices(null);
-    setMessage(`「${card}」を手札に加えました。`);
+    setMessageWithLog(`「${card}」を手札に加えました。`);
 
     // CPUの役割選択を順に実行
     setTimeout(() => {
@@ -131,13 +137,13 @@ function App() {
         cpuMsgs.push(`CPU${i}は「${cpuRole}」を選択しました。`);
       }
       setSelectedRoles(roles);
-      setMessage(`「${card}」を手札に加えました。\n${cpuMsgs.join("\n")}`);
+      setMessageWithLog(`「${card}」を手札に加えました。\n${cpuMsgs.join("\n")}`);
 
       // 1ラウンド終了後、次のターンへ
       setTimeout(() => {
         setRole(null);
         setSelectedRoles([]);
-        setMessage("次のラウンドです。役割を選んでください。");
+        setMessageWithLog("次のラウンドです。役割を選んでください。");
         setTurn(governor);
       }, 1200);
     }, 800);
@@ -162,7 +168,7 @@ function App() {
           return true;
         });
         setBuildChoices(buildable);
-        setMessage("建設するカードを選んでください。");
+        setMessageWithLog("建設するカードを選んでください。");
       }, 500);
       return;
     }
@@ -187,7 +193,7 @@ function App() {
           setTimeout(() => {
             setRole(null);
             setSelectedRoles([]);
-            setMessage("次のラウンドです。役割を選んでください。");
+            setMessageWithLog("次のラウンドです。役割を選んでください。");
             setGovernor(g => (g + 1) % players.length);
             setTurn(governor);
           }, 1200);
@@ -220,7 +226,7 @@ function App() {
             d = d.slice(1);
           }
           setDeck(d);
-          setMessage(`あなたは「金鉱掘り」でカードを1枚引きました。`);
+          setMessageWithLog(`あなたは「金鉱掘り」でカードを1枚引きました。`);
           return newPlayers;
         });
         // CPUの役割選択を順に実行
@@ -235,7 +241,7 @@ function App() {
             cpuMsgs.push(`CPU${i}は「${cpuRole}」を選択しました。`);
           }
           setSelectedRoles(roles);
-          setMessage(`あなたは「金鉱掘り」でカードを1枚引きました。\n${cpuMsgs.join("\n")}`);
+          setMessageWithLog(`あなたは「金鉱掘り」でカードを1枚引きました。\n${cpuMsgs.join("\n")}`);
           setTimeout(() => {
             // ゲーム終了判定
             const winner = players.find(p => p.buildings.length >= 12);
@@ -260,10 +266,10 @@ function App() {
             }
             setRole(null);
             setSelectedRoles([]);
-            setMessage("次のラウンドです。役割を選んでください。");
+            setMessageWithLog("次のラウンドです。役割を選んでください。");
             setGovernor(g => (g + 1) % players.length);
             setTurn(governor);
-          }, 1200);
+          }, 2000);
         }, 800);
       }, 500);
       return;
@@ -289,13 +295,16 @@ function App() {
         }
       }
       setSelectedRoles(roles);
-      setMessage(`あなたは「${r}」を選択しました。\n${cpuMsgs.join("\n")}`);
+      // CPUが監督を選んだ場合はhandleOverseer(false)でメッセージをセット済みなので上書きしない
+      if (!overseerTriggered) {
+        setMessageWithLog(`あなたは「${r}」を選択しました。\n${cpuMsgs.join("\n")}`);
+      }
 
       // 1ラウンド終了後、次のターンへ
       setTimeout(() => {
         setRole(null);
         setSelectedRoles([]);
-        setMessage("次のラウンドです。役割を選んでください。");
+        setMessageWithLog("次のラウンドです。役割を選んでください。");
         setGovernor(g => (g + 1) % players.length);
         setTurn(governor);
       }, 1200);
@@ -345,6 +354,7 @@ function App() {
       <div className="message-area">
         {message}
       </div>
+      <div data-testid="message-log" style={{display:"none"}}>{messageLog.join("\n")}</div>
 
       {/* プレイヤーの建物 */}
       <PlayerBuildings
@@ -439,11 +449,11 @@ function App() {
                         cpuMsgs.push(`CPU${i}は「${cpuRole}」を選択しました。`);
                       }
                       setSelectedRoles(roles);
-                      setMessage(`「${card}」を建設しました。\nCPUも建設を試みました。\n${cpuMsgs.join("\n")}`);
+                      setMessageWithLog(`「${card}」を建設しました。\nCPUも建設を試みました。\n${cpuMsgs.join("\n")}`);
                       setTimeout(() => {
                         setRole(null);
                         setSelectedRoles([]);
-                        setMessage("次のラウンドです。役割を選んでください。");
+                        setMessageWithLog("次のラウンドです。役割を選んでください。");
                         setTurn(governor);
                       }, 1200);
                     }, 800);
