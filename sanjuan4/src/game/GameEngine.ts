@@ -77,7 +77,53 @@ export class GameEngine {
     this.state.currentRole = role;
     this.state.availableRoles = this.state.availableRoles.filter(r => r !== role);
     this.state.log.push(`${this.currentPlayer().name}が${roleNames[role]}を選択`);
+    this.executeRoleForAllPlayers();
     return true;
+  }
+
+  // 役割選択後、全員が順に役割を実行する
+  executeRoleForAllPlayers() {
+    const role = this.state.currentRole;
+    if (!role) return;
+
+    // 現在のプレイヤーから時計回り
+    const playerCount = this.state.players.length;
+    let idx = this.state.currentPlayerIndex;
+    for (let i = 0; i < playerCount; i++) {
+      const player = this.state.players[idx];
+      switch (role) {
+        case 'builder':
+          // 仮: 自動で最初の建物を建てる（実際はUI入力等が必要）
+          // this.buildBuilding(player.id, ...);
+          break;
+        case 'producer':
+          // 仮: 全ての建物で生産
+          // this.produce(player.id, ...);
+          break;
+        case 'trader':
+          // 仮: 最初の建物を売却
+          // this.trade(player.id, ...);
+          break;
+        case 'councillor':
+          // 仮: 最初のカードを選択
+          // this.councillor(player.id, 0);
+          break;
+        case 'prospector':
+          // 仮: 金鉱掘り
+          // this.prospector(player.id);
+          break;
+      }
+      idx = (idx + 1) % playerCount;
+    }
+    // 日本語役割名
+    const roleNames: Record<Role, string> = {
+      builder: '建築士',
+      producer: '監督',
+      trader: '商人',
+      councillor: '参事会議員',
+      prospector: '金鉱掘り'
+    };
+    this.state.log.push(`全員が${roleNames[role]}の処理を完了`);
   }
   // 建築士（builder）処理: 建物建設
   // playerId: 建設するプレイヤー, buildingId: 建設する建物, payment: 支払いカードID配列
