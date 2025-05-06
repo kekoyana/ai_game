@@ -8,7 +8,13 @@ import type { Player } from './game/GameTypes';
 function App() {
   const [engine] = useState(() => new GameEngine());
   const [state, setState] = useState(engine.state);
-  const [showBuildingSelection, setShowBuildingSelection] = useState(false);
+
+  // 監督フェーズ用
+  const [showProducerFlow, setShowProducerFlow] = useState(false);
+  const [producerStep, setProducerStep] = useState<'all' | 'bonus' | null>(null);
+  const [producePlayerIdx, setProducePlayerIdx] = useState(0);
+  const [produceMap, setProduceMap] = useState<Record<number, string>>({});
+  const [bonusDone, setBonusDone] = useState(false);
 
   // 役割選択
   const handleChooseRole = (role: Role) => {
@@ -18,24 +24,18 @@ function App() {
         engine.prospector(currentPlayerId);
         setState({ ...engine.state });
       } else if (role === 'producer') {
-        setShowBuildingSelection(true);
+        setShowProducerFlow(true);
+        setProducerStep('all');
+        setProducePlayerIdx(0);
+        setProduceMap({});
+        setBonusDone(false);
       } else {
         setState({ ...engine.state });
       }
     }
   };
 
-  // 生産施設選択
-  const handleProduce = (buildingId: string) => {
-    const currentPlayerId = engine.state.players[engine.state.currentPlayerIndex].id;
-    const result = engine.produce(currentPlayerId, buildingId);
-    if (result) {
-      setState({ ...engine.state });
-      setShowBuildingSelection(false);
-    }
-  };
-
-  // プレイヤーの生産施設リストを取得
+  // 生産施設リスト
   const getProductionBuildings = (playerId: number) => {
     const player = state.players.find(p => p.id === playerId);
     if (!player) return [];
@@ -45,8 +45,52 @@ function App() {
     });
   };
 
-  // カードID配列を日本語名配列に変換
-  // (未使用のため削除)
+  // 全員生産フェーズ: 各プレイヤー順に生産施設を選択
+  const handleProduceSelect = (buildingId: string) => {
+    const player = state.players[producePlayerIdx];
+    setProduceMap(prev => ({ ...prev, [player.id]: buildingId }));
+    // 次のプレイヤーへ
+    nextProduceStep(producePlayerIdx + 1, { ...produceMap, [player.id]: buildingId });
+  };
+
+  // CPU自動選択 or スキップ
+  const nextProduceStep = (nextIdx: number, nextMap: Record<number, string>) => {
+    if (nextIdx < state.players.length) {
+      const nextPlayer = state.players[nextIdx];
+      if (nextPlayer.type === 'cpu') {
+        const prodBuildings = getProductionBuildings(nextPlayer.id);
+        if (prodBuildings.length > 0) {
+          // ランダム選択
+          const buildingId = prodBuildings[Math.floor(Math.random() * prodBuildings.length)];
+          setProduceMap(prev => ({ ...nextMap, [nextPlayer.id]: buildingId }));
+          // 次のプレイヤーへ
+          nextProduceStep(nextIdx + 1, { ...nextMap, [nextPlayer.id]: buildingId });
+        } else {
+          // スキップ
+          nextProduceStep(nextIdx + 1, nextMap);
+        }
+      } else {
+        setProducePlayerIdx(nextIdx);
+        setProduceMap(nextMap);
+      }
+    } else {
+      // 全員分選択完了→生産実行
+      engine.produceAllPlayers(nextMap);
+      setState({ ...engine.state });
+      setProducerStep('bonus');
+      setProducePlayerIdx(state.currentPlayerIndex); // 役割選択者
+    }
+  };
+
+  // 特典生産フェーズ: 役割選択者が追加生産
+  const handleBonusProduce = (buildingId: string) => {
+    const playerId = state.players[state.currentPlayerIndex].id;
+    engine.produceBonus(playerId, buildingId);
+    setState({ ...engine.state });
+    setBonusDone(true);
+    setShowProducerFlow(false);
+    setProducerStep(null);
+  };
 
   // ログ内のカードIDを日本語名に変換
   const localizeLog = (msg: string) => {
@@ -124,15 +168,15 @@ function App() {
           </button>
         ))}
       </div>
-      {showBuildingSelection && (
+      {showProducerFlow && producerStep === 'all' && state.players[producePlayerIdx].type === 'human' && (
         <div style={{margin: '12px 0', background: '#fffde7', padding: 8, borderRadius: 6}}>
-          <b>生産する建物を選択してください:</b>
+          <b>生産する建物を選択してください: {state.players[producePlayerIdx].name}</b>
           <ul style={{display: 'flex', gap: 8, listStyle: 'none', padding: 0}}>
-            {getProductionBuildings(state.players[state.currentPlayerIndex].id).map(buildingId => {
+            {getProductionBuildings(state.players[producePlayerIdx].id).map(buildingId => {
               const building = BuildingCards.find(b => b.id === buildingId);
               return (
                 <li key={buildingId}>
-                  <button onClick={() => handleProduce(buildingId)} style={{
+                  <button onClick={() => handleProduceSelect(buildingId)} style={{
                     border: '1.5px solid #1976d2', borderRadius: 4, padding: '4px 12px', background: '#e3f2fd', fontWeight: 'bold'
                   }}>
                     {building ? building.name : buildingId}
@@ -140,7 +184,42 @@ function App() {
                 </li>
               );
             })}
+            {getProductionBuildings(state.players[producePlayerIdx].id).length === 0 && (
+              <li>生産可能な建物なし</li>
+            )}
           </ul>
+          {getProductionBuildings(state.players[producePlayerIdx].id).length === 0 && (
+            <button onClick={() => handleProduceSelect('')}>スキップ</button>
+          )}
+        </div>
+      )}
+      {showProducerFlow && producerStep === 'bonus' && !bonusDone && (
+        <div style={{margin: '12px 0', background: '#fffde7', padding: 8, borderRadius: 6}}>
+          <b>特典生産: もう一度生産する建物を選択してください（{state.players[state.currentPlayerIndex].name}）</b>
+          <ul style={{display: 'flex', gap: 8, listStyle: 'none', padding: 0}}>
+            {getProductionBuildings(state.players[state.currentPlayerIndex].id).map(buildingId => {
+              const building = BuildingCards.find(b => b.id === buildingId);
+              return (
+                <li key={buildingId}>
+                  <button onClick={() => handleBonusProduce(buildingId)} style={{
+                    border: '1.5px solid #388e3c', borderRadius: 4, padding: '4px 12px', background: '#e8f5e9', fontWeight: 'bold'
+                  }}>
+                    {building ? building.name : buildingId}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+          {getProductionBuildings(state.players[state.currentPlayerIndex].id).length === 0 && (
+            <div>
+              <span>生産可能な建物なし</span>
+              <button style={{marginLeft: 12}} onClick={() => {
+                setBonusDone(true);
+                setShowProducerFlow(false);
+                setProducerStep(null);
+              }}>スキップ</button>
+            </div>
+          )}
         </div>
       )}
       <div>

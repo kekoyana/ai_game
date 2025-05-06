@@ -132,6 +132,32 @@ export class GameEngine {
   }
 
   /**
+   * 全員生産: 各プレイヤーが指定した生産施設で生産
+   * @param buildingMap プレイヤーID→生産する建物ID
+   */
+  produceAllPlayers(buildingMap: Record<number, string>) {
+    for (const pid in buildingMap) {
+      const playerId = Number(pid);
+      const buildingId = buildingMap[pid];
+      this.produce(playerId, buildingId);
+    }
+  }
+
+  /**
+   * 特典生産: 役割選択者が追加で生産
+   * @param playerId プレイヤーID
+   * @param buildingId 生産する建物ID
+   */
+  produceBonus(playerId: number, buildingId: string) {
+    // 既に商品がある場合は生産できない
+    if (this.state.players.find(p => p.id === playerId)?.products[buildingId]) {
+      this.state.log.push(`特典生産: 既に商品があるため生産できません`);
+      return false;
+    }
+    return this.produce(playerId, buildingId);
+  }
+
+  /**
    * 商人（trader）処理: 商品売却
    * @param playerId 売却するプレイヤー
    * @param buildingId 生産施設ID
