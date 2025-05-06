@@ -78,6 +78,25 @@ export class GameEngine {
     this.state.availableRoles = this.state.availableRoles.filter(r => r !== role);
     this.state.log.push(`${this.currentPlayer().name}が${roleNames[role]}を選択`);
     this.executeRoleForAllPlayers();
+
+    // 全員が1回ずつ役割を選ぶまで自動で手番を進める
+    // availableRolesが空ならラウンド終了
+    if (this.state.availableRoles.length === 0) {
+      this.endRound();
+    } else {
+      // 次のプレイヤーへ
+      this.nextPlayer();
+
+      // CPUなら自動で役割選択
+      let current = this.currentPlayer();
+      while (current.type === 'cpu' && this.state.availableRoles.length > 0) {
+        // ランダムに役割を選択（戦略は今後拡張可）
+        const cpuRole = this.state.availableRoles[Math.floor(Math.random() * this.state.availableRoles.length)];
+        this.chooseRole(cpuRole);
+        // nextPlayerでcurrentPlayerIndexが進むので再取得
+        current = this.currentPlayer();
+      }
+    }
     return true;
   }
 
