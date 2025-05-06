@@ -1,35 +1,56 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from 'react';
+import './App.css';
+import { GameEngine } from './game/GameEngine';
+import { RoleNames, Role } from './game/GameTypes';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [engine] = useState(() => new GameEngine());
+  const [state, setState] = useState(engine.state);
+
+  // 役割選択
+  const handleChooseRole = (role: Role) => {
+    if (engine.chooseRole(role)) {
+      setState({ ...engine.state });
+    }
+  };
 
   return (
-    <>
+    <div className="game-root">
+      <h1>サンファン4</h1>
       <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+        <b>ラウンド: </b>{state.round}
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
+      <div>
+        <b>現在のプレイヤー: </b>{state.players[state.currentPlayerIndex].name}
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+      <div>
+        <b>選択可能な役割:</b>
+        {state.availableRoles.map(role => (
+          <button key={role} onClick={() => handleChooseRole(role)} style={{margin: 4}}>
+            {RoleNames[role]}
+          </button>
+        ))}
+      </div>
+      <div>
+        <b>ログ:</b>
+        <ul>
+          {state.log.map((msg, i) => <li key={i}>{msg}</li>)}
+        </ul>
+      </div>
+      <div>
+        <b>プレイヤー情報:</b>
+        <ul>
+          {state.players.map(p => (
+            <li key={p.id}>
+              {p.name} [{p.type === 'human' ? 'あなた' : 'CPU'}]
+              建物:{p.buildings.length}枚　手札:{p.hand.length}枚
+              {p.isGovernor && ' 👑'}
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
+  );
 }
 
-export default App
+export default App;
