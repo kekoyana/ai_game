@@ -9,7 +9,55 @@ export type Player = {
 };
 
 export function useSanJuanGame() {
-  // ...（省略: 状態管理部分は前回と同じ）
+  // --- 状態管理 ---
+  const [showLog, setShowLog] = useState(false);
+
+  function createDeck() {
+    const deck: string[] = [];
+    buildings.forEach(card => {
+      const count = card.name === "インディゴ染料工場" ? (card.count ?? 0) - 4 : (card.count ?? 0);
+      for (let i = 0; i < count; i++) deck.push(card.name);
+    });
+    return deck;
+  }
+  function shuffle<T>(array: T[]): T[] {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+  const [deck, setDeck] = useState<string[]>(() => shuffle(createDeck()));
+  const [players, setPlayers] = useState<Player[]>(() => {
+    const names = ["あなた", "CPU1", "CPU2", "CPU3"];
+    let d = shuffle(createDeck());
+    const ps = names.map(name => {
+      const hand = d.slice(0, 4);
+      d = d.slice(4);
+      return {
+        name,
+        buildings: ["インディゴ染料工場"],
+        hand,
+        products: {},
+      };
+    });
+    setDeck(d);
+    return ps;
+  });
+  const [turn, setTurn] = useState(0); // 0:あなた, 1:CPU1...
+  const [role, setRole] = useState<string | null>(null);
+  const [message, setMessage] = useState("ゲーム開始！役割を選んでください。");
+  const [messageLog, setMessageLog] = useState<string[]>(["ゲーム開始！役割を選んでください。"]);
+  function setMessageWithLog(msg: string) {
+    setMessage(msg);
+    setMessageLog(log => [...log, msg]);
+  }
+  const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
+  const [councilChoices, setCouncilChoices] = useState<string[] | null>(null);
+  const [buildChoices, setBuildChoices] = useState<string[] | null>(null);
+  const [sellChoices, setSellChoices] = useState<string[] | null>(null);
+  const [governor, setGovernor] = useState(0);
 
   // 監督アクション（全員分）
   function handleOverseer(isFirst: boolean) {
@@ -75,5 +123,32 @@ export function useSanJuanGame() {
     }, 800);
   }
 
-  // ...（return部分省略）
-}
+    return {
+      players,
+      deck,
+      role,
+      selectedRoles,
+      buildChoices,
+      councilChoices,
+      sellChoices,
+      governor,
+      turn,
+      message,
+      messageLog,
+      showLog,
+      setShowLog,
+      setPlayers,
+      setDeck,
+      setRole,
+      setSelectedRoles,
+      setBuildChoices,
+      setCouncilChoices,
+      setSellChoices,
+      setGovernor,
+      setTurn,
+      setMessage,
+      setMessageLog,
+      handleRoleSelect,
+      setMessageWithLog,
+    };
+  }
