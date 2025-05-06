@@ -22,6 +22,7 @@ function App() {
     if (engine.chooseRole(role)) {
       if (role === 'prospector') {
         engine.prospector(currentPlayerId);
+        engine.nextPlayer();
         setState({ ...engine.state });
       } else if (role === 'producer') {
         setShowProducerFlow(true);
@@ -30,6 +31,8 @@ function App() {
         setProduceMap({});
         setBonusDone(false);
       } else {
+        // 他の役割の処理をここに追加
+        engine.nextPlayer();
         setState({ ...engine.state });
       }
     }
@@ -49,7 +52,6 @@ function App() {
   const handleProduceSelect = (buildingId: string) => {
     const player = state.players[producePlayerIdx];
     setProduceMap(prev => ({ ...prev, [player.id]: buildingId }));
-    // 次のプレイヤーへ
     nextProduceStep(producePlayerIdx + 1, { ...produceMap, [player.id]: buildingId });
   };
 
@@ -60,13 +62,10 @@ function App() {
       if (nextPlayer.type === 'cpu') {
         const prodBuildings = getProductionBuildings(nextPlayer.id);
         if (prodBuildings.length > 0) {
-          // ランダム選択
           const buildingId = prodBuildings[Math.floor(Math.random() * prodBuildings.length)];
-          setProduceMap(prev => ({ ...nextMap, [nextPlayer.id]: buildingId }));
-          // 次のプレイヤーへ
+          setProduceMap({ ...nextMap, [nextPlayer.id]: buildingId });
           nextProduceStep(nextIdx + 1, { ...nextMap, [nextPlayer.id]: buildingId });
         } else {
-          // スキップ
           nextProduceStep(nextIdx + 1, nextMap);
         }
       } else {
@@ -74,11 +73,10 @@ function App() {
         setProduceMap(nextMap);
       }
     } else {
-      // 全員分選択完了→生産実行
       engine.produceAllPlayers(nextMap);
       setState({ ...engine.state });
       setProducerStep('bonus');
-      setProducePlayerIdx(state.currentPlayerIndex); // 役割選択者
+      setProducePlayerIdx(state.currentPlayerIndex);
     }
   };
 
@@ -86,6 +84,16 @@ function App() {
   const handleBonusProduce = (buildingId: string) => {
     const playerId = state.players[state.currentPlayerIndex].id;
     engine.produceBonus(playerId, buildingId);
+    engine.nextPlayer();
+    setState({ ...engine.state });
+    setBonusDone(true);
+    setShowProducerFlow(false);
+    setProducerStep(null);
+  };
+
+  // 特典生産スキップ
+  const handleBonusSkip = () => {
+    engine.nextPlayer();
     setState({ ...engine.state });
     setBonusDone(true);
     setShowProducerFlow(false);
@@ -213,11 +221,7 @@ function App() {
           {getProductionBuildings(state.players[state.currentPlayerIndex].id).length === 0 && (
             <div>
               <span>生産可能な建物なし</span>
-              <button style={{marginLeft: 12}} onClick={() => {
-                setBonusDone(true);
-                setShowProducerFlow(false);
-                setProducerStep(null);
-              }}>スキップ</button>
+              <button style={{marginLeft: 12}} onClick={handleBonusSkip}>スキップ</button>
             </div>
           )}
         </div>
