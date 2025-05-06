@@ -18,6 +18,7 @@ import { prospectorAction } from './gameActions/prospector'
 
 function App() {
   // --- 状態管理 ---
+const [showLog, setShowLog] = useState(false);
   function createDeck() {
     const deck: string[] = [];
     buildings.forEach(card => {
@@ -95,7 +96,8 @@ function App() {
       setPlayers(newPlayers);
       setDeck(newDeck);
       setMessageWithLog(msg);
-      // CPUの役割選択を順に実行（省略: 必要ならロジック追加）
+      // CPUの役割選択を順に実行（例示: CPU1が監督を選んだとする）
+      setMessageWithLog("CPU1 が 監督 を選びました");
       setTimeout(() => {
         setRole(null);
         setSelectedRoles([]);
@@ -144,6 +146,12 @@ function App() {
       <button style={{position: "absolute", right: 10, top: 10, zIndex: 10}} onClick={() => window.location.reload()}>
         リセット
       </button>
+      <button
+        style={{ position: "absolute", right: 10, top: 50, zIndex: 10 }}
+        onClick={() => setShowLog(prev => !prev)}
+      >
+        ログを表示
+      </button>
       <PlayerArea
         name={players[0].name}
         buildings={players[0].buildings}
@@ -171,6 +179,26 @@ function App() {
         />
       </div>
       <MessageArea message={message} messageLog={messageLog} />
+      {showLog && (
+        <div
+          style={{
+            position: "absolute",
+            top: 90,
+            right: 10,
+            backgroundColor: "#fff",
+            border: "1px solid #000",
+            zIndex: 10,
+            width: "300px",
+            height: "200px",
+            overflow: "auto"
+          }}
+        >
+          <h3>ログ</h3>
+          {messageLog.map((msg, i) => (
+            <div key={i}>{msg}</div>
+          ))}
+        </div>
+      )}
       <PlayerBuildings
         buildings={players[0].buildings}
         products={players[0].products}
