@@ -77,7 +77,8 @@ export class GameEngine {
     this.state.currentRole = role;
     this.state.availableRoles = this.state.availableRoles.filter(r => r !== role);
     this.state.log.push(`${this.currentPlayer().name}が${roleNames[role]}を選択`);
-    this.executeRoleForAllPlayers();
+    // 役割を選んだプレイヤーのindexを渡す
+    this.executeRoleForAllPlayers(this.state.currentPlayerIndex);
 
     // 全員が1回ずつ役割を選ぶまで自動で手番を進める
     // availableRolesが空ならラウンド終了
@@ -87,49 +88,51 @@ export class GameEngine {
       // 次のプレイヤーへ
       this.nextPlayer();
 
-      // CPUなら自動で役割選択
-      let current = this.currentPlayer();
-      while (current.type === 'cpu' && this.state.availableRoles.length > 0) {
-        // ランダムに役割を選択（戦略は今後拡張可）
-        const cpuRole = this.state.availableRoles[Math.floor(Math.random() * this.state.availableRoles.length)];
-        this.chooseRole(cpuRole);
-        // nextPlayerでcurrentPlayerIndexが進むので再取得
-        current = this.currentPlayer();
+      // ラウンド終了直後（availableRolesリセット直後）は自動選択しない
+      // それ以外でCPUなら自動で役割選択
+      if (this.state.round > 1 || this.state.availableRoles.length < 5) {
+        let current = this.currentPlayer();
+        while (current.type === 'cpu' && this.state.availableRoles.length > 0) {
+          // ランダムに役割を選択（戦略は今後拡張可）
+          const cpuRole = this.state.availableRoles[Math.floor(Math.random() * this.state.availableRoles.length)];
+          this.chooseRole(cpuRole);
+          // nextPlayerでcurrentPlayerIndexが進むので再取得
+          current = this.currentPlayer();
+        }
       }
     }
     return true;
   }
 
   // 役割選択後、全員が順に役割を実行する
-  executeRoleForAllPlayers() {
+  executeRoleForAllPlayers(roleChooserIndex?: number) {
     const role = this.state.currentRole;
     if (!role) return;
 
     // 現在のプレイヤーから時計回り
     const playerCount = this.state.players.length;
     let idx = this.state.currentPlayerIndex;
+    // 役割を選んだプレイヤーのindexを保持
+    const chooserIdx = typeof roleChooserIndex === 'number' ? roleChooserIndex : this.state.currentPlayerIndex;
+
     for (let i = 0; i < playerCount; i++) {
       const player = this.state.players[idx];
       switch (role) {
         case 'builder':
           // 仮: 自動で最初の建物を建てる（実際はUI入力等が必要）
-          // this.buildBuilding(player.id, ...);
           break;
         case 'producer':
-          // 仮: 全ての建物で生産
-          // this.produce(player.id, ...);
+          // 生産処理は外部から明示的に呼ぶ（ここでは何もしない）
           break;
         case 'trader':
-          // 仮: 最初の建物を売却
-          // this.trade(player.id, ...);
           break;
         case 'councillor':
-          // 仮: 最初のカードを選択
-          // this.councillor(player.id, 0);
           break;
         case 'prospector':
-          // 仮: 金鉱掘り
-          // this.prospector(player.id);
+          // 金鉱掘りは役割を選んだプレイヤーのみ
+          if (idx === chooserIdx) {
+            this.prospector(player.id);
+          }
           break;
       }
       idx = (idx + 1) % playerCount;
@@ -144,6 +147,7 @@ export class GameEngine {
     };
     this.state.log.push(`全員が${roleNames[role]}の処理を完了`);
   }
+
   // 建築士（builder）処理: 建物建設
   // playerId: 建設するプレイヤー, buildingId: 建設する建物, payment: 支払いカードID配列
   buildBuilding(playerId: number, buildingId: string, payment: string[]): boolean {
