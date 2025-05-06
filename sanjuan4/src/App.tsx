@@ -10,6 +10,13 @@ function App() {
   // 役割選択
   const handleChooseRole = (role: Role) => {
     if (engine.chooseRole(role)) {
+      // 役割に応じた処理を実行
+      const currentPlayerId = engine.state.players[engine.state.currentPlayerIndex].id;
+      if (role === 'prospector') {
+        engine.prospector(currentPlayerId);
+      }
+      // TODO: 他の役割の処理も追加する
+
       setState({ ...engine.state });
     }
   };
@@ -43,7 +50,7 @@ function App() {
           {state.players.map(p => (
             <li key={p.id}>
               {p.name} [{p.type === 'human' ? 'あなた' : 'CPU'}]
-              建物:{p.buildings.length}枚　手札:{p.hand.length}枚
+              建物:{p.buildings.length}枚 手札:{p.hand.length}枚 ({p.hand.join(', ')})
               {p.isGovernor && ' 👑'}
             </li>
           ))}
