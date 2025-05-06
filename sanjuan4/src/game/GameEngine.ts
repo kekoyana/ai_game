@@ -65,10 +65,18 @@ export class GameEngine {
 
   // 役割選択
   chooseRole(role: Role) {
+    // 日本語役割名
+    const roleNames: Record<Role, string> = {
+      builder: '建築士',
+      producer: '監督',
+      trader: '商人',
+      councillor: '参事会議員',
+      prospector: '金鉱掘り'
+    };
     if (!this.state.availableRoles.includes(role)) return false;
     this.state.currentRole = role;
     this.state.availableRoles = this.state.availableRoles.filter(r => r !== role);
-    this.state.log.push(`${this.currentPlayer().name}が${role}を選択`);
+    this.state.log.push(`${this.currentPlayer().name}が${roleNames[role]}を選択`);
     return true;
   }
   // 建築士（builder）処理: 建物建設
@@ -94,23 +102,33 @@ export class GameEngine {
   /**
    * 監督（producer）処理: 生産
    * @param playerId 生産するプレイヤー
+   * @param buildingId 生産する建物ID
    */
-  produce(playerId: number): boolean {
+  produce(playerId: number, buildingId: string): boolean {
     const player = this.state.players.find(p => p.id === playerId);
     if (!player) return false;
-    let produced = false;
-    for (const bId of player.buildings) {
-      const card = BuildingCards.find(c => c.id === bId);
-      if (!card || card.category !== 'production') continue;
-      if (player.products[bId]) continue; // 既に商品あり
-      // 山札から1枚引いて商品に
-      if (this.state.deck.length === 0) break;
-      const prodCard = this.state.deck.shift()!;
-      player.products[bId] = prodCard;
-      produced = true;
-      this.state.log.push(`${player.name}の${card.name}で商品を生産`);
+
+    const card = BuildingCards.find(c => c.id === buildingId);
+    // 指定された建物が存在し、生産施設であるか、かつプレイヤーが所有しているか
+    if (!card || card.category !== 'production' || !player.buildings.includes(buildingId)) {
+      return false;
     }
-    return produced;
+
+    // 既に商品がある場合は生産しない
+    if (player.products[buildingId]) {
+      this.state.log.push(`${player.name}の${card.name}には既に商品があります`);
+      return false;
+    }
+
+    // 山札から1枚引いて商品に
+    if (this.state.deck.length === 0) {
+      this.state.log.push(`山札が空のため、${card.name}で生産できませんでした`);
+      return false;
+    }
+    const prodCard = this.state.deck.shift()!;
+    player.products[buildingId] = prodCard;
+    this.state.log.push(`${player.name}の${card.name}で商品を生産`);
+    return true;
   }
 
   /**
