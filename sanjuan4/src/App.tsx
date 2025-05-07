@@ -20,11 +20,7 @@ function App() {
   const handleChooseRole = (role: Role) => {
     const currentPlayerId = engine.state.players[engine.state.currentPlayerIndex].id;
     if (engine.chooseRole(role)) {
-      if (role === 'prospector') {
-        engine.prospector(currentPlayerId);
-        engine.nextPlayer();
-        setState({ ...engine.state });
-      } else if (role === 'producer') {
+      if (role === 'producer') {
         setShowProducerFlow(true);
         setProducerStep('all');
         setProducePlayerIdx(0);
@@ -33,8 +29,8 @@ function App() {
       } else {
         // 他の役割の処理をここに追加
         engine.nextPlayer();
-        setState({ ...engine.state });
       }
+      setState({ ...engine.state });
     }
   };
 
