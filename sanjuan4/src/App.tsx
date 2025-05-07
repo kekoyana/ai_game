@@ -26,6 +26,9 @@ function App() {
         setProducePlayerIdx(0);
         setProduceMap({});
         setBonusDone(false);
+      } else if (role === 'prospector') {
+        // 金鉱掘りはUI操作不要なので即進行
+        engine.advanceToNextRoleOrPlayer();
       } else {
         // 他の役割の処理をここに追加
         engine.nextPlayer();
@@ -80,7 +83,7 @@ function App() {
   const handleBonusProduce = (buildingId: string) => {
     const playerId = state.players[state.currentPlayerIndex].id;
     engine.produceBonus(playerId, buildingId);
-    engine.nextPlayer();
+    engine.advanceToNextRoleOrPlayer();
     setState({ ...engine.state });
     setBonusDone(true);
     setShowProducerFlow(false);
@@ -89,7 +92,7 @@ function App() {
 
   // 特典生産スキップ
   const handleBonusSkip = () => {
-    engine.nextPlayer();
+    engine.advanceToNextRoleOrPlayer();
     setState({ ...engine.state });
     setBonusDone(true);
     setShowProducerFlow(false);

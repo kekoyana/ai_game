@@ -78,8 +78,19 @@ export class GameEngine {
     this.state.availableRoles = this.state.availableRoles.filter(r => r !== role);
     this.state.log.push(`${this.currentPlayer().name}が${roleNames[role]}を選択`);
     // 役割を選んだプレイヤーのindexを渡す
-    this.executeRoleForAllPlayers(this.state.currentPlayerIndex);
+    // 監督（producer）の場合は生産処理を外部UIで制御するためここでは呼ばない
+    if (role === 'producer' || role === 'prospector') {
+      // 生産や金鉱掘りはUI側で進行するため、ここで処理を止める
+      return true;
+    } else {
+      this.executeRoleForAllPlayers(this.state.currentPlayerIndex);
+      this.advanceToNextRoleOrPlayer();
+      return true;
+    }
+  }
 
+  // 役割処理完了後に次のプレイヤーやCPUに進める共通処理
+  advanceToNextRoleOrPlayer() {
     // 全員が1回ずつ役割を選ぶまで自動で手番を進める
     // availableRolesが空ならラウンド終了
     if (this.state.availableRoles.length === 0) {
@@ -101,7 +112,6 @@ export class GameEngine {
         }
       }
     }
-    return true;
   }
 
   // 役割選択後、全員が順に役割を実行する
